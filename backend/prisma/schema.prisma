@@ -1,0 +1,86 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Category {
+  id       String    @id @default(uuid())
+  name     String    @unique
+  slug     String    @unique
+  products Product[]
+}
+
+model Product {
+  id          String   @id @default(uuid())
+  name        String
+  price       Int
+  description String
+  inStock     Boolean  @default(true)
+  specs       Json?
+  categoryId  String
+  createdAt   DateTime @default(now())
+  images      String[]
+  category    Category @relation(fields: [categoryId], references: [id])
+
+  @@index([name])
+}
+
+model Order {
+  id             String      @id @default(cuid())
+  customerName   String
+  phone          String
+  city           String?
+  address        String?
+  notes          String?
+  total          Int
+  deliveryFee    Int         @default(0)
+  status         OrderStatus @default(PENDING)
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+  email          String?
+  deliveryMethod String      @default("DELIVERY")
+  items          OrderItem[]
+
+  @@index([city])
+}
+
+model OrderItem {
+  id        String  @id @default(uuid())
+  orderId   String
+  productId String?
+  name      String
+  price     Int
+  quantity  Int
+  order     Order   @relation(fields: [orderId], references: [id])
+}
+
+model Settings {
+  id                    Int     @id @default(1)
+  storeName             String  @default("AtlasStore")
+  whatsappNumber        String  @default("+212600000000")
+  supportEmail          String?
+  businessAddress       String?
+  freeShippingEnabled   Boolean @default(true)
+  freeShippingThreshold Int     @default(50000)
+  standardDeliveryFee   Int     @default(5000)
+  heroImage             String?
+  googleMapsEmbed       String?
+}
+
+model AdminUser {
+  id        String   @id @default(uuid())
+  username  String   @unique
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now())
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  DELIVERED
+  CANCELLED
+}

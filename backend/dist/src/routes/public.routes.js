@@ -1,0 +1,12 @@
+import { Router } from 'express';
+import { PublicController } from '../controllers/public.controller.js';
+const router = Router();
+router.get('/init', PublicController.getInitData);
+router.get('/products', PublicController.getProducts);
+router.get('/products/:id', PublicController.getProductById);
+router.post('/orders', PublicController.createOrder);
+router.get('/orders/search', PublicController.searchOrders);
+router.get('/orders', PublicController.getOrders);
+router.post('/orders/:id/cancel', PublicController.cancelOrder);
+router.post('/contact', PublicController.sendMessage);
+export default router;
