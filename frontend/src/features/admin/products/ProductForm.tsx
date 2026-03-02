@@ -49,7 +49,7 @@ export function ProductForm({ onSuccess, initialData }: ProductFormProps) {
     const isEdit = !!initialData;
     const createMutation = useMutation({
         mutationFn: async (payload: any) => {
-            const method = isEdit ? 'PUT' : 'POST';
+            const method = isEdit ? 'PATCH' : 'POST';
             const url = isEdit ? `/api/admin/products/${initialData.id}` : '/api/admin/products';
             const res = await apiRequest(method, url, payload);
             return res.json();

@@ -52,6 +52,19 @@ export default function ProductsAdmin() {
     },
   });
 
+  const toggleStock = useMutation({
+    mutationFn: async ({ id, inStock }: { id: string, inStock: boolean }) => {
+      await apiRequest('PATCH', `/api/admin/products/${id}`, { inStock: !inStock });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/products'] });
+      toast({ title: 'Availability updated' });
+    },
+    onError: (err: Error) => {
+      toast({ title: 'Error', description: err.message, variant: 'destructive' });
+    },
+  });
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -143,12 +156,19 @@ export default function ProductsAdmin() {
                     <TableCell>{product.category?.name}</TableCell>
                     <TableCell>{centsToMad(product.price)} MAD</TableCell>
                     <TableCell>
-                      <Badge
-                        variant={product.inStock ? "outline" : "destructive"}
-                        className={product.inStock ? "text-emerald-600 bg-emerald-50 border-emerald-200" : ""}
+                      <button
+                        onClick={() => toggleStock.mutate({ id: product.id, inStock: product.inStock })}
+                        className="hover:opacity-80 transition-opacity"
+                        disabled={toggleStock.isPending}
                       >
-                        {product.inStock ? 'In Stock' : 'Out of Stock'}
-                      </Badge>
+                        <Badge
+                          variant={product.inStock ? "outline" : "destructive"}
+                          className={product.inStock ? "text-emerald-600 bg-emerald-50 border-emerald-200 cursor-pointer" : "cursor-pointer"}
+                        >
+                          {toggleStock.isPending && <Loader2 className="mr-1 h-3 w-3 animate-spin" />}
+                          {product.inStock ? 'In Stock' : 'Out of Stock'}
+                        </Badge>
+                      </button>
                     </TableCell>
                     <TableCell className="text-right">
                       <DropdownMenu>
