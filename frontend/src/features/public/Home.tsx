@@ -66,10 +66,10 @@ export default function Home() {
 
               {/* CTA */}
               <div>
-                <Link href="/products">
+                <Link href="/products" className="block w-full sm:w-auto">
                   <Button
                     size="lg"
-                    className="w-full xs:w-auto h-11 sm:h-12 px-8 sm:px-10 bg-[#C9A227] hover:bg-[#C9A227]/90 text-black rounded-none text-[10.5px] uppercase tracking-[0.22em] sm:tracking-[0.35em] transition-all duration-300 font-semibold shadow-xl shadow-[#C9A227]/25"
+                    className="w-full sm:w-auto h-11 sm:h-12 px-8 sm:px-10 flex items-center justify-center bg-[#C9A227] hover:bg-[#C9A227]/90 text-black rounded-none text-[11px] uppercase tracking-[0.2em] transition-all duration-300 font-semibold shadow-xl shadow-[#C9A227]/25"
                   >
                     Explorer la Collection
                     <ArrowRight className="ml-2.5 h-3.5 w-3.5" />
@@ -122,10 +122,11 @@ export default function Home() {
             <Loader2 className="h-7 w-7 animate-spin text-[#C9A227]/40" />
           </div>
         ) : categories.length === 0 ? null : (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+          /* Mobile: horizontal scroll row — Desktop: 4-col grid */
+          <div className="flex gap-4 overflow-x-auto pb-2 -mx-6 px-6 md:mx-0 md:px-0 md:grid md:grid-cols-4 md:gap-6 md:overflow-visible md:pb-0">
             {categories.slice(0, 4).map((cat) => (
-              <Link key={cat.id} href={`/products?category=${cat.slug}`}>
-                <div className="group relative bg-white border border-[#E8E2D9] hover:border-[#C9A227]/40 transition-all duration-500 p-8 flex flex-col items-center justify-center text-center gap-4 aspect-square md:aspect-auto md:py-12 cursor-pointer hover:shadow-md hover:shadow-[#C9A227]/5">
+              <Link key={cat.id} href={`/products?category=${cat.slug}`} className="shrink-0 w-36 md:w-auto">
+                <div className="group relative bg-white border border-[#E8E2D9] hover:border-[#C9A227]/40 transition-all duration-500 p-5 md:p-8 flex flex-col items-center justify-center text-center gap-3 md:gap-4 h-36 md:h-auto md:py-12 cursor-pointer hover:shadow-md hover:shadow-[#C9A227]/5">
                   {/* Decorative corner */}
                   <div className="absolute top-0 left-0 w-4 h-4 border-t border-l border-[#C9A227]/30 group-hover:border-[#C9A227] transition-colors duration-500" />
                   <div className="absolute bottom-0 right-0 w-4 h-4 border-b border-r border-[#C9A227]/30 group-hover:border-[#C9A227] transition-colors duration-500" />
@@ -133,9 +134,9 @@ export default function Home() {
                   <div className="h-10 w-10 border border-[#C9A227]/20 group-hover:bg-[#C9A227]/10 flex items-center justify-center transition-colors duration-500">
                     <span className="font-serif text-[#C9A227] text-xl">{cat.name.charAt(0)}</span>
                   </div>
-                  <div>
-                    <h3 className="font-serif text-[#1A1A1A] text-lg leading-tight">{cat.name}</h3>
-                    <p className="text-[10px] uppercase tracking-[0.3em] text-[#9B9B9B] mt-2">{cat._count?.products ?? 0} pièces</p>
+                  <div className="w-full">
+                    <h3 className="font-serif text-[#1A1A1A] text-base md:text-lg leading-tight truncate">{cat.name}</h3>
+                    <p className="text-[10px] uppercase tracking-[0.3em] text-[#9B9B9B] mt-1.5">{cat._count?.products ?? 0} pièces</p>
                   </div>
                 </div>
               </Link>
@@ -180,9 +181,9 @@ export default function Home() {
           )}
 
           {/* Mobile CTA */}
-          <div className="mt-12 flex justify-center sm:hidden">
-            <Link href="/products">
-              <Button variant="outline" className="rounded-none border-[#C9A227]/30 text-[10px] uppercase tracking-[0.35em] px-8 text-[#1A1A1A] hover:bg-[#C9A227]/5 hover:border-[#C9A227]">
+          <div className="mt-12 sm:hidden">
+            <Link href="/products" className="block w-full">
+              <Button variant="outline" className="w-full h-11 flex items-center justify-center rounded-none border-[#C9A227]/30 text-[11px] uppercase tracking-[0.2em] px-8 text-[#1A1A1A] hover:bg-[#C9A227]/5 hover:border-[#C9A227]">
                 Voir toute la collection
               </Button>
             </Link>
@@ -249,13 +250,14 @@ export default function Home() {
               href={`https://wa.me/${(settings?.whatsappNumber ?? '+212600000000').replace(/[^0-9]/g, '')}?text=${encodeURIComponent("Bonjour, j'aimerais avoir plus d'informations sur vos caftans.")}`}
               target="_blank"
               rel="noopener noreferrer"
+              className="w-full sm:w-auto"
             >
-              <Button className="h-12 px-10 bg-[#C9A227] hover:bg-[#C9A227]/90 text-black rounded-none text-[11px] uppercase tracking-[0.35em] font-semibold shadow-lg shadow-[#C9A227]/20 transition-all duration-300">
+              <Button className="w-full sm:w-auto h-11 sm:h-12 px-10 flex items-center justify-center bg-[#C9A227] hover:bg-[#C9A227]/90 text-black rounded-none text-[11px] uppercase tracking-[0.2em] font-semibold shadow-lg shadow-[#C9A227]/20 transition-all duration-300">
                 Contacter sur WhatsApp
               </Button>
             </a>
-            <Link href="/contact">
-              <Button variant="outline" className="h-12 px-10 border-white/10 bg-transparent hover:bg-white/5 text-white rounded-none text-[11px] uppercase tracking-[0.35em] transition-all duration-300">
+            <Link href="/contact" className="w-full sm:w-auto">
+              <Button variant="outline" className="w-full sm:w-auto h-11 sm:h-12 px-10 flex items-center justify-center border-white/10 bg-transparent hover:bg-white/5 text-white rounded-none text-[11px] uppercase tracking-[0.2em] transition-all duration-300">
                 Voir le contact
               </Button>
             </Link>

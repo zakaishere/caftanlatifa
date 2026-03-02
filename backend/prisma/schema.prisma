@@ -68,6 +68,9 @@ model Settings {
   freeShippingThreshold Int     @default(50000)
   standardDeliveryFee   Int     @default(5000)
   heroImage             String?
+  logoUrl               String?
+  ogImageUrl            String?
+  ogDescription         String?
   googleMapsEmbed       String?
 }
 

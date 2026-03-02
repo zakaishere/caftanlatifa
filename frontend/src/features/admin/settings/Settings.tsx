@@ -28,6 +28,9 @@ export default function SettingsAdmin() {
   const [freeShippingThresholdMad, setFreeShippingThresholdMad] = useState('');
   const [standardDeliveryFeeMad, setStandardDeliveryFeeMad] = useState('');
   const [heroImage, setHeroImage] = useState<string | null>(null);
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
+  const [ogImageUrl, setOgImageUrl] = useState<string | null>(null);
+  const [ogDescription, setOgDescription] = useState('');
   const [googleMapsEmbed, setGoogleMapsEmbed] = useState('');
 
   // Sync state when data loads
@@ -41,6 +44,9 @@ export default function SettingsAdmin() {
       setFreeShippingThresholdMad(centsToMad(settings.freeShippingThreshold || 0));
       setStandardDeliveryFeeMad(centsToMad(settings.standardDeliveryFee || 0));
       setHeroImage(settings.heroImage || null);
+      setLogoUrl(settings.logoUrl || null);
+      setOgImageUrl(settings.ogImageUrl || null);
+      setOgDescription(settings.ogDescription || '');
       setGoogleMapsEmbed(settings.googleMapsEmbed || '');
     }
   }, [settings]);
@@ -71,6 +77,9 @@ export default function SettingsAdmin() {
       freeShippingThreshold: Math.round(parseFloat(freeShippingThresholdMad || '0') * 100),
       standardDeliveryFee: Math.round(parseFloat(standardDeliveryFeeMad || '0') * 100),
       heroImage,
+      logoUrl,
+      ogImageUrl,
+      ogDescription: ogDescription || null,
       googleMapsEmbed: googleMapsEmbed || null,
     });
   };
@@ -119,6 +128,53 @@ export default function SettingsAdmin() {
               />
               <p className="text-[10px] text-muted-foreground uppercase tracking-widest bg-primary/5 p-3 border border-primary/10">
                 Tip: Use a high-quality vertical or editorial photo of a "Moroccan Luxury Caftan" for the best boutique feel.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Branding & SEO</CardTitle>
+            <CardDescription>Configure your logo and how your site appears when shared on social media.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="grid gap-4">
+              <Label>Store Logo</Label>
+              <ImageUploader
+                value={logoUrl ? [logoUrl] : []}
+                onChange={(urls) => setLogoUrl(urls.length > 0 ? urls[0] : null)}
+                maxFiles={1}
+              />
+              <p className="text-[10px] text-muted-foreground uppercase tracking-widest">
+                This logo appears in the website header.
+              </p>
+            </div>
+
+            <div className="h-[1px] bg-border/40" />
+
+            <div className="grid gap-4">
+              <Label>Social Sharing Image (OG Image)</Label>
+              <ImageUploader
+                value={ogImageUrl ? [ogImageUrl] : []}
+                onChange={(urls) => setOgImageUrl(urls.length > 0 ? urls[0] : null)}
+                maxFiles={1}
+              />
+              <p className="text-[10px] text-muted-foreground uppercase tracking-widest">
+                This image appears when you share your website link (WhatsApp, Facebook, etc).
+              </p>
+            </div>
+
+            <div className="grid gap-2">
+              <Label htmlFor="ogDescription">Social Sharing Description</Label>
+              <Input
+                id="ogDescription"
+                value={ogDescription}
+                onChange={(e) => setOgDescription(e.target.value)}
+                placeholder="Ex: L'élégance du Caftan Marocain sublimé..."
+              />
+              <p className="text-[10px] text-muted-foreground uppercase tracking-widest">
+                The short text that appears under the link when shared.
               </p>
             </div>
           </CardContent>

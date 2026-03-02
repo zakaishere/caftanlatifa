@@ -47,4 +47,7 @@ export const updateSettingsSchema = z.object({
     freeShippingThreshold: z.number().int().min(0).optional(),
     standardDeliveryFee: z.number().int().min(0).optional(),
     heroImage: z.string().url().optional().nullable(),
+    logoUrl: z.string().url().optional().nullable(),
+    ogImageUrl: z.string().url().optional().nullable(),
+    ogDescription: z.string().optional().nullable(),
 });

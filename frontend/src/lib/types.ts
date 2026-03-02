@@ -57,6 +57,9 @@ export interface ApiSettings {
     freeShippingThreshold: number;
     standardDeliveryFee: number;
     heroImage?: string | null;
+    logoUrl?: string | null;
+    ogImageUrl?: string | null;
+    ogDescription?: string | null;
     googleMapsEmbed?: string | null;
 }
 
