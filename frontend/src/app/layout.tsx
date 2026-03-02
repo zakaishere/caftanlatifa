@@ -33,7 +33,7 @@ export const metadata: Metadata = {
     description: "L'héritage de l'artisanat marocain sublimé par une élégance contemporaine.",
   },
   icons: {
-    icon: "/favicon.ico",
+    icon: "/icon.jpg",
   }
 };
 

@@ -99,15 +99,23 @@ export default function StoreLayout({ children }: { children: React.ReactNode })
               </SheetContent>
             </Sheet>
 
-            <Link href="/" className="flex flex-col items-center group transition-all duration-500" data-testid="link-logo">
-              <div className="relative h-14 w-32 md:h-16 md:w-40 flex items-center justify-center">
+            <Link href="/" className="flex items-center gap-3 group transition-all duration-500" data-testid="link-logo">
+              <div className="relative h-10 w-16 md:h-12 md:w-20 flex-shrink-0">
                 <Image
                   src="/logo.png"
                   alt={settings?.storeName ?? 'Caftan Latifa'}
                   fill
-                  className="object-contain"
+                  className="object-contain object-left md:object-center"
                   priority
                 />
+              </div>
+              <div className="flex flex-col items-start hidden sm:flex">
+                <span className="font-serif text-xl md:text-3xl tracking-tighter text-foreground group-hover:text-primary transition-colors line-clamp-1">
+                  {settings?.storeName ?? 'Caftan Latifa'}
+                </span>
+                <span className="text-[8px] md:text-[9px] uppercase tracking-[0.4em] text-primary -mt-1 opacity-80 group-hover:opacity-100 line-clamp-1">
+                  Maison de Couture
+                </span>
               </div>
             </Link>
 
