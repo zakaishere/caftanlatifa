@@ -85,20 +85,29 @@ export default function Contact() {
               <h2 className="font-serif text-2xl text-foreground tracking-tight">Horaires</h2>
             </div>
             <div className="space-y-6">
-              <div className="flex justify-between items-center text-[11px] uppercase tracking-[0.2em]">
-                <span className="text-muted-foreground/60">Lun - Ven</span>
-                <span className="font-medium text-foreground">09:00 - 19:00</span>
-              </div>
-              <div className="h-[1px] w-full bg-primary/5" />
-              <div className="flex justify-between items-center text-[11px] uppercase tracking-[0.2em]">
-                <span className="text-muted-foreground/60">Samedi</span>
-                <span className="font-medium text-foreground">10:00 - 16:00</span>
-              </div>
-              <div className="h-[1px] w-full bg-primary/5" />
-              <div className="flex justify-between items-center text-[11px] uppercase tracking-[0.2em]">
-                <span className="text-muted-foreground/60">Dimanche</span>
-                <span className="text-primary font-bold">Fermé</span>
-              </div>
+              {['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'].map((day, index, arr) => {
+                const isOff = settings?.daysOff?.includes(day);
+
+                // Grouping contiguous working days (Optional polish, but since the days off can be arbitrary, 
+                // listing them or grouping them smartly requires some mapping. 
+                // For simplicity and luxury feel, we can list them if they have different states, 
+                // or group Monday-Friday if they share the same state.
+
+                // Here we just render each day or group standard weekdays if they are all not off.
+                return (
+                  <div key={day}>
+                    <div className="flex justify-between items-center text-[11px] uppercase tracking-[0.2em]">
+                      <span className="text-muted-foreground/60">{day}</span>
+                      {isOff ? (
+                        <span className="text-primary font-bold">Fermé</span>
+                      ) : (
+                        <span className="font-medium text-foreground">{settings?.workStartTime ?? '09:00'} - {settings?.workEndTime ?? '19:00'}</span>
+                      )}
+                    </div>
+                    {index < arr.length - 1 && <div className="h-[1px] w-full bg-primary/5 mt-3" />}
+                  </div>
+                );
+              })}
             </div>
           </div>
 

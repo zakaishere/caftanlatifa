@@ -68,9 +68,9 @@ model Settings {
   freeShippingThreshold Int     @default(50000)
   standardDeliveryFee   Int     @default(5000)
   heroImage             String?
-  logoUrl               String?
-  ogImageUrl            String?
-  ogDescription         String?
+  workStartTime         String  @default("09:00")
+  workEndTime           String  @default("19:00")
+  daysOff               String[] @default(["Dimanche"])
   googleMapsEmbed       String?
 }
 

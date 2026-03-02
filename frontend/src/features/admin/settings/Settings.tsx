@@ -28,9 +28,9 @@ export default function SettingsAdmin() {
   const [freeShippingThresholdMad, setFreeShippingThresholdMad] = useState('');
   const [standardDeliveryFeeMad, setStandardDeliveryFeeMad] = useState('');
   const [heroImage, setHeroImage] = useState<string | null>(null);
-  const [logoUrl, setLogoUrl] = useState<string | null>(null);
-  const [ogImageUrl, setOgImageUrl] = useState<string | null>(null);
-  const [ogDescription, setOgDescription] = useState('');
+  const [workStartTime, setWorkStartTime] = useState('09:00');
+  const [workEndTime, setWorkEndTime] = useState('19:00');
+  const [daysOff, setDaysOff] = useState<string[]>(['Dimanche']);
   const [googleMapsEmbed, setGoogleMapsEmbed] = useState('');
 
   // Sync state when data loads
@@ -44,9 +44,9 @@ export default function SettingsAdmin() {
       setFreeShippingThresholdMad(centsToMad(settings.freeShippingThreshold || 0));
       setStandardDeliveryFeeMad(centsToMad(settings.standardDeliveryFee || 0));
       setHeroImage(settings.heroImage || null);
-      setLogoUrl(settings.logoUrl || null);
-      setOgImageUrl(settings.ogImageUrl || null);
-      setOgDescription(settings.ogDescription || '');
+      setWorkStartTime(settings.workStartTime || '09:00');
+      setWorkEndTime(settings.workEndTime || '19:00');
+      setDaysOff(settings.daysOff || ['Dimanche']);
       setGoogleMapsEmbed(settings.googleMapsEmbed || '');
     }
   }, [settings]);
@@ -77,9 +77,9 @@ export default function SettingsAdmin() {
       freeShippingThreshold: Math.round(parseFloat(freeShippingThresholdMad || '0') * 100),
       standardDeliveryFee: Math.round(parseFloat(standardDeliveryFeeMad || '0') * 100),
       heroImage,
-      logoUrl,
-      ogImageUrl,
-      ogDescription: ogDescription || null,
+      workStartTime,
+      workEndTime,
+      daysOff,
       googleMapsEmbed: googleMapsEmbed || null,
     });
   };
@@ -135,46 +135,46 @@ export default function SettingsAdmin() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Branding & SEO</CardTitle>
-            <CardDescription>Configure your logo and how your site appears when shared on social media.</CardDescription>
+            <CardTitle>Business Hours</CardTitle>
+            <CardDescription>Configure your operating hours and days off.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            <div className="grid gap-4">
-              <Label>Store Logo</Label>
-              <ImageUploader
-                value={logoUrl ? [logoUrl] : []}
-                onChange={(urls) => setLogoUrl(urls.length > 0 ? urls[0] : null)}
-                maxFiles={1}
-              />
-              <p className="text-[10px] text-muted-foreground uppercase tracking-widest">
-                This logo appears in the website header.
-              </p>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="grid gap-2">
+                <Label htmlFor="workStartTime">Opening Time</Label>
+                <Input type="time" id="workStartTime" value={workStartTime} onChange={(e) => setWorkStartTime(e.target.value)} />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="workEndTime">Closing Time</Label>
+                <Input type="time" id="workEndTime" value={workEndTime} onChange={(e) => setWorkEndTime(e.target.value)} />
+              </div>
             </div>
 
             <div className="h-[1px] bg-border/40" />
 
             <div className="grid gap-4">
-              <Label>Social Sharing Image (OG Image)</Label>
-              <ImageUploader
-                value={ogImageUrl ? [ogImageUrl] : []}
-                onChange={(urls) => setOgImageUrl(urls.length > 0 ? urls[0] : null)}
-                maxFiles={1}
-              />
+              <Label>Days Off (Fermé)</Label>
+              <div className="flex flex-wrap gap-2">
+                {['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'].map((day) => (
+                  <Button
+                    key={day}
+                    type="button"
+                    variant={daysOff.includes(day) ? "default" : "outline"}
+                    className={daysOff.includes(day) ? "bg-primary text-white" : ""}
+                    onClick={() => {
+                      if (daysOff.includes(day)) {
+                        setDaysOff(daysOff.filter(d => d !== day));
+                      } else {
+                        setDaysOff([...daysOff, day]);
+                      }
+                    }}
+                  >
+                    {day}
+                  </Button>
+                ))}
+              </div>
               <p className="text-[10px] text-muted-foreground uppercase tracking-widest">
-                This image appears when you share your website link (WhatsApp, Facebook, etc).
-              </p>
-            </div>
-
-            <div className="grid gap-2">
-              <Label htmlFor="ogDescription">Social Sharing Description</Label>
-              <Input
-                id="ogDescription"
-                value={ogDescription}
-                onChange={(e) => setOgDescription(e.target.value)}
-                placeholder="Ex: L'élégance du Caftan Marocain sublimé..."
-              />
-              <p className="text-[10px] text-muted-foreground uppercase tracking-widest">
-                The short text that appears under the link when shared.
+                Select the days your store is closed.
               </p>
             </div>
           </CardContent>

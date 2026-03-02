@@ -194,9 +194,9 @@ export class AdminService {
                 freeShippingThreshold: 50000,
                 standardDeliveryFee: 5000,
                 heroImage: null,
-                logoUrl: null,
-                ogImageUrl: null,
-                ogDescription: null,
+                workStartTime: "09:00",
+                workEndTime: "19:00",
+                daysOff: ["Dimanche"],
                 googleMapsEmbed: null
             };
         }
