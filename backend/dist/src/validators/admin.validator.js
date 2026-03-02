@@ -13,6 +13,7 @@ export const createProductSchema = z.object({
     name: z.string().min(2),
     categoryId: z.string().uuid(),
     price: z.number().int().positive(),
+    shippingFee: z.number().int().min(0).default(0),
     description: z.string().min(10),
     images: z.array(z.string().url()).min(1, "At least one image is required"),
     specs: z.record(z.string()).optional(),
