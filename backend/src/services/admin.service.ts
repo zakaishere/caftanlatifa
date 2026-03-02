@@ -179,7 +179,27 @@ export class AdminService {
     // ─── Settings ─────────────────────────────────────────────────────────────
 
     static async getSettings() {
-        return prisma.settings.findUnique({ where: { id: 1 } });
+        try {
+            return await prisma.settings.findUnique({ where: { id: 1 } });
+        } catch (error: any) {
+            console.warn('Could not fetch settings (possible schema mismatch):', error.message);
+            // Fallback to default values if table is missing columns or doesn't exist
+            return {
+                id: 1,
+                storeName: "AtlasStore",
+                whatsappNumber: "+212600000000",
+                supportEmail: null,
+                businessAddress: null,
+                freeShippingEnabled: true,
+                freeShippingThreshold: 50000,
+                standardDeliveryFee: 5000,
+                heroImage: null,
+                logoUrl: null,
+                ogImageUrl: null,
+                ogDescription: null,
+                googleMapsEmbed: null
+            };
+        }
     }
 
     static async updateSettings(data: UpdateSettingsInput) {
