@@ -5,10 +5,13 @@
 export const startKeepAlive = (url: string, intervalMinutes: number = 5) => {
     const endpoint = '/ping';
     const intervalMs = intervalMinutes * 60 * 1000;
-    const fullUrl = url.endsWith('/') ? `${url}${endpoint.substring(1)}` : `${url}${endpoint}`;
 
-    console.log(`🚀 [Keep-Alive] Started for: ${url}`);
-    console.log(`📡 [Keep-Alive] Endpoint: ${endpoint}`);
+    // Ensure URL is valid and doesn't have duplicate slashes
+    const baseUrl = url.replace(/\/$/, '');
+    const fullUrl = `${baseUrl}${endpoint}`;
+
+    console.log(`🚀 [Keep-Alive] Started for: ${baseUrl}`);
+    console.log(`📡 [Keep-Alive] Full URL: ${fullUrl}`);
     console.log(`⏱️  [Keep-Alive] Interval: ${intervalMinutes} minutes`);
     console.log(`⏰ [Keep-Alive] First ping in 5 seconds...\n`);
 
@@ -21,13 +24,10 @@ export const startKeepAlive = (url: string, intervalMinutes: number = 5) => {
             if (response.ok) {
                 console.log(`✅ [${timestamp}] Keep-alive ping successful`);
             } else {
-                console.warn(`⚠️  [${timestamp}] Keep-alive ping returned non-ok status (${response.status})`, data);
+                console.warn(`⚠️  [${timestamp}] Keep-alive ping returned status ${response.status}`, data);
             }
         } catch (error: any) {
             console.error(`❌ [${timestamp}] Keep-alive ping failed:`, error.message);
-            if (error.code === 'ECONNREFUSED' || error.code === 'ETIMEDOUT') {
-                console.error(`   ⚠️  Service might be paused or unreachable.`);
-            }
         }
     };
 
