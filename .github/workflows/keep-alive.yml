@@ -15,7 +15,7 @@ jobs:
     steps:
       - name: Validate SERVICE_URL is configured
         run: |
-          if [[ "$SERVICE_URL" == *"https://pixelart-ubva.onrender.com"* ]] || [[ -z "$SERVICE_URL" ]]; then
+          if [[ "$SERVICE_URL" == *"<my-render-service>"* ]] || [[ -z "$SERVICE_URL" ]]; then
             echo "SERVICE_URL is missing or still a placeholder. Set env.SERVICE_URL to your Render base URL." >&2
             exit 1
           fi
