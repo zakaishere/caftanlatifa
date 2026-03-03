@@ -25,6 +25,10 @@ app.use(cookieParser());
 app.use('/api/public', publicRoutes);
 app.use('/api/admin', adminRoutes);
 
+app.get('/ping', (_req, res) => {
+    res.json({ status: 'ok' });
+});
+
 app.get('/health', (_req, res) => {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });

@@ -3,21 +3,37 @@
  * This is useful for free-tier hosting like Render that sleeps after inactivity.
  */
 export const startKeepAlive = (url: string, intervalMinutes: number = 5) => {
+    const endpoint = '/ping';
     const intervalMs = intervalMinutes * 60 * 1000;
+    const fullUrl = url.endsWith('/') ? `${url}${endpoint.substring(1)}` : `${url}${endpoint}`;
 
-    console.log(`[Keep-Alive] Starting keep-alive for ${url} every ${intervalMinutes} minutes.`);
+    console.log(`🚀 [Keep-Alive] Started for: ${url}`);
+    console.log(`📡 [Keep-Alive] Endpoint: ${endpoint}`);
+    console.log(`⏱️  [Keep-Alive] Interval: ${intervalMinutes} minutes`);
+    console.log(`⏰ [Keep-Alive] First ping in 5 seconds...\n`);
 
-    setInterval(async () => {
+    const ping = async () => {
+        const timestamp = new Date().toISOString();
         try {
-            // Using native fetch available in Node.js 18+
-            const response = await fetch(`${url}/health`);
+            const response = await fetch(fullUrl);
+            const data = await response.json().catch(() => null);
+
             if (response.ok) {
-                console.log(`[Keep-Alive] Ping successful: ${new Date().toISOString()}`);
+                console.log(`✅ [${timestamp}] Keep-alive ping successful`);
             } else {
-                console.warn(`[Keep-Alive] Ping failed with status: ${response.status}`);
+                console.warn(`⚠️  [${timestamp}] Keep-alive ping returned non-ok status (${response.status})`, data);
             }
-        } catch (error) {
-            console.error(`[Keep-Alive] Error pinging health endpoint:`, error);
+        } catch (error: any) {
+            console.error(`❌ [${timestamp}] Keep-alive ping failed:`, error.message);
+            if (error.code === 'ECONNREFUSED' || error.code === 'ETIMEDOUT') {
+                console.error(`   ⚠️  Service might be paused or unreachable.`);
+            }
         }
-    }, intervalMs);
+    };
+
+    // Initial ping after 5 seconds
+    setTimeout(ping, 5000);
+
+    // Regular interval
+    setInterval(ping, intervalMs);
 };

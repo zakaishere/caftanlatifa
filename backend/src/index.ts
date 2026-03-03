@@ -8,10 +8,12 @@ app.listen(PORT, () => {
     console.log(`🚀 Server running on http://localhost:${PORT}`);
 
     // Start keep-alive pinging if on production (Render)
-    if (process.env.NODE_ENV === 'production' && process.env.RENDER_EXTERNAL_URL) {
-        startKeepAlive(process.env.RENDER_EXTERNAL_URL);
-    } else if (process.env.NODE_ENV === 'production') {
-        // Fallback to localhost if external URL not provided, though external is better for keeping the service active
-        startKeepAlive(`http://localhost:${PORT}`);
+    if (process.env.NODE_ENV === 'production') {
+        const keepAliveUrl = process.env.SERVICE_URL ||
+            process.env.RENDER_SERVICE_URL ||
+            process.env.RENDER_EXTERNAL_URL ||
+            `http://localhost:${PORT}`;
+
+        startKeepAlive(keepAliveUrl);
     }
 });
