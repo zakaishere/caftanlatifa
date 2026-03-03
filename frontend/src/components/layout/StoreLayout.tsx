@@ -176,7 +176,8 @@ export default function StoreLayout({ children }: { children: React.ReactNode })
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20 pb-24 md:pb-20" suppressHydrationWarning>
+      {/* pb-40 on mobile: 64px sticky checkout bar + 64px bottom nav + 16px gap */}
+      <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-20 pb-40 md:pb-20" suppressHydrationWarning>
         {children}
       </main>
 
@@ -244,8 +245,9 @@ export default function StoreLayout({ children }: { children: React.ReactNode })
         </div>
       </footer>
 
-      {/* Mobile Bottom Navigation */}
-      {!['/checkout', '/cart'].includes(pathname) && <MobileBottomNav />}
+      {/* Mobile Bottom Navigation — shown on all store pages except checkout */}
+      {pathname !== '/checkout' && <MobileBottomNav />}
+
     </div>
   );
 }

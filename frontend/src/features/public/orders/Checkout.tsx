@@ -17,8 +17,9 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Separator } from '@/components/ui/separator';
 import {
   CheckCircle2, Truck, Wallet, ArrowLeft, Loader2, Store,
-  MessageCircle, ChevronDown, ChevronUp, ShoppingBag, CreditCard, Copy, Check
+  MessageCircle, ChevronDown, ChevronUp, ShoppingBag, CreditCard, Clipboard, Check
 } from 'lucide-react';
+import { toast } from 'sonner';
 import { CheckoutStepper } from '@/components/ui/checkout-stepper';
 import { apiRequest } from '@/lib/queryClient';
 import { centsToMad } from '@/lib/types';
@@ -146,44 +147,47 @@ export default function Checkout() {
   const copyToClipboard = (text: string) => {
     if (!text) return;
 
-    // Modern approach
+    const onSuccess = () => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+      toast.success('Référence copiée ✓', {
+        description: text,
+        duration: 2500,
+      });
+    };
+
+    const onError = () => {
+      toast.error('Impossible de copier', {
+        description: 'Copiez la référence manuellement.',
+        duration: 3000,
+      });
+    };
+
     if (navigator.clipboard && window.isSecureContext) {
-      navigator.clipboard.writeText(text).then(() => {
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
-      }).catch(err => {
-        console.error('Failed to copy using clipboard API: ', err);
-        fallbackCopyText(text);
+      navigator.clipboard.writeText(text).then(onSuccess).catch(() => {
+        // Try fallback before giving up
+        fallbackCopyText(text, onSuccess, onError);
       });
     } else {
-      // Fallback approach
-      fallbackCopyText(text);
+      fallbackCopyText(text, onSuccess, onError);
     }
   };
 
-  const fallbackCopyText = (text: string) => {
+  const fallbackCopyText = (text: string, onSuccess: () => void, onError: () => void) => {
     try {
-      const textArea = document.createElement("textarea");
+      const textArea = document.createElement('textarea');
       textArea.value = text;
-
-      // Ensure the textarea is not visible
-      textArea.style.position = "fixed";
-      textArea.style.left = "-9999px";
-      textArea.style.top = "0";
+      textArea.style.position = 'fixed';
+      textArea.style.left = '-9999px';
+      textArea.style.top = '0';
       document.body.appendChild(textArea);
-
       textArea.focus();
       textArea.select();
-
       const successful = document.execCommand('copy');
       document.body.removeChild(textArea);
-
-      if (successful) {
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
-      }
-    } catch (err) {
-      console.error('Fallback copy failed: ', err);
+      successful ? onSuccess() : onError();
+    } catch {
+      onError();
     }
   };
 
@@ -226,23 +230,27 @@ export default function Checkout() {
         </p>
 
         <Card className="mb-8 text-left border-slate-200 overflow-hidden shadow-xl shadow-slate-200/40 rounded-[1.5rem] bg-white">
-          <div className="bg-slate-50 p-5 px-6 border-b border-slate-100">
-            <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1.5 leading-none">Order Reference</p>
-            <button
-              onClick={() => copyToClipboard(finalOrderData?.orderId)}
-              className="flex items-center gap-2 font-mono font-bold text-xl text-primary hover:bg-primary/5 -ml-1 px-2 py-1 rounded-lg transition-all active:scale-95 group w-full text-left break-all"
-              title="Click to copy"
-            >
-              {finalOrderData?.orderId}
-              {copied ? (
-                <Check className="h-4 w-4 text-emerald-500 flex-shrink-0" />
-              ) : (
-                <div className="flex items-center gap-1 text-[9px] font-sans font-normal text-muted-foreground opacity-60 group-hover:opacity-100 transition-opacity">
-                  <Copy className="h-3 w-3" />
-                  <span>Copy</span>
-                </div>
-              )}
-            </button>
+          <div className="bg-[#F9F6F0] px-6 py-5 border-b border-[#C9A227]/10">
+            <p className="text-[9px] font-bold text-[#1A1A1A]/40 uppercase tracking-[0.3em] mb-3 leading-none">Référence de commande</p>
+            {/* Stable reference row — never changes size */}
+            <div className="flex items-center gap-2">
+              <span className="font-mono font-bold text-lg text-[#1A1A1A] tracking-wider truncate flex-1 min-w-0">
+                {finalOrderData?.orderId}
+              </span>
+              {/* Fixed-size icon button — only the icon inside animates */}
+              <button
+                onClick={() => copyToClipboard(finalOrderData?.orderId)}
+                aria-label="Copier la référence"
+                title="Copier la référence"
+                className="flex-shrink-0 h-8 w-8 flex items-center justify-center rounded-none border border-[#C9A227]/20 text-[#1A1A1A]/30 hover:text-[#C9A227] hover:border-[#C9A227]/50 hover:bg-[#C9A227]/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C9A227]/30 transition-colors active:scale-95 duration-150"
+              >
+                {copied ? (
+                  <Check className="h-3.5 w-3.5 text-emerald-500 transition-all duration-300" />
+                ) : (
+                  <Clipboard className="h-3.5 w-3.5 transition-all duration-300" />
+                )}
+              </button>
+            </div>
           </div>
           <CardContent className="space-y-6 p-6 md:p-8">
             <div className="flex justify-between items-center text-xs">
