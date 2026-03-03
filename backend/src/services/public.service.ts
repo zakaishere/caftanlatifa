@@ -25,9 +25,20 @@ export class PublicService {
                 freeShippingThreshold: 50000,
                 standardDeliveryFee: 5000,
                 heroImage: null,
-                workStartTime: "09:00",
-                workEndTime: "19:00",
-                daysOff: ["Dimanche"],
+                businessHours: {
+                    timezone: "Africa/Casablanca",
+                    regularHours: {
+                        lundi: { isOpen: true, slots: [{ start: "09:00", end: "19:00" }] },
+                        mardi: { isOpen: true, slots: [{ start: "09:00", end: "19:00" }] },
+                        mercredi: { isOpen: true, slots: [{ start: "09:00", end: "19:00" }] },
+                        jeudi: { isOpen: true, slots: [{ start: "09:00", end: "19:00" }] },
+                        vendredi: { isOpen: true, slots: [{ start: "09:00", end: "19:00" }] },
+                        samedi: { isOpen: true, slots: [{ start: "09:00", end: "19:00" }] },
+                        dimanche: { isOpen: false, slots: [] }
+                    },
+                    exceptions: [],
+                    lastUpdated: new Date().toISOString()
+                },
                 googleMapsEmbed: null
             };
         }

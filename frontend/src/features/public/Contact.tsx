@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { useQuery } from '@tanstack/react-query';
 import type { ApiInitData } from '@/lib/types';
+import { SmartBusinessHoursWidget } from './SmartBusinessHoursWidget';
 
 export default function Contact() {
   const { data } = useQuery<ApiInitData>({
@@ -78,37 +79,7 @@ export default function Contact() {
           </div>
 
           <div className="bg-white border border-primary/10 p-10 md:p-12 shadow-2xl shadow-primary/5">
-            <div className="flex items-center gap-6 mb-8">
-              <div className="h-14 w-14 rounded-none bg-primary/5 flex items-center justify-center text-primary border border-primary/10">
-                <Clock className="h-6 w-6 stroke-1" />
-              </div>
-              <h2 className="font-serif text-2xl text-foreground tracking-tight">Horaires</h2>
-            </div>
-            <div className="space-y-6">
-              {['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'].map((day, index, arr) => {
-                const isOff = settings?.daysOff?.includes(day);
-
-                // Grouping contiguous working days (Optional polish, but since the days off can be arbitrary, 
-                // listing them or grouping them smartly requires some mapping. 
-                // For simplicity and luxury feel, we can list them if they have different states, 
-                // or group Monday-Friday if they share the same state.
-
-                // Here we just render each day or group standard weekdays if they are all not off.
-                return (
-                  <div key={day}>
-                    <div className="flex justify-between items-center text-[11px] uppercase tracking-[0.2em]">
-                      <span className="text-muted-foreground/60">{day}</span>
-                      {isOff ? (
-                        <span className="text-primary font-bold">Fermé</span>
-                      ) : (
-                        <span className="font-medium text-foreground">{settings?.workStartTime ?? '09:00'} - {settings?.workEndTime ?? '19:00'}</span>
-                      )}
-                    </div>
-                    {index < arr.length - 1 && <div className="h-[1px] w-full bg-primary/5 mt-3" />}
-                  </div>
-                );
-              })}
-            </div>
+            <SmartBusinessHoursWidget config={settings?.businessHours} />
           </div>
 
           <div className="bg-white border border-primary/10 p-10 md:p-12 shadow-2xl shadow-primary/5">

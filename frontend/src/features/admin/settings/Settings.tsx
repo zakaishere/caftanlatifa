@@ -11,6 +11,8 @@ import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
 import { ApiSettings, centsToMad } from '@/lib/types';
 import { ImageUploader } from '@/components/ui/image-uploader';
+import { BusinessHoursEditor } from './BusinessHoursEditor';
+import { BusinessHoursConfig } from '@/lib/types';
 
 export default function SettingsAdmin() {
   const { toast } = useToast();
@@ -28,9 +30,7 @@ export default function SettingsAdmin() {
   const [freeShippingThresholdMad, setFreeShippingThresholdMad] = useState('');
   const [standardDeliveryFeeMad, setStandardDeliveryFeeMad] = useState('');
   const [heroImage, setHeroImage] = useState<string | null>(null);
-  const [workStartTime, setWorkStartTime] = useState('09:00');
-  const [workEndTime, setWorkEndTime] = useState('19:00');
-  const [daysOff, setDaysOff] = useState<string[]>(['Dimanche']);
+  const [businessHours, setBusinessHours] = useState<BusinessHoursConfig | null>(null);
   const [googleMapsEmbed, setGoogleMapsEmbed] = useState('');
 
   // Sync state when data loads
@@ -44,9 +44,9 @@ export default function SettingsAdmin() {
       setFreeShippingThresholdMad(centsToMad(settings.freeShippingThreshold || 0));
       setStandardDeliveryFeeMad(centsToMad(settings.standardDeliveryFee || 0));
       setHeroImage(settings.heroImage || null);
-      setWorkStartTime(settings.workStartTime || '09:00');
-      setWorkEndTime(settings.workEndTime || '19:00');
-      setDaysOff(settings.daysOff || ['Dimanche']);
+      if (settings.businessHours) {
+        setBusinessHours(settings.businessHours);
+      }
       setGoogleMapsEmbed(settings.googleMapsEmbed || '');
     }
   }, [settings]);
@@ -77,9 +77,7 @@ export default function SettingsAdmin() {
       freeShippingThreshold: Math.round(parseFloat(freeShippingThresholdMad || '0') * 100),
       standardDeliveryFee: Math.round(parseFloat(standardDeliveryFeeMad || '0') * 100),
       heroImage,
-      workStartTime,
-      workEndTime,
-      daysOff,
+      businessHours,
       googleMapsEmbed: googleMapsEmbed || null,
     });
   };
@@ -133,52 +131,10 @@ export default function SettingsAdmin() {
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Business Hours</CardTitle>
-            <CardDescription>Configure your operating hours and days off.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="grid gap-2">
-                <Label htmlFor="workStartTime">Opening Time</Label>
-                <Input type="time" id="workStartTime" value={workStartTime} onChange={(e) => setWorkStartTime(e.target.value)} />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="workEndTime">Closing Time</Label>
-                <Input type="time" id="workEndTime" value={workEndTime} onChange={(e) => setWorkEndTime(e.target.value)} />
-              </div>
-            </div>
-
-            <div className="h-[1px] bg-border/40" />
-
-            <div className="grid gap-4">
-              <Label>Days Off (Fermé)</Label>
-              <div className="flex flex-wrap gap-2">
-                {['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'].map((day) => (
-                  <Button
-                    key={day}
-                    type="button"
-                    variant={daysOff.includes(day) ? "default" : "outline"}
-                    className={daysOff.includes(day) ? "bg-primary text-white" : ""}
-                    onClick={() => {
-                      if (daysOff.includes(day)) {
-                        setDaysOff(daysOff.filter(d => d !== day));
-                      } else {
-                        setDaysOff([...daysOff, day]);
-                      }
-                    }}
-                  >
-                    {day}
-                  </Button>
-                ))}
-              </div>
-              <p className="text-[10px] text-muted-foreground uppercase tracking-widest">
-                Select the days your store is closed.
-              </p>
-            </div>
-          </CardContent>
-        </Card>
+        <BusinessHoursEditor
+          value={businessHours}
+          onChange={setBusinessHours}
+        />
 
         <Card>
           <CardHeader>

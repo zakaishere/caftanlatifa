@@ -47,6 +47,38 @@ export interface ApiOrder {
     updatedAt: string;
 }
 
+export interface TimeSlot {
+    start: string; // "09:00"
+    end: string;   // "19:00"
+}
+
+export interface DaySchedule {
+    isOpen: boolean;
+    slots: TimeSlot[];
+}
+
+export interface ScheduleException {
+    date: string; // "YYYY-MM-DD"
+    name: string;
+    isOpen: boolean;
+    slots: TimeSlot[];
+}
+
+export interface BusinessHoursConfig {
+    timezone: string; // "Africa/Casablanca"
+    regularHours: {
+        lundi: DaySchedule;
+        mardi: DaySchedule;
+        mercredi: DaySchedule;
+        jeudi: DaySchedule;
+        vendredi: DaySchedule;
+        samedi: DaySchedule;
+        dimanche: DaySchedule;
+    };
+    exceptions: ScheduleException[];
+    lastUpdated: string;
+}
+
 export interface ApiSettings {
     id: number;
     storeName: string;
@@ -57,9 +89,7 @@ export interface ApiSettings {
     freeShippingThreshold: number;
     standardDeliveryFee: number;
     heroImage?: string | null;
-    workStartTime: string;
-    workEndTime: string;
-    daysOff: string[];
+    businessHours?: BusinessHoursConfig | null;
     googleMapsEmbed?: string | null;
 }
 
