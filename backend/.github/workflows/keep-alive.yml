@@ -1,0 +1,34 @@
+name: Render Keep Alive
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+
+jobs:
+  ping-render:
+    runs-on: ubuntu-latest
+    env:
+      # Replace with your actual Render service hostname, e.g. https://my-app.onrender.com/ping
+      PING_URL: https://<my-render-service>.onrender.com/ping
+    steps:
+      - name: Validate PING_URL is configured
+        run: |
+          if [[ "$PING_URL" == *"<my-render-service>"* ]]; then
+            echo "PING_URL is still a placeholder. Set env.PING_URL to your Render service URL." >&2
+            exit 1
+          fi
+
+      - name: Curl /ping endpoint
+        run: |
+          set -euo pipefail
+          STATUS=$(curl --silent --show-error --max-time 10 --write-out '%{http_code}' --output /tmp/ping.out "$PING_URL")
+          cat /tmp/ping.out
+          echo "Status: $STATUS"
+          if [ "$STATUS" != "200" ]; then
+            echo "Ping failed (status $STATUS)." >&2
+            exit 1
+          fi
+
+      - name: Record timestamp
+        run: date -u
