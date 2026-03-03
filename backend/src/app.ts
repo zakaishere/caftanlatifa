@@ -21,17 +21,22 @@ app.use(morgan('dev'));
 app.use(express.json());
 app.use(cookieParser());
 
-// Routes
-app.use('/api/public', publicRoutes);
-app.use('/api/admin', adminRoutes);
-
+// Health checks (must be before authentication/complex routes)
 app.get('/ping', (_req, res) => {
-    res.json({ status: 'ok' });
+    res.status(200).send('pong');
 });
 
 app.get('/health', (_req, res) => {
-    res.json({ status: 'ok', timestamp: new Date().toISOString() });
+    res.json({
+        status: 'ok',
+        timestamp: new Date().toISOString(),
+        uptime: process.uptime()
+    });
 });
+
+// Routes
+app.use('/api/public', publicRoutes);
+app.use('/api/admin', adminRoutes);
 
 // Zod validation error formatter (must be before global error handler)
 app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {

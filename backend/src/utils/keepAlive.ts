@@ -1,6 +1,10 @@
 /**
- * Pings the health endpoint of the application to keep it alive.
- * This is useful for free-tier hosting like Render that sleeps after inactivity.
+ * Pings the health endpoint of the application.
+ * 
+ * ⚠️ IMPORTANT: In-app keep-alive loops (setInterval) will NOT keep 
+ * Render Free Tier services awake reliably because the process sleeps 
+ * and pauses all timers. Use an external monitor (UptimeRobot, etc.) 
+ * to ping this service from outside.
  */
 export const startKeepAlive = (url: string, intervalMinutes: number = 5) => {
     const endpoint = '/ping';
@@ -10,28 +14,34 @@ export const startKeepAlive = (url: string, intervalMinutes: number = 5) => {
     const baseUrl = url.replace(/\/$/, '');
     const fullUrl = `${baseUrl}${endpoint}`;
 
-    console.log(`🚀 [Keep-Alive] Started for: ${baseUrl}`);
-    console.log(`📡 [Keep-Alive] Full URL: ${fullUrl}`);
-    console.log(`⏱️  [Keep-Alive] Interval: ${intervalMinutes} minutes`);
-    console.log(`⏰ [Keep-Alive] First ping in 5 seconds...\n`);
+    console.log(`📡 [Keep-Alive] Monitoring initialized for: ${baseUrl}`);
+    console.log(`ℹ️  [Keep-Alive] Note: External monitoring is required to prevent Render sleeping.`);
 
     const ping = async () => {
         const timestamp = new Date().toISOString();
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
+
         try {
-            const response = await fetch(fullUrl);
-            const data = await response.json().catch(() => null);
+            const response = await fetch(fullUrl, { signal: controller.signal });
+            clearTimeout(timeoutId);
 
             if (response.ok) {
-                console.log(`✅ [${timestamp}] Keep-alive ping successful`);
+                console.log(`✅ [${timestamp}] Internal health check successful`);
             } else {
-                console.warn(`⚠️  [${timestamp}] Keep-alive ping returned status ${response.status}`, data);
+                console.warn(`⚠️  [${timestamp}] Internal health check returned status ${response.status}`);
             }
         } catch (error: any) {
-            console.error(`❌ [${timestamp}] Keep-alive ping failed:`, error.message);
+            clearTimeout(timeoutId);
+            if (error.name === 'AbortError') {
+                console.error(`❌ [${timestamp}] Internal health check timed out`);
+            } else {
+                console.error(`❌ [${timestamp}] Internal health check failed:`, error.message);
+            }
         }
     };
 
-    // Initial ping after 5 seconds
+    // Initial ping after 5 seconds to verify endpoint
     setTimeout(ping, 5000);
 
     // Regular interval
