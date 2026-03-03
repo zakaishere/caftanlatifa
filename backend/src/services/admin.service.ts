@@ -179,11 +179,11 @@ export class AdminService {
     // ─── Settings ─────────────────────────────────────────────────────────────
 
     static async getSettings() {
-        try {
-            return await prisma.settings.findUnique({ where: { id: 1 } });
-        } catch (error: any) {
-            console.warn('Could not fetch settings (possible schema mismatch):', error.message);
-            // Fallback to default values if table is missing columns or doesn't exist
+        // We do NOT silently fall back to defaults here — that hides real errors.
+        // This will throw and return a 500 if the DB is misconfigured, helping us diagnose.
+        const settings = await prisma.settings.findUnique({ where: { id: 1 } });
+        if (!settings) {
+            // No row yet — return sensible defaults so admin can configure
             return {
                 id: 1,
                 storeName: "AtlasStore",
@@ -194,31 +194,24 @@ export class AdminService {
                 freeShippingThreshold: 50000,
                 standardDeliveryFee: 5000,
                 heroImage: null,
-                businessHours: {
-                    timezone: "Africa/Casablanca",
-                    regularHours: {
-                        lundi: { isOpen: true, slots: [{ start: "09:00", end: "19:00" }] },
-                        mardi: { isOpen: true, slots: [{ start: "09:00", end: "19:00" }] },
-                        mercredi: { isOpen: true, slots: [{ start: "09:00", end: "19:00" }] },
-                        jeudi: { isOpen: true, slots: [{ start: "09:00", end: "19:00" }] },
-                        vendredi: { isOpen: true, slots: [{ start: "09:00", end: "19:00" }] },
-                        samedi: { isOpen: true, slots: [{ start: "09:00", end: "19:00" }] },
-                        dimanche: { isOpen: false, slots: [] }
-                    },
-                    exceptions: [],
-                    lastUpdated: new Date().toISOString()
-                },
+                businessHours: null,
                 googleMapsEmbed: null
             };
         }
+        return settings;
     }
 
     static async updateSettings(data: UpdateSettingsInput) {
-        const payload = data as any;
+        // Explicitly structure the JSON to avoid Prisma's strict typing issues
+        const { businessHours, ...rest } = data;
+        const updatePayload: any = {
+            ...rest,
+            ...(businessHours !== undefined && { businessHours: businessHours === null ? null : businessHours }),
+        };
         return prisma.settings.upsert({
             where: { id: 1 },
-            update: payload,
-            create: { id: 1, ...payload },
+            update: updatePayload,
+            create: { id: 1, ...updatePayload },
         });
     }
 }
