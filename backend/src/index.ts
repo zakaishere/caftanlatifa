@@ -2,11 +2,11 @@ import 'dotenv/config';
 import app from './app.js';
 import { startKeepAlive } from './utils/keepAlive.js';
 
-const PORT = process.env.PORT || 3000;
+const PORT = Number(process.env.PORT) || 3000;
 const isProduction = process.env.NODE_ENV === 'production';
 
-app.listen(PORT, () => {
-    console.log(`Server running`);
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Server running on port ${PORT}`);
 
     if (!isProduction) {
         const keepAliveUrl = process.env.RENDER_EXTERNAL_URL || process.env.SERVICE_URL || process.env.RENDER_SERVICE_URL;

@@ -9,12 +9,12 @@ jobs:
   ping-render:
     runs-on: ubuntu-latest
     env:
-      # Replace with your actual Render service hostname, e.g. https://my-app.onrender.com/ping
-      PING_URL: https://<my-render-service>.onrender.com/ping
+      # Set to your Render service /ping endpoint
+      PING_URL: https://pixelart-ubva.onrender.com/ping
     steps:
       - name: Validate PING_URL is configured
         run: |
-          if [[ "$PING_URL" == *"<my-render-service>"* ]]; then
+          if [[ "$PING_URL" == *"https://pixelart-ubva.onrender.com"* ]]; then
             echo "PING_URL is still a placeholder. Set env.PING_URL to your Render service URL." >&2
             exit 1
           fi
