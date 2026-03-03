@@ -13,6 +13,7 @@ import { SmartBusinessHoursWidget } from './SmartBusinessHoursWidget';
 export default function Contact() {
   const { data } = useQuery<ApiInitData>({
     queryKey: ['/api/public/init'],
+    staleTime: 5 * 60 * 1000, // 5 minutes instead of Infinity to catch admin updates
   });
   const settings = data?.settings;
 
@@ -78,9 +79,10 @@ export default function Contact() {
             </div>
           </div>
 
-          <div className="bg-white border border-primary/10 p-10 md:p-12 shadow-2xl shadow-primary/5">
-            <SmartBusinessHoursWidget config={settings?.businessHours} />
-          </div>
+          <SmartBusinessHoursWidget
+            config={settings?.businessHours}
+            isLoading={!data && !settings}
+          />
 
           <div className="bg-white border border-primary/10 p-10 md:p-12 shadow-2xl shadow-primary/5">
             <div className="flex items-center gap-6 mb-8">
