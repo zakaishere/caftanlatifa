@@ -5,12 +5,10 @@ import { startKeepAlive } from './utils/keepAlive.js';
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
-    console.log(`🚀 Server running on http://localhost:${PORT}`);
+    console.log(`Server running`);
 
     // Start keep-alive pinging
-    const keepAliveUrl = process.env.SERVICE_URL ||
-        process.env.RENDER_SERVICE_URL ||
-        process.env.RENDER_EXTERNAL_URL;
+    const keepAliveUrl = process.env.RENDER_EXTERNAL_URL;
 
     if (keepAliveUrl) {
         startKeepAlive(keepAliveUrl);
