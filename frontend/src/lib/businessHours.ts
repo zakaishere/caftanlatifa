@@ -1,4 +1,4 @@
-import { formatInTimeZone, utcToZonedTime } from 'date-fns-tz';
+import { formatInTimeZone, toZonedTime } from 'date-fns-tz';
 import { BusinessHoursConfig } from './types';
 
 // The store operates in Morocco time
@@ -21,7 +21,7 @@ export function getStoreStatus(config?: BusinessHoursConfig | null): StoreStatus
 
     // Use config timezone if available, otherwise default to Casablanca
     const timeZone = config.timezone || STORE_TIMEZONE;
-    const zonedNow = utcToZonedTime(now, timeZone);
+    const zonedNow = toZonedTime(now, timeZone);
 
     const todayDateStr = formatInTimeZone(now, timeZone, 'yyyy-MM-dd');
     // EEEE gives full day name in English by default, but we need our French keys mapping
