@@ -2,7 +2,41 @@ import prisma from '../lib/prisma.js';
 import { AppError } from '../utils/errors.js';
 export class PublicService {
     static async getInitData() {
-        const [featuredProducts, categories, settings] = await Promise.all([
+        let settings = null;
+        try {
+            settings = await prisma.settings.findUnique({ where: { id: 1 } });
+        }
+        catch (error) {
+            console.warn('Could not fetch settings (possible schema mismatch):', error.message);
+            // Fallback to default values if table is missing columns or doesn't exist
+            settings = {
+                id: 1,
+                storeName: "AtlasStore",
+                whatsappNumber: "+212600000000",
+                supportEmail: null,
+                businessAddress: null,
+                freeShippingEnabled: true,
+                freeShippingThreshold: 50000,
+                standardDeliveryFee: 5000,
+                heroImage: null,
+                businessHours: {
+                    timezone: "Africa/Casablanca",
+                    regularHours: {
+                        lundi: { isOpen: true, slots: [{ start: "09:00", end: "19:00" }] },
+                        mardi: { isOpen: true, slots: [{ start: "09:00", end: "19:00" }] },
+                        mercredi: { isOpen: true, slots: [{ start: "09:00", end: "19:00" }] },
+                        jeudi: { isOpen: true, slots: [{ start: "09:00", end: "19:00" }] },
+                        vendredi: { isOpen: true, slots: [{ start: "09:00", end: "19:00" }] },
+                        samedi: { isOpen: true, slots: [{ start: "09:00", end: "19:00" }] },
+                        dimanche: { isOpen: false, slots: [] }
+                    },
+                    exceptions: [],
+                    lastUpdated: new Date().toISOString()
+                },
+                googleMapsEmbed: null
+            };
+        }
+        const [featuredProducts, categories] = await Promise.all([
             prisma.product.findMany({
                 where: { inStock: true },
                 take: 4,
@@ -12,7 +46,6 @@ export class PublicService {
             prisma.category.findMany({
                 include: { _count: { select: { products: true } } },
             }),
-            prisma.settings.findUnique({ where: { id: 1 } }),
         ]);
         return { featuredProducts, categories, settings };
     }

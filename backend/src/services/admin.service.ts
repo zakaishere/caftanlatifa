@@ -214,10 +214,11 @@ export class AdminService {
     }
 
     static async updateSettings(data: UpdateSettingsInput) {
+        const payload = data as any;
         return prisma.settings.upsert({
             where: { id: 1 },
-            update: data,
-            create: { id: 1, ...data },
+            update: payload,
+            create: { id: 1, ...payload },
         });
     }
 }

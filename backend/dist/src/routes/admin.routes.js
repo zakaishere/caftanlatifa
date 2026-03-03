@@ -18,6 +18,7 @@ router.post('/upload', upload.single('image'), AdminController.uploadImage);
 router.get('/products', AdminController.getProducts);
 router.post('/products', AdminController.createProduct);
 router.patch('/products/:id', AdminController.updateProduct);
+router.put('/products/:id', AdminController.updateProduct);
 router.delete('/products/:id', AdminController.deleteProduct);
 // Categories
 router.get('/categories', AdminController.getCategories);
