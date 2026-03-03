@@ -9,20 +9,23 @@ jobs:
   ping-render:
     runs-on: ubuntu-latest
     env:
-      # Set to your Render service /ping endpoint
-      PING_URL: https://pixelart-ubva.onrender.com/ping
+      # Canonical base URL for your Render service (no trailing slash)
+      SERVICE_URL: https://pixelart-ubva.onrender.com
+      ENDPOINT: /ping
     steps:
-      - name: Validate PING_URL is configured
+      - name: Validate SERVICE_URL is configured
         run: |
-          if [[ "$PING_URL" == *"https://pixelart-ubva.onrender.com"* ]]; then
-            echo "PING_URL is still a placeholder. Set env.PING_URL to your Render service URL." >&2
+          if [[ "$SERVICE_URL" == *"https://pixelart-ubva.onrender.com"* ]] || [[ -z "$SERVICE_URL" ]]; then
+            echo "SERVICE_URL is missing or still a placeholder. Set env.SERVICE_URL to your Render base URL." >&2
             exit 1
           fi
 
       - name: Curl /ping endpoint
         run: |
           set -euo pipefail
-          STATUS=$(curl --silent --show-error --max-time 10 --write-out '%{http_code}' --output /tmp/ping.out "$PING_URL")
+          PING_URL=\"${SERVICE_URL%/}${ENDPOINT}\"
+          echo \"Pinging $PING_URL\"
+          STATUS=$(curl --silent --show-error --max-time 10 --write-out '%{http_code}' --output /tmp/ping.out \"$PING_URL\")
           cat /tmp/ping.out
           echo "Status: $STATUS"
           if [ "$STATUS" != "200" ]; then

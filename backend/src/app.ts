@@ -22,7 +22,9 @@ app.use(express.json());
 app.use(cookieParser());
 
 // Health checks (must be before authentication/complex routes)
-app.get('/ping', (_req, res) => {
+app.get('/ping', (req, res) => {
+    const ts = new Date().toISOString();
+    console.log(`[ping] ${ts} ${req.ip || 'unknown'}`);
     res.status(200).send('pong');
 });
 
