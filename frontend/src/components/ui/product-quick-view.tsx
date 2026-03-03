@@ -1,28 +1,27 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
+import useEmblaCarousel from 'embla-carousel-react';
 import { useQuery } from '@tanstack/react-query';
-import {
-    Dialog,
-    DialogContent,
-    DialogTitle,
-} from '@/components/ui/dialog';
 import {
     Drawer,
     DrawerContent,
     DrawerTitle,
 } from '@/components/ui/drawer';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
 import {
-    ShoppingCart, Minus, Plus, ChevronLeft, ChevronRight,
-    Check, Truck, ShieldCheck, RotateCcw, X, Image as ImageIcon,
-    Package
+    Dialog,
+    DialogContent,
+    DialogTitle,
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import {
+    ShoppingCart, Minus, Plus, Check, Truck, ShieldCheck,
+    RotateCcw, X, Image as ImageIcon, ChevronLeft, ChevronRight
 } from 'lucide-react';
 import { ApiProduct, ApiInitData, centsToMad } from '@/lib/types';
 import { useCart } from '@/features/public/cart/cartContext';
+import { cn } from '@/lib/utils';
 
 // ─── Simple media query hook ──────────────────────────────────────────────────
 function useIsMobile(breakpoint = 768) {
@@ -30,7 +29,7 @@ function useIsMobile(breakpoint = 768) {
     useEffect(() => {
         const mql = window.matchMedia(`(max-width: ${breakpoint - 1}px)`);
         const handler = (e: MediaQueryListEvent | MediaQueryList) => setIsMobile(e.matches);
-        handler(mql); // initial
+        handler(mql);
         mql.addEventListener('change', handler as any);
         return () => mql.removeEventListener('change', handler as any);
     }, [breakpoint]);
@@ -46,7 +45,6 @@ interface ProductQuickViewProps {
 export function ProductQuickView({ product, open, onClose }: ProductQuickViewProps) {
     const { addToCart } = useCart();
     const [quantity, setQuantity] = useState(1);
-    const [activeImage, setActiveImage] = useState(0);
     const [addedToCart, setAddedToCart] = useState(false);
     const isMobile = useIsMobile();
 
@@ -54,286 +52,356 @@ export function ProductQuickView({ product, open, onClose }: ProductQuickViewPro
         queryKey: ['/api/public/init'],
     });
 
-    if (!product) return null;
-
-    const hasImages = product.images && product.images.length > 0;
-    const images = hasImages ? product.images : [];
-    const priceMad = centsToMad(product.price);
-    const isFreeShipping =
-        initData?.settings?.freeShippingEnabled &&
-        product.price >= (initData.settings.freeShippingThreshold || 0);
+    const handleOpenChange = (v: boolean) => {
+        if (!v) { onClose(); setQuantity(1); setAddedToCart(false); }
+    };
 
     const handleAddToCart = () => {
+        if (!product) return;
         addToCart(product, quantity);
         setAddedToCart(true);
         setTimeout(() => setAddedToCart(false), 2000);
     };
 
-    const prevImage = () => {
-        setActiveImage((prev) => (prev === 0 ? images.length - 1 : prev - 1));
-    };
-    const nextImage = () => {
-        setActiveImage((prev) => (prev === images.length - 1 ? 0 : prev + 1));
-    };
+    if (!product) return null;
 
-    const handleOpenChange = (v: boolean) => {
-        if (!v) { onClose(); setActiveImage(0); setQuantity(1); setAddedToCart(false); }
-    };
+    const images = product.images?.length ? product.images : [];
+    const subtotal = (product.price * quantity) / 100;
 
-    const specsEntries = product.specs ? Object.entries(product.specs) : [];
-
-    // ─── Shared content ───────────────────────────────────────────────────────
-    const imageSection = (
-        <div className="relative bg-slate-50">
-            <div className="relative aspect-square overflow-hidden group">
-                {hasImages ? (
-                    <>
-                        <Image
-                            key={activeImage}
-                            src={images[activeImage]}
-                            alt={product.name}
-                            fill
-                            sizes="(max-width: 768px) 100vw, 50vw"
-                            className="object-cover transition-transform duration-500 hover:scale-105"
-                            priority
-                        />
-                        {images.length > 1 && (
-                            <>
+    if (isMobile) {
+        return (
+            <Drawer open={open} onOpenChange={handleOpenChange}>
+                <DrawerContent className="max-h-[96svh] outline-none flex flex-col rounded-t-[28px] bg-[#FAF7F2] border-0">
+                    <DrawerTitle className="sr-only">{product.name}</DrawerTitle>
+                    {/* Drag handle */}
+                    <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
+                        <div className="h-1 w-10 bg-[#1A1A1A]/10 rounded-full" />
+                    </div>
+                    {/* Scrollable content */}
+                    <div className="overflow-y-auto flex-1 overscroll-contain">
+                        <MobileGallery images={images} productName={product.name} />
+                        <MobileDetails product={product} initData={initData} />
+                    </div>
+                    {/* Sticky bottom CTA */}
+                    <div className="flex-shrink-0 bg-white border-t border-[#1A1A1A]/5 px-5 pt-3 pb-safe-5 pb-5">
+                        <div className="flex items-center gap-4">
+                            {/* Quantity */}
+                            <div className="flex items-center border border-[#1A1A1A]/10 bg-[#FAF7F2]">
                                 <button
-                                    onClick={prevImage}
-                                    className="absolute left-3 top-1/2 -translate-y-1/2 h-10 w-10 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center border border-slate-200 shadow-lg transition-all hover:bg-white active:scale-95"
+                                    className="h-11 w-11 flex items-center justify-center text-[#1A1A1A]/40 hover:text-[#1A1A1A] transition-colors disabled:opacity-25"
+                                    onClick={() => setQuantity(q => Math.max(1, q - 1))}
+                                    disabled={quantity <= 1 || !product.inStock}
+                                    aria-label="Diminuer"
                                 >
-                                    <ChevronLeft className="h-5 w-5" />
+                                    <Minus className="h-3 w-3" />
                                 </button>
+                                <span className="w-9 text-center text-sm font-medium tabular-nums">{quantity}</span>
                                 <button
-                                    onClick={nextImage}
-                                    className="absolute right-3 top-1/2 -translate-y-1/2 h-10 w-10 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center border border-slate-200 shadow-lg transition-all hover:bg-white active:scale-95"
+                                    className="h-11 w-11 flex items-center justify-center text-[#1A1A1A]/40 hover:text-[#1A1A1A] transition-colors disabled:opacity-25"
+                                    onClick={() => setQuantity(q => q + 1)}
+                                    disabled={!product.inStock}
+                                    aria-label="Augmenter"
                                 >
-                                    <ChevronRight className="h-5 w-5" />
+                                    <Plus className="h-3 w-3" />
                                 </button>
-                                {/* Dot indicators */}
-                                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
-                                    {images.map((_, idx) => (
-                                        <button
-                                            key={idx}
-                                            onClick={() => setActiveImage(idx)}
-                                            className={`h-1.5 rounded-full transition-all duration-300 ${activeImage === idx
-                                                ? 'w-8 bg-primary shadow-sm shadow-primary/20'
-                                                : 'w-2 bg-slate-400/50 hover:bg-slate-400'
-                                                }`}
-                                        />
-                                    ))}
+                            </div>
+                            {/* Price */}
+                            <div className="flex flex-col">
+                                <span className="text-[8px] uppercase tracking-[0.3em] text-[#1A1A1A]/30 leading-none mb-0.5">
+                                    {quantity > 1 ? `×${quantity}` : 'Prix'}
+                                </span>
+                                <span className="font-serif text-[#C9A227] text-base leading-none">
+                                    {subtotal.toFixed(0)} MAD
+                                </span>
+                            </div>
+                            {/* CTA */}
+                            <Button
+                                className={cn(
+                                    "flex-1 h-11 rounded-none text-[10px] uppercase tracking-[0.3em] font-bold transition-all duration-300 gap-2",
+                                    addedToCart
+                                        ? "bg-emerald-500 hover:bg-emerald-600 text-white"
+                                        : "bg-[#C9A227] hover:bg-[#b8911f] text-black"
+                                )}
+                                onClick={handleAddToCart}
+                                disabled={!product.inStock}
+                            >
+                                {addedToCart ? (
+                                    <><Check className="h-3.5 w-3.5" /> Ajouté !</>
+                                ) : (
+                                    <><ShoppingCart className="h-3.5 w-3.5" /> Ajouter</>
+                                )}
+                            </Button>
+                        </div>
+                    </div>
+                </DrawerContent>
+            </Drawer>
+        );
+    }
+
+    // ─── Desktop: Dialog ──────────────────────────────────────────────────────
+    return (
+        <Dialog open={open} onOpenChange={handleOpenChange}>
+            <DialogContent className="max-w-4xl w-full p-0 gap-0 overflow-hidden rounded-2xl shadow-2xl border border-[#1A1A1A]/5 bg-[#FAF7F2]">
+                <DialogTitle className="sr-only">{product.name}</DialogTitle>
+                <button
+                    onClick={onClose}
+                    className="absolute top-4 right-4 z-50 h-9 w-9 rounded-full bg-white/90 backdrop-blur flex items-center justify-center border border-[#1A1A1A]/10 shadow-sm hover:bg-white transition-colors"
+                    aria-label="Fermer"
+                >
+                    <X className="h-4 w-4" />
+                </button>
+                <div className="grid grid-cols-2 min-h-0">
+                    {/* Gallery side */}
+                    <DesktopGallery images={images} productName={product.name} />
+                    {/* Details side */}
+                    <div className="flex flex-col overflow-y-auto max-h-[82vh] bg-white">
+                        <MobileDetails product={product} initData={initData} />
+                        {/* Desktop quantity + CTA */}
+                        <div className="mt-auto border-t border-[#1A1A1A]/5 p-8 space-y-5 bg-white">
+                            <div className="flex items-center gap-6">
+                                <span className="text-[10px] uppercase tracking-[0.3em] text-[#1A1A1A]/35 font-medium w-20 shrink-0">Quantité</span>
+                                <div className="flex items-center border border-[#1A1A1A]/10 bg-[#FAF7F2]">
+                                    <button className="h-10 w-10 flex items-center justify-center text-[#1A1A1A]/40 hover:text-[#1A1A1A] transition-colors disabled:opacity-25"
+                                        onClick={() => setQuantity(q => Math.max(1, q - 1))} disabled={quantity <= 1 || !product.inStock}><Minus className="h-3 w-3" /></button>
+                                    <span className="w-10 text-center text-sm font-medium tabular-nums">{quantity}</span>
+                                    <button className="h-10 w-10 flex items-center justify-center text-[#1A1A1A]/40 hover:text-[#1A1A1A] transition-colors disabled:opacity-25"
+                                        onClick={() => setQuantity(q => q + 1)} disabled={!product.inStock}><Plus className="h-3 w-3" /></button>
                                 </div>
-                            </>
-                        )}
-                    </>
-                ) : (
-                    <div className="flex flex-col items-center justify-center w-full h-full text-slate-300">
-                        <ImageIcon className="h-20 w-20 mb-3 opacity-50" />
-                        <span className="text-[10px] font-bold uppercase tracking-widest">No Image Available</span>
+                            </div>
+                            <Button
+                                size="lg"
+                                className={cn(
+                                    "w-full h-14 rounded-none text-[11px] uppercase tracking-[0.4em] font-bold transition-all duration-300 gap-3",
+                                    addedToCart
+                                        ? "bg-emerald-500 hover:bg-emerald-600 text-white"
+                                        : "bg-[#C9A227] hover:bg-[#b8911f] text-black shadow-lg shadow-[#C9A227]/20"
+                                )}
+                                onClick={handleAddToCart}
+                                disabled={!product.inStock}
+                            >
+                                {addedToCart ? (
+                                    <><Check className="h-4 w-4" /> Ajouté au Panier</>
+                                ) : (
+                                    <><ShoppingCart className="h-4 w-4" /> Ajouter au Panier</>
+                                )}
+                            </Button>
+                        </div>
                     </div>
-                )}
-                {!product.inStock && (
-                    <div className="absolute inset-0 bg-white/70 backdrop-blur-[2px] flex items-center justify-center z-10">
-                        <Badge variant="destructive" className="text-sm font-bold uppercase tracking-wider px-4 py-1.5 shadow-md">Sold Out</Badge>
-                    </div>
-                )}
-            </div>
+                </div>
+            </DialogContent>
+        </Dialog>
+    );
+}
 
-            {/* Thumbnails (desktop only) */}
-            {!isMobile && images.length > 1 && (
-                <div className="flex gap-2 p-3 overflow-x-auto bg-muted/20 border-t border-border/30">
-                    {images.map((img, idx) => (
-                        <button
-                            key={idx}
-                            onClick={() => setActiveImage(idx)}
-                            className={`relative flex-shrink-0 h-14 w-14 rounded-lg overflow-hidden border-2 transition-all duration-200 ${activeImage === idx
-                                ? 'border-primary ring-2 ring-primary/30 scale-95'
-                                : 'border-transparent hover:border-primary/50 opacity-70 hover:opacity-100'
-                                }`}
-                        >
+/* ────────────────────────────────────────────────────────────────────────────
+   Mobile Embla Gallery — full-width, tall, touch-swipeable
+   ──────────────────────────────────────────────────────────────────────────── */
+function MobileGallery({ images, productName }: { images: string[]; productName: string }) {
+    const [viewportRef, emblaApi] = useEmblaCarousel({ loop: images.length > 1 });
+    const [selectedIndex, setSelectedIndex] = useState(0);
+
+    const onSelect = useCallback(() => {
+        if (!emblaApi) return;
+        setSelectedIndex(emblaApi.selectedScrollSnap());
+    }, [emblaApi]);
+
+    useEffect(() => {
+        if (!emblaApi) return;
+        onSelect();
+        emblaApi.on('select', onSelect);
+        emblaApi.on('reInit', onSelect);
+    }, [emblaApi, onSelect]);
+
+    if (!images.length) {
+        return (
+            <div className="w-full bg-[#F3EFE9] flex items-center justify-center" style={{ height: '60svh' }}>
+                <ImageIcon className="h-12 w-12 text-[#C9A227]/20" />
+            </div>
+        );
+    }
+
+    return (
+        <div className="relative w-full bg-[#F3EFE9] overflow-hidden" style={{ height: '65svh' }}>
+            <div className="overflow-hidden h-full touch-pan-y" ref={viewportRef}>
+                <div className="flex h-full">
+                    {images.map((img, i) => (
+                        <div key={i} className="relative flex-[0_0_100%] min-w-0 h-full">
                             <Image
                                 src={img}
-                                alt={`view ${idx + 1}`}
+                                alt={`${productName} — ${i + 1}`}
                                 fill
-                                sizes="56px"
-                                className="object-cover"
-                                loading="lazy"
+                                priority={i === 0}
+                                loading={i === 0 ? 'eager' : 'lazy'}
+                                className="object-contain"
+                                sizes="100vw"
                             />
+                        </div>
+                    ))}
+                </div>
+            </div>
+            {/* Counter */}
+            {images.length > 1 && (
+                <div className="absolute top-4 right-4 bg-black/20 backdrop-blur-sm px-2.5 py-1 rounded-full">
+                    <span className="text-[10px] text-white/90 tracking-[0.15em] tabular-nums font-light">
+                        {selectedIndex + 1} / {images.length}
+                    </span>
+                </div>
+            )}
+            {/* Dot indicators */}
+            {images.length > 1 && (
+                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-1.5">
+                    {images.map((_, i) => (
+                        <button
+                            key={i}
+                            onClick={() => emblaApi?.scrollTo(i)}
+                            aria-label={`Image ${i + 1}`}
+                            className={cn(
+                                "rounded-full transition-all duration-300",
+                                i === selectedIndex ? "w-5 h-1.5 bg-[#C9A227]" : "w-1.5 h-1.5 bg-black/20"
+                            )}
+                        />
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+   Desktop Gallery — static with arrow nav + thumbnails
+   ──────────────────────────────────────────────────────────────────────────── */
+function DesktopGallery({ images, productName }: { images: string[]; productName: string }) {
+    const [active, setActive] = useState(0);
+    const prev = () => setActive(i => (i === 0 ? images.length - 1 : i - 1));
+    const next = () => setActive(i => (i === images.length - 1 ? 0 : i + 1));
+
+    if (!images.length) {
+        return (
+            <div className="bg-[#F3EFE9] flex items-center justify-center aspect-square">
+                <ImageIcon className="h-12 w-12 text-[#C9A227]/20" />
+            </div>
+        );
+    }
+
+    return (
+        <div className="flex flex-col bg-[#F3EFE9]">
+            <div className="relative aspect-square overflow-hidden group">
+                <Image
+                    key={active}
+                    src={images[active]}
+                    alt={`${productName} — ${active + 1}`}
+                    fill
+                    priority
+                    className="object-contain transition-opacity duration-300"
+                    sizes="50vw"
+                />
+                {images.length > 1 && (
+                    <>
+                        <button onClick={prev} aria-label="Image précédente"
+                            className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 bg-white/80 hover:bg-white flex items-center justify-center shadow-sm opacity-0 group-hover:opacity-100 transition-all">
+                            <ChevronLeft className="h-4 w-4" />
+                        </button>
+                        <button onClick={next} aria-label="Image suivante"
+                            className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 bg-white/80 hover:bg-white flex items-center justify-center shadow-sm opacity-0 group-hover:opacity-100 transition-all">
+                            <ChevronRight className="h-4 w-4" />
+                        </button>
+                    </>
+                )}
+            </div>
+            {images.length > 1 && (
+                <div className="flex gap-2 p-3 bg-[#F3EFE9]/50">
+                    {images.map((img, i) => (
+                        <button key={i} onClick={() => setActive(i)} aria-label={`Image ${i + 1}`}
+                            className={cn("relative flex-shrink-0 w-14 h-14 border-2 transition-all overflow-hidden",
+                                i === active ? "border-[#C9A227]" : "border-transparent opacity-50 hover:opacity-80")}>
+                            <Image src={img} alt="" fill className="object-cover" sizes="56px" loading="lazy" />
                         </button>
                     ))}
                 </div>
             )}
         </div>
     );
+}
 
-    const detailsSection = (
-        <div className="flex-1 p-6 md:p-8 space-y-6">
-            {/* Category + badges */}
-            <div className="flex flex-wrap gap-2 items-center">
-                <span className="text-[10px] font-bold text-primary uppercase tracking-[0.2em]">
+/* ────────────────────────────────────────────────────────────────────────────
+   Shared Details Section (no CTA — handled by parent)
+   ──────────────────────────────────────────────────────────────────────────── */
+function MobileDetails({ product, initData }: { product: ApiProduct; initData?: ApiInitData | null }) {
+    const specsEntries = product.specs ? Object.entries(product.specs) : [];
+
+    return (
+        <div className="px-6 pt-6 pb-4 space-y-5 bg-[#FAF7F2] md:bg-white">
+            {/* Category + stock */}
+            <div className="flex flex-wrap items-center gap-2">
+                <span className="text-[9px] uppercase tracking-[0.35em] font-semibold text-[#C9A227] border border-[#C9A227]/25 px-3 py-1 bg-[#C9A227]/5">
                     {product.category?.name}
                 </span>
-
                 {product.inStock ? (
-                    <span className="inline-flex items-center gap-1 text-[10px] text-emerald-600 font-bold bg-emerald-50 px-2 py-0.5 rounded-full uppercase tracking-wider">
-                        <Check className="h-3 w-3" /> In Stock
+                    <span className="text-[9px] uppercase tracking-[0.3em] font-medium text-emerald-600 border border-emerald-200 px-3 py-1 bg-emerald-50">
+                        En stock
                     </span>
                 ) : (
-                    <span className="inline-flex items-center gap-1 text-[10px] text-red-600 font-bold bg-red-50 px-2 py-0.5 rounded-full uppercase tracking-wider">
-                        <Package className="h-3 w-3" /> Out of Stock
+                    <span className="text-[9px] uppercase tracking-[0.3em] font-medium text-red-500 border border-red-200 px-3 py-1 bg-red-50">
+                        Épuisé
                     </span>
                 )}
-
-                {isFreeShipping && (
-                    <Badge className="bg-blue-600 hover:bg-blue-600 text-white border-none text-[10px] font-bold uppercase tracking-wider px-2 py-0.5">
-                        Free Delivery
-                    </Badge>
-                )}
             </div>
 
-            <h2 className="text-2xl md:text-3xl font-black leading-tight text-slate-900 tracking-tight">{product.name}</h2>
+            {/* Name */}
+            <h2 className="font-serif text-2xl md:text-3xl text-[#1A1A1A] tracking-tight leading-tight">
+                {product.name}
+            </h2>
 
-            <div className="flex items-baseline gap-2">
-                <span className="text-3xl md:text-4xl font-black text-primary tracking-tighter">{priceMad}</span>
-                <span className="text-sm text-slate-400 font-bold uppercase tracking-widest">MAD</span>
+            {/* Price */}
+            <div className="flex items-baseline gap-3">
+                <span className="font-serif text-xl text-[#C9A227]">
+                    {centsToMad(product.price)} MAD
+                </span>
+                {initData?.settings?.standardDeliveryFee ? (
+                    <span className="text-[10px] uppercase tracking-widest text-[#1A1A1A]/30 font-light">
+                        + {centsToMad(initData.settings.standardDeliveryFee)} livraison
+                    </span>
+                ) : null}
             </div>
 
-            <Separator className="bg-slate-100" />
+            <div className="h-px w-10 bg-[#C9A227]/30" />
 
-            <div className="space-y-3">
-                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Description</p>
-                <p className="text-base text-slate-600 leading-relaxed font-medium">{product.description}</p>
-            </div>
+            {/* Description */}
+            <p className="text-[13px] leading-relaxed text-[#1A1A1A]/60 font-light tracking-wide">
+                {product.description}
+            </p>
 
+            {/* Specs */}
             {specsEntries.length > 0 && (
-                <>
-                    <Separator className="bg-slate-100" />
-                    <div className="space-y-4">
-                        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Specifications</p>
-                        <div className="grid grid-cols-2 gap-x-6 gap-y-3">
-                            {specsEntries.map(([key, val]) => (
-                                <div key={key} className="flex flex-col gap-0.5">
-                                    <span className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">{key}</span>
-                                    <span className="text-sm font-bold text-slate-900">{val}</span>
-                                </div>
-                            ))}
-                        </div>
+                <div className="space-y-2 pt-1">
+                    <p className="text-[9px] uppercase tracking-[0.3em] text-[#1A1A1A]/30 font-medium">Caractéristiques</p>
+                    <div className="space-y-2">
+                        {specsEntries.map(([key, val]) => (
+                            <div key={key} className="flex justify-between text-[12px] border-b border-[#1A1A1A]/5 pb-2 last:border-0">
+                                <span className="text-[#1A1A1A]/40 font-light">{key}</span>
+                                <span className="font-medium text-[#1A1A1A]">{val}</span>
+                            </div>
+                        ))}
                     </div>
-                </>
+                </div>
             )}
 
-            <Separator className="bg-slate-100" />
-            <div className="grid grid-cols-3 gap-3 text-center">
+            {/* Selling points */}
+            <div className="grid grid-cols-2 gap-3 pt-1">
                 {[
-                    { icon: Truck, label: 'Fast Delivery' },
-                    { icon: ShieldCheck, label: 'Secure Order' },
-                    { icon: RotateCcw, label: 'Easy Returns' },
-                ].map(({ icon: Icon, label }) => (
-                    <div key={label} className="flex flex-col items-center gap-2 p-3 rounded-xl bg-slate-50 border border-slate-100">
-                        <Icon className="h-5 w-5 text-primary" />
-                        <span className="text-[10px] text-slate-600 font-extrabold uppercase tracking-tight leading-none">{label}</span>
+                    { Icon: ShoppingCart, label: "Paiement à la livraison" },
+                    { Icon: Truck, label: "Livraison au Maroc" },
+                    { Icon: ShieldCheck, label: "Qualité artisanale" },
+                    { Icon: RotateCcw, label: "Retour sous 7 jours" },
+                ].map(({ Icon, label }) => (
+                    <div key={label} className="flex items-center gap-2">
+                        <div className="w-6 h-6 flex items-center justify-center border border-[#C9A227]/20 rounded-full shrink-0">
+                            <Icon className="h-2.5 w-2.5 text-[#C9A227]" />
+                        </div>
+                        <span className="text-[9px] uppercase tracking-[0.1em] text-[#1A1A1A]/45 leading-tight">{label}</span>
                     </div>
                 ))}
             </div>
         </div>
-    );
-
-    const actionsSection = (
-        <div className="p-6 md:p-8 border-t border-slate-100 bg-slate-50/50 space-y-5">
-            <div className="flex items-center justify-between gap-4">
-                <div className="flex flex-col">
-                    <span className="text-[10px] text-slate-400 font-black uppercase tracking-[0.2em] mb-1">Quantity</span>
-                    <div className="flex items-center bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
-                        <button
-                            onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                            className="w-12 h-12 flex items-center justify-center hover:bg-slate-50 transition-colors active:scale-95 disabled:opacity-30"
-                            disabled={quantity <= 1}
-                        >
-                            <Minus className="h-4 w-4" />
-                        </button>
-                        <span className="w-12 text-center text-base font-black">{quantity}</span>
-                        <button
-                            onClick={() => setQuantity((q) => q + 1)}
-                            className="w-12 h-12 flex items-center justify-center hover:bg-slate-50 transition-colors active:scale-95"
-                        >
-                            <Plus className="h-4 w-4" />
-                        </button>
-                    </div>
-                </div>
-                <div className="flex flex-col items-end">
-                    <span className="text-[10px] text-slate-400 font-black uppercase tracking-[0.2em] mb-1">Subtotal</span>
-                    <span className="font-black text-2xl tracking-tighter text-slate-900">{centsToMad(product.price * quantity)} MAD</span>
-                </div>
-            </div>
-
-            <Button
-                size="lg"
-                className={`w-full h-14 font-black gap-3 text-lg rounded-2xl shadow-xl transition-all duration-500 active:scale-[0.98] ${addedToCart
-                    ? 'bg-emerald-500 text-white hover:bg-emerald-600 shadow-emerald-200'
-                    : 'shadow-primary/20 hover:shadow-primary/30'
-                    }`}
-                disabled={!product.inStock}
-                onClick={handleAddToCart}
-            >
-                {addedToCart ? (
-                    <>
-                        <Check className="h-6 w-6 animate-in zoom-in duration-300" />
-                        Added to Cart!
-                    </>
-                ) : (
-                    <>
-                        <ShoppingCart className="h-6 w-6" />
-                        {product.inStock ? `Add to Cart` : 'Out of Stock'}
-                    </>
-                )}
-            </Button>
-        </div>
-    );
-
-    // ─── Mobile: Drawer (slide up from bottom) ────────────────────────────────
-    if (isMobile) {
-        return (
-            <Drawer open={open} onOpenChange={handleOpenChange}>
-                <DrawerContent className="max-h-[92vh] outline-none flex flex-col rounded-t-[2rem]">
-                    <DrawerTitle className="sr-only">{product.name}</DrawerTitle>
-                    {/* Swipe handle */}
-                    <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
-                        <div className="h-1 w-10 bg-slate-200 rounded-full" />
-                    </div>
-                    {/* Scrollable content */}
-                    <div className="overflow-y-auto flex-1 overscroll-contain">
-                        {imageSection}
-                        {detailsSection}
-                    </div>
-                    {/* Sticky CTA at bottom */}
-                    {actionsSection}
-                </DrawerContent>
-            </Drawer>
-        );
-    }
-
-    // ─── Desktop: Dialog (centered) ───────────────────────────────────────────
-    return (
-        <Dialog open={open} onOpenChange={handleOpenChange}>
-            <DialogContent className="max-w-4xl w-full p-0 gap-0 overflow-hidden rounded-2xl shadow-2xl border-border/40">
-                <DialogTitle className="sr-only">{product.name}</DialogTitle>
-
-                <button
-                    onClick={onClose}
-                    className="absolute top-4 right-4 z-50 h-8 w-8 rounded-full bg-background/80 backdrop-blur flex items-center justify-center border border-border shadow-sm hover:bg-muted transition-colors"
-                >
-                    <X className="h-4 w-4" />
-                </button>
-
-                <div className="grid grid-cols-2 min-h-0">
-                    <div className="flex flex-col">{imageSection}</div>
-                    <div className="flex flex-col overflow-y-auto max-h-[80vh]">
-                        {detailsSection}
-                        {actionsSection}
-                    </div>
-                </div>
-            </DialogContent>
-        </Dialog>
     );
 }
