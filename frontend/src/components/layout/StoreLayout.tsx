@@ -60,10 +60,9 @@ export default function StoreLayout({ children }: { children: React.ReactNode })
 
       {/* Main Header */}
       <header className="sticky top-0 z-40 w-full border-b border-border/40 bg-background/80 backdrop-blur-md">
-        <div className="max-w-7xl mx-auto px-4 md:px-8 h-20 flex items-center justify-between gap-8">
-
-          {/* Logo & Mobile Menu */}
-          <div className="flex items-center gap-6">
+        <div className="max-w-7xl mx-auto px-4 md:px-8 h-20 flex items-center justify-between gap-4 relative">
+          {/* ZONE 1: Left Group (Hamburger + Logo) */}
+          <div className="flex items-center gap-2 sm:gap-6 flex-shrink-0">
             <Sheet>
               <SheetTrigger asChild>
                 <Button variant="ghost" size="icon" className="md:hidden hover:bg-primary/5" data-testid="button-menu">
@@ -99,8 +98,8 @@ export default function StoreLayout({ children }: { children: React.ReactNode })
               </SheetContent>
             </Sheet>
 
-            <Link href="/" className="flex items-center gap-3 group transition-all duration-500" data-testid="link-logo">
-              <div className="relative h-10 w-16 md:h-12 md:w-20 flex-shrink-0">
+            <Link href="/" className="flex items-center flex-shrink-0" data-testid="link-logo">
+              <div className="relative h-10 w-16 md:h-12 md:w-20">
                 <Image
                   src="/logo.png"
                   alt={settings?.storeName ?? 'Caftan Latifa'}
@@ -109,17 +108,22 @@ export default function StoreLayout({ children }: { children: React.ReactNode })
                   priority
                 />
               </div>
-              <div className="flex flex-col items-start hidden sm:flex">
-                <span className="font-serif text-xl md:text-3xl tracking-tighter text-foreground group-hover:text-primary transition-colors line-clamp-1">
-                  {settings?.storeName ?? 'Caftan Latifa'}
-                </span>
-                <span className="text-[8px] md:text-[9px] uppercase tracking-[0.4em] text-primary -mt-1 opacity-80 group-hover:opacity-100 line-clamp-1">
-                  Maison de Couture
-                </span>
-              </div>
+            </Link>
+          </div>
+
+          {/* ZONE 2: Center Group (Flexible Store Name) */}
+          <div className="flex-1 min-w-0 flex items-center">
+            <Link href="/" className="group min-w-0 flex flex-col items-start transition-all duration-500">
+              <span className="font-sans font-medium text-[12px] sm:font-serif sm:text-xl md:text-3xl sm:font-normal uppercase sm:normal-case tracking-[0.2em] sm:tracking-tighter text-foreground group-hover:text-primary transition-colors truncate block w-full leading-none">
+                {settings?.storeName ?? 'Caftan Latifa'}
+              </span>
+              <span className="hidden sm:inline-block text-[8px] md:text-[9px] uppercase tracking-[0.4em] text-primary -mt-1 opacity-80 group-hover:opacity-100 line-clamp-1 font-serif italic">
+                Maison de Couture
+              </span>
             </Link>
 
-            <nav className="hidden lg:flex items-center gap-8 ml-8">
+            {/* Desktop Navigation */}
+            <nav className="hidden lg:flex items-center gap-8 ml-8 flex-shrink-0">
               {[
                 { href: '/', label: 'Accueil' },
                 { href: '/products', label: 'Collection' },
@@ -138,19 +142,19 @@ export default function StoreLayout({ children }: { children: React.ReactNode })
           </div>
 
           {/* Search Bar - Desktop */}
-          <form onSubmit={handleHeaderSearch} className="hidden md:flex flex-1 max-w-xs mx-4 relative group">
+          <form onSubmit={handleHeaderSearch} className="hidden md:flex flex-1 max-w-xs mx-4 relative group flex-shrink-0">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground group-focus-within:text-primary transition-colors" />
             <Input
               type="search"
-              placeholder="Rechercher un caftan..."
+              placeholder="Rechercher..."
               value={headerSearch}
               onChange={(e) => setHeaderSearch(e.target.value)}
               className="pl-10 h-10 w-full bg-transparent border-border/60 rounded-none focus:border-primary/40 focus:ring-0 transition-all font-light text-sm italic"
             />
           </form>
 
-          {/* Actions */}
-          <div className="flex items-center gap-2 sm:gap-6">
+          {/* ZONE 3: Right Group (Search + Cart) */}
+          <div className="flex items-center gap-2 sm:gap-6 flex-shrink-0">
             <Button
               variant="ghost"
               size="icon"
@@ -173,6 +177,7 @@ export default function StoreLayout({ children }: { children: React.ReactNode })
             </Link>
           </div>
         </div>
+
       </header>
 
       {/* Main Content */}
