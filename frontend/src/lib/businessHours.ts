@@ -12,6 +12,19 @@ export type StoreStatus = {
     exceptionName?: string;
 };
 
+/**
+ * Extracts the src URL from a Google Maps iframe tag if provided,
+ * or returns the string directly if it's already a URL.
+ */
+export function extractGoogleMapsUrl(input: string): string {
+    if (!input) return "";
+    if (input.includes('<iframe')) {
+        const match = input.match(/src="([^"]+)"/);
+        return match ? match[1] : "";
+    }
+    return input;
+}
+
 export function getStoreStatus(config?: BusinessHoursConfig | null): StoreStatus {
     if (!config) {
         return { isOpenNow: false, statusText: "Horaires indisponibles" };
@@ -21,12 +34,12 @@ export function getStoreStatus(config?: BusinessHoursConfig | null): StoreStatus
 
     // Use config timezone if available, otherwise default to Casablanca
     const timeZone = config.timezone || STORE_TIMEZONE;
-    const zonedNow = toZonedTime(now, timeZone);
 
+    // Get the current time in the store's timezone
+    const zonedNow = toZonedTime(now, timeZone);
     const todayDateStr = formatInTimeZone(now, timeZone, 'yyyy-MM-dd');
-    // EEEE gives full day name in English by default, but we need our French keys mapping
-    // Since date-fns locale mapping is heavy, we can just use getDay() on the zoned time.
-    // 0 = Sunday, 1 = Monday
+
+    // Get day index from the ZONED time (0=Sunday, 1=Monday)
     const dayIndex = zonedNow.getDay();
     const dayNames: (keyof BusinessHoursConfig['regularHours'])[] = [
         'dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi'
@@ -100,12 +113,15 @@ function findNextOpenSlot(config: BusinessHoursConfig, zonedNow: Date, timeZone:
     for (let offset = 1; offset <= 7; offset++) {
         // Add offset days to zonedNow
         const futureDate = new Date(zonedNow.getTime() + offset * 24 * 60 * 60 * 1000);
+        // CRITICAL: We must convert this future date back to the store's zoned perspective
+        // to get the correct day of the week, especially around midnight.
+        const futureZoned = toZonedTime(futureDate, timeZone);
         const futureDateStr = formatInTimeZone(futureDate, timeZone, 'yyyy-MM-dd');
 
         const dayNames: (keyof BusinessHoursConfig['regularHours'])[] = [
             'dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi'
         ];
-        const futureDayName = dayNames[futureDate.getDay()];
+        const futureDayName = dayNames[futureZoned.getDay()];
 
         const exception = config.exceptions?.find(e => e.date === futureDateStr);
         const schedule = exception ? exception : config.regularHours[futureDayName];

@@ -9,6 +9,7 @@ import { Separator } from '@/components/ui/separator';
 import { useQuery } from '@tanstack/react-query';
 import type { ApiInitData } from '@/lib/types';
 import { SmartBusinessHoursWidget } from './SmartBusinessHoursWidget';
+import { extractGoogleMapsUrl } from '@/lib/businessHours';
 
 export default function Contact() {
   const { data } = useQuery<ApiInitData>({
@@ -138,7 +139,7 @@ export default function Contact() {
             </div>
             <div className="relative h-[500px] bg-muted group">
               <iframe
-                src={settings?.googleMapsEmbed ?? "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d719.3483166805976!2d-5.362805966594682!3d35.56245974318981!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xd0b42461ad1469f%3A0x25ec5089911ba6df!2sFaculty%20of%20Sciences%20Tetouan!5e1!3m2!1sen!2sma!4v1771780802081!5m2!1sen!2sma"}
+                src={extractGoogleMapsUrl(settings?.googleMapsEmbed ?? "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d719.3483166805976!2d-5.362805966594682!3d35.56245974318981!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xd0b42461ad1469f%3A0x25ec5089911ba6df!2sFaculty%20of%20Sciences%20Tetouan!5e1!3m2!1sen!2sma!4v1771780802081!5m2!1sen!2sma")}
                 width="100%"
                 height="100%"
                 style={{ border: 0 }}

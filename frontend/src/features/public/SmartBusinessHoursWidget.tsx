@@ -149,7 +149,7 @@ export function SmartBusinessHoursWidget({ config, isLoading }: Props) {
                                 ) : (
                                     <div className="text-[12px] font-medium tabular-nums text-right">
                                         {dayData.slots.map((slot, sIdx) => (
-                                            <div key={sIdx} className="leading-none mb-1last:mb-0">
+                                            <div key={sIdx} className="leading-none mb-1 last:mb-0">
                                                 {slot.start} — {slot.end}
                                             </div>
                                         ))}
