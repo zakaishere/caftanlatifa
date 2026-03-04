@@ -10,12 +10,5 @@ const envSchema = z.object({
     NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
     FRONTEND_URL: z.string().url().optional(),
 });
-const _env = envSchema.safeParse(process.env);
-if (!_env.success) {
-    console.error('❌  Invalid environment variables:');
-    _env.error.issues.forEach((issue) => {
-        console.error(`   ${issue.path.join('.')}: ${issue.message}`);
-    });
-    process.exit(1);
-}
-export const env = _env.data;
+const env = envSchema.parse(process.env);
+export { env };

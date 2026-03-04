@@ -1,37 +1,14 @@
-name: Render Keep Alive
+name: Keep Render Service Alive
 
 on:
   schedule:
-    - cron: '*/5 * * * *'
-  workflow_dispatch:
+    - cron: "*/5 * * * *" # Runs every 5 minutes
+  workflow_dispatch: # Allows manual triggering from the GitHub UI
 
 jobs:
-  ping-render:
+  ping:
     runs-on: ubuntu-latest
-    env:
-      # Canonical base URL for your Render service (no trailing slash)
-      SERVICE_URL: https://pixelart-ubva.onrender.com
-      ENDPOINT: /ping
     steps:
-      - name: Validate SERVICE_URL is configured
+      - name: Ping backend /ping endpoint
         run: |
-          if [[ "$SERVICE_URL" == *"<my-render-service>"* ]] || [[ -z "$SERVICE_URL" ]]; then
-            echo "SERVICE_URL is missing or still a placeholder. Set env.SERVICE_URL to your Render base URL." >&2
-            exit 1
-          fi
-
-      - name: Curl /ping endpoint
-        run: |
-          set -euo pipefail
-          PING_URL=\"${SERVICE_URL%/}${ENDPOINT}\"
-          echo \"Pinging $PING_URL\"
-          STATUS=$(curl --silent --show-error --max-time 10 --write-out '%{http_code}' --output /tmp/ping.out \"$PING_URL\")
-          cat /tmp/ping.out
-          echo "Status: $STATUS"
-          if [ "$STATUS" != "200" ]; then
-            echo "Ping failed (status $STATUS)." >&2
-            exit 1
-          fi
-
-      - name: Record timestamp
-        run: date -u
+          curl --fail --max-time 10 https://pixelart-ubva.onrender.com/ping
