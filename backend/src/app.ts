@@ -28,7 +28,7 @@ app.get('/ping', (req: express.Request, res: express.Response) => {
     res.status(200).send('pong');
 });
 
-app.get('/health', (_req, res) => {
+app.get('/health', (_req: express.Request, res: express.Response) => {
     res.json({
         status: 'ok',
         timestamp: new Date().toISOString(),
