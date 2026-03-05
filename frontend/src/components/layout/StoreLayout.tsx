@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
-import { ShoppingCart, Menu, Search, Phone, Store } from 'lucide-react';
+import { ShoppingCart, Menu, Search, Phone } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -11,12 +11,7 @@ import { useCart } from '@/features/public/cart/cartContext';
 import { useQuery } from '@tanstack/react-query';
 import type { ApiInitData } from '@/lib/types';
 import { MobileBottomNav } from '@/components/layout/MobileBottomNav';
-import {
-  Sheet,
-  SheetContent,
-  SheetTrigger,
-  SheetTitle,
-} from "@/components/ui/sheet";
+import { MobileDrawer } from '@/components/layout/MobileDrawer';
 
 export default function StoreLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -24,6 +19,7 @@ export default function StoreLayout({ children }: { children: React.ReactNode })
   const { itemCount } = useCart();
   const [headerSearch, setHeaderSearch] = useState('');
   const [isMounted, setIsMounted] = useState(false);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   useEffect(() => {
     setIsMounted(true);
@@ -63,40 +59,26 @@ export default function StoreLayout({ children }: { children: React.ReactNode })
         <div className="max-w-7xl mx-auto px-4 md:px-8 h-20 flex items-center justify-between gap-4 relative">
           {/* ZONE 1: Left Group (Hamburger + Logo) */}
           <div className="flex items-center gap-2 sm:gap-6 flex-shrink-0">
-            <Sheet>
-              <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="md:hidden hover:bg-primary/5" data-testid="button-menu">
-                  <Menu className="h-5 w-5" />
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="left" className="w-[300px] border-r-primary/10">
-                <SheetTitle className="sr-only">Menu de navigation</SheetTitle>
-                <div className="mt-8 mb-10 text-center">
-                  <h2 className="font-serif text-2xl tracking-tighter text-primary">Caftan Latifa</h2>
-                  <div className="h-[1px] w-12 bg-primary/30 mx-auto mt-2" />
-                </div>
-                <nav className="flex flex-col gap-2">
-                  {[
-                    { href: '/', label: 'Accueil' },
-                    { href: '/products', label: 'Collections' },
-                    { href: '/cart', label: 'Mon Panier' },
-                    { href: '/contact', label: 'Contact' },
-                    { href: '/orders', label: 'Mes Commandes' },
-                  ].map(({ href, label }) => (
-                    <Link
-                      key={href}
-                      href={href}
-                      className={`text-base font-light px-4 py-3 transition-all duration-300 border-l-2 ${isActive(href)
-                        ? 'text-primary bg-primary/5 border-primary font-medium'
-                        : 'text-foreground border-transparent hover:border-primary/30 hover:bg-muted/30'
-                        }`}
-                    >
-                      {label}
-                    </Link>
-                  ))}
-                </nav>
-              </SheetContent>
-            </Sheet>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="md:hidden hover:bg-primary/5"
+              data-testid="button-menu"
+              aria-label="Ouvrir le menu"
+              aria-expanded={isDrawerOpen}
+              aria-controls="mobile-nav-drawer"
+              onClick={() => setIsDrawerOpen(true)}
+            >
+              <Menu className="h-5 w-5" />
+            </Button>
+
+            {/* Smooth mobile drawer — replaces Radix Sheet */}
+            <MobileDrawer
+              isOpen={isDrawerOpen}
+              onClose={() => setIsDrawerOpen(false)}
+              pathname={pathname}
+              storeName={settings?.storeName}
+            />
 
             <Link href="/" className="flex items-center flex-shrink-0" data-testid="link-logo">
               <div className="relative h-10 w-16 md:h-12 md:w-20">
