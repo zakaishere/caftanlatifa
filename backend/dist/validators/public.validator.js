@@ -47,4 +47,5 @@ export const productParamsSchema = z.object({
         .string()
         .optional()
         .transform((v) => (v ? Math.min(100, parseInt(v, 10)) : 12)),
+    sort: z.enum(['newest', 'price_asc', 'price_desc']).optional().default('newest'),
 });

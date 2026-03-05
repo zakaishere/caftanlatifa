@@ -18,12 +18,22 @@ app.use(cors({
 app.use(morgan('dev'));
 app.use(express.json());
 app.use(cookieParser());
+// Health checks (must be before authentication/complex routes)
+app.get('/ping', (req, res) => {
+    const ts = new Date().toISOString();
+    console.log(`[ping] ${ts} ${req.ip || 'unknown'}`);
+    res.status(200).send('pong');
+});
+app.get('/health', (_req, res) => {
+    res.json({
+        status: 'ok',
+        timestamp: new Date().toISOString(),
+        uptime: process.uptime()
+    });
+});
 // Routes
 app.use('/api/public', publicRoutes);
 app.use('/api/admin', adminRoutes);
-app.get('/health', (_req, res) => {
-    res.json({ status: 'ok', timestamp: new Date().toISOString() });
-});
 // Zod validation error formatter (must be before global error handler)
 app.use((err, req, res, next) => {
     if (err instanceof ZodError) {

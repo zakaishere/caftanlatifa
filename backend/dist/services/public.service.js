@@ -2,7 +2,9 @@ import prisma from '../lib/prisma.js';
 import { AppError } from '../utils/errors.js';
 export class PublicService {
     static async getInitData() {
-        const [featuredProducts, categories, settings] = await Promise.all([
+        // Fetch settings from DB — let real errors bubble up for proper diagnosis
+        const settings = await prisma.settings.findUnique({ where: { id: 1 } });
+        const [featuredProducts, categories] = await Promise.all([
             prisma.product.findMany({
                 where: { inStock: true },
                 take: 4,
@@ -12,12 +14,11 @@ export class PublicService {
             prisma.category.findMany({
                 include: { _count: { select: { products: true } } },
             }),
-            prisma.settings.findUnique({ where: { id: 1 } }),
         ]);
         return { featuredProducts, categories, settings };
     }
     static async getProducts(filters) {
-        const { category, search, inStock, minPrice, maxPrice, page = 1, limit = 12 } = filters;
+        const { category, search, inStock, minPrice, maxPrice, page = 1, limit = 12, sort = 'newest' } = filters;
         const where = {
             ...(category && { category: { slug: category } }),
             ...(search && { name: { contains: search, mode: 'insensitive' } }),
@@ -29,11 +30,16 @@ export class PublicService {
                 },
             }),
         };
+        const orderBy = sort === 'price_asc'
+            ? { price: 'asc' }
+            : sort === 'price_desc'
+                ? { price: 'desc' }
+                : { createdAt: 'desc' };
         const [products, total] = await Promise.all([
             prisma.product.findMany({
                 where,
                 include: { category: true },
-                orderBy: { createdAt: 'desc' },
+                orderBy,
                 skip: (page - 1) * limit,
                 take: limit,
             }),
