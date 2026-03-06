@@ -1,5 +1,6 @@
-import AdminRegister from "@/features/admin/auth/Register";
+import { redirect } from "next/navigation";
 
 export default function RegisterPage() {
-    return <AdminRegister />;
+    redirect("/admin/login");
+    return null;
 }

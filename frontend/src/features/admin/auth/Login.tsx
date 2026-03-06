@@ -85,12 +85,7 @@ export default function AdminLogin() {
                             </Button>
                         </form>
                     </Form>
-                    <div className="mt-4 text-center text-sm">
-                        Don't have an account?{" "}
-                        <Link href="/admin/register" className="text-primary hover:underline">
-                            Register
-                        </Link>
-                    </div>
+
                 </CardContent>
             </Card>
         </div>
