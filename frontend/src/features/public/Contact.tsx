@@ -146,7 +146,7 @@ export default function Contact() {
                 allowFullScreen={true}
                 loading="lazy"
                 referrerPolicy="no-referrer-when-downgrade"
-                className="grayscale contrast-125"
+                className=""
               ></iframe>
             </div>
           </div>
