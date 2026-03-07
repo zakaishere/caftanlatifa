@@ -43,12 +43,16 @@ export default function ProductDetails({ params }: { params: Promise<{ id: strin
 
     if (product.availableSizes && product.availableSizes.length > 0 && !selectedSize) {
       setSizeError(true);
-      // Scroll to size selector (optional, but good UX on mobile)
+      const sizeEl = document.getElementById('size-selector');
+      if (sizeEl) {
+        const y = sizeEl.getBoundingClientRect().top + window.scrollY - 100;
+        window.scrollTo({ top: y, behavior: 'smooth' });
+      }
       return;
     }
 
     setSizeError(false);
-    addToCart(product, quantity, selectedSize);
+    addToCart(product, quantity, selectedSize || undefined);
     setAdded(true);
     setTimeout(() => setAdded(false), 2000);
   };
@@ -123,7 +127,7 @@ export default function ProductDetails({ params }: { params: Promise<{ id: strin
           Mobile: Slides up with rounded corners over the gallery (-mt-8) 
           Desktop: Standard column layout
         */}
-        <div className="relative -mt-8 md:mt-0 bg-[#FAF7F2] rounded-t-[32px] md:rounded-none px-6 pt-8 pb-32 md:pb-8 md:px-0">
+        <div className="relative -mt-8 md:mt-0 bg-[#FAF7F2] rounded-t-[32px] md:rounded-none px-6 pt-8 pb-40 md:pb-8 md:px-0">
 
           {/* ── Category + Stock tags ──────────────────────────── */}
           <div className="flex flex-wrap items-center gap-2 mb-5">
@@ -163,7 +167,7 @@ export default function ProductDetails({ params }: { params: Promise<{ id: strin
 
           {/* ── Size Selector ─────────────────────────────────── */}
           {product.availableSizes && product.availableSizes.length > 0 ? (
-            <div className="mb-6">
+            <div id="size-selector" className="mb-6 scroll-mt-24">
               <div className="flex items-center gap-4 mb-3">
                 <span className="text-[10px] uppercase tracking-[0.3em] font-medium text-[#1A1A1A]/35 w-20 shrink-0">
                   Taille
@@ -310,40 +314,63 @@ export default function ProductDetails({ params }: { params: Promise<{ id: strin
 
       {/* ── Related Products ──────────────────────────────────────── */}
       {relatedProducts && relatedProducts.length > 0 && (
-        <div className="max-w-7xl mx-auto px-6 md:px-12 py-16 border-t border-[#1A1A1A]/5">
-          <h3 className="font-serif text-2xl md:text-3xl text-center text-[#1A1A1A] mb-12">
+        <div className="max-w-7xl mx-auto py-16 border-t border-[#1A1A1A]/5 overflow-hidden">
+          <h3 className="font-serif text-2xl md:text-3xl text-center text-[#1A1A1A] mb-8 md:mb-12 px-6">
             Vous aimerez aussi
           </h3>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8">
-            {relatedProducts.slice(0, 4).map((related) => (
-              <ProductCard key={related.id} product={related} />
+
+          {/* Mobile: Horizontal scroll, Desktop: Grid */}
+          <div className="flex overflow-x-auto snap-x snap-mandatory hide-scrollbar gap-4 px-6 pb-8 md:grid md:grid-cols-4 md:gap-8 md:overflow-visible md:px-12">
+            {relatedProducts.slice(0, 8).map((related) => (
+              <div key={related.id} className="min-w-[240px] w-[70vw] md:w-auto md:min-w-0 snap-center shrink-0">
+                <ProductCard product={related} />
+              </div>
             ))}
           </div>
         </div>
       )}
 
       {/* ── Mobile Sticky Bottom CTA ─────────────────────────────── */}
-      <div className="fixed bottom-0 inset-x-0 z-50 md:hidden bg-white/95 backdrop-blur-md border-t border-[#1A1A1A]/5 pb-safe">
-        <div className="px-5 pt-3 pb-4 flex items-center gap-4">
-          {/* Price + Subtotal */}
-          <div className="flex flex-col min-w-0">
-            <span className="text-[8px] uppercase tracking-[0.3em] text-[#1A1A1A]/30 font-light leading-none mb-1">
-              {quantity > 1 ? `Sous-total (×${quantity})` : 'Prix'}
-            </span>
+      <div className="fixed bottom-[calc(4rem+env(safe-area-inset-bottom))] inset-x-0 z-40 md:hidden bg-white/95 backdrop-blur-md border-t border-[#1A1A1A]/5 shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
+        <div className="px-4 py-3 flex items-center justify-between gap-3">
+          {/* Left: Price */}
+          <div className="flex flex-col shrink-0">
             <span className="font-serif text-[#C9A227] text-lg leading-none">
-              {subtotal.toFixed(0)} MAD
+              {centsToMad(product.price)}
+            </span>
+            <span className="text-[8px] uppercase tracking-[0.2em] text-[#1A1A1A]/40 font-light mt-1">
+              MAD
             </span>
           </div>
-          {/* CTA */}
+
+          {/* Middle: Selected Size */}
+          <div className="flex flex-col flex-1 items-center justify-center border-l border-r border-[#1A1A1A]/5 px-2">
+            {product.availableSizes && product.availableSizes.length > 0 ? (
+              selectedSize ? (
+                <>
+                  <span className="text-[8px] uppercase tracking-[0.2em] text-[#1A1A1A]/40 leading-none mb-1">Taille</span>
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-[#1A1A1A]">{selectedSize}</span>
+                </>
+              ) : (
+                <span className={`text-[9px] uppercase tracking-[0.1em] text-center font-medium leading-tight ${sizeError ? 'text-red-500 animate-pulse' : 'text-[#1A1A1A]/50'}`}>
+                  Choisir une taille
+                </span>
+              )
+            ) : (
+              <span className="text-[9px] uppercase tracking-[0.15em] text-[#1A1A1A]/50">Taille unique</span>
+            )}
+          </div>
+
+          {/* Right: CTA */}
           <Button
-            className="flex-1 h-12 rounded-none bg-[#C9A227] hover:bg-[#b8911f] text-black text-[10px] uppercase tracking-[0.3em] font-bold transition-all duration-300 gap-2 shrink-0 disabled:opacity-40"
+            className="h-11 rounded-none bg-[#C9A227] hover:bg-[#b8911f] text-black text-[10px] uppercase tracking-[0.3em] font-bold transition-all duration-300 px-4 shrink-0 disabled:opacity-40 disabled:cursor-not-allowed"
             onClick={handleAddToCart}
-            disabled={!product.inStock}
+            disabled={!product.inStock || (product.availableSizes && product.availableSizes.length > 0 ? !selectedSize : false)}
           >
             {added ? (
-              <><Check className="h-3.5 w-3.5" /> Ajouté !</>
+              <Check className="h-4 w-4" />
             ) : (
-              <><ShoppingCart className="h-3.5 w-3.5" /> Ajouter</>
+              <ShoppingCart className="h-4 w-4" />
             )}
           </Button>
         </div>
