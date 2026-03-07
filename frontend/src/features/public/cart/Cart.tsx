@@ -90,9 +90,12 @@ export default function Cart() {
                     <div className="flex flex-col justify-center gap-2">
                       <h3 className="font-serif text-xl text-foreground tracking-tight">{item.name}</h3>
                       <p className="text-[10px] uppercase tracking-[0.2em] text-primary/60 font-medium">{item.category?.name}</p>
+                      <p className="text-[9px] uppercase tracking-[0.15em] text-muted-foreground/50 font-medium">
+                        {item.selectedSize ? `Taille: ${item.selectedSize}` : 'Taille unique'}
+                      </p>
                       <button
                         className="flex items-center gap-2 text-[9px] uppercase tracking-[0.2em] text-red-800/40 hover:text-red-800 mt-4 transition-colors w-fit"
-                        onClick={() => removeFromCart(item.id)}
+                        onClick={() => removeFromCart(item.id, item.selectedSize)}
                         aria-label={`Supprimer ${item.name}`}
                       >
                         <Trash2 className="h-3 w-3" /> Supprimer
@@ -101,11 +104,11 @@ export default function Cart() {
                   </div>
                   <div className="col-span-2 flex items-center justify-center">
                     <div className="flex items-center border border-primary/10 rounded-none p-1">
-                      <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-primary/5 rounded-none" onClick={() => updateQuantity(item.id, item.quantity - 1)} disabled={item.quantity <= 1} aria-label="Diminuer">
+                      <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-primary/5 rounded-none" onClick={() => updateQuantity(item.id, item.quantity - 1, item.selectedSize)} disabled={item.quantity <= 1} aria-label="Diminuer">
                         <Minus className="h-2.5 w-2.5" />
                       </Button>
                       <span className="w-10 text-center font-medium text-xs">{item.quantity}</span>
-                      <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-primary/5 rounded-none" onClick={() => updateQuantity(item.id, item.quantity + 1)} aria-label="Augmenter">
+                      <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-primary/5 rounded-none" onClick={() => updateQuantity(item.id, item.quantity + 1, item.selectedSize)} aria-label="Augmenter">
                         <Plus className="h-2.5 w-2.5" />
                       </Button>
                     </div>
@@ -136,11 +139,14 @@ export default function Cart() {
                         <p className="text-[9px] uppercase tracking-[0.2em] text-primary/50 font-medium mt-0.5">
                           {item.category?.name}
                         </p>
+                        <p className="text-[9px] uppercase tracking-[0.15em] text-muted-foreground/40 font-medium mt-0.5">
+                          {item.selectedSize ? `Taille: ${item.selectedSize}` : 'Taille unique'}
+                        </p>
                       </div>
                       {/* Remove button */}
                       <button
                         className="flex-shrink-0 h-8 w-8 flex items-center justify-center text-muted-foreground/30 hover:text-red-500 transition-colors"
-                        onClick={() => removeFromCart(item.id)}
+                        onClick={() => removeFromCart(item.id, item.selectedSize)}
                         aria-label={`Supprimer ${item.name}`}
                       >
                         <Trash2 className="h-3.5 w-3.5" />
@@ -153,7 +159,7 @@ export default function Cart() {
                       <div className="flex items-center border border-primary/10 bg-transparent">
                         <button
                           className="h-7 w-7 flex items-center justify-center text-foreground/40 hover:text-foreground transition-colors disabled:opacity-30"
-                          onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                          onClick={() => updateQuantity(item.id, item.quantity - 1, item.selectedSize)}
                           disabled={item.quantity <= 1}
                           aria-label="Diminuer la quantité"
                         >
@@ -162,7 +168,7 @@ export default function Cart() {
                         <span className="w-7 text-center text-xs font-medium tabular-nums">{item.quantity}</span>
                         <button
                           className="h-7 w-7 flex items-center justify-center text-foreground/40 hover:text-foreground transition-colors"
-                          onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                          onClick={() => updateQuantity(item.id, item.quantity + 1, item.selectedSize)}
                           aria-label="Augmenter la quantité"
                         >
                           <Plus className="h-2.5 w-2.5" />

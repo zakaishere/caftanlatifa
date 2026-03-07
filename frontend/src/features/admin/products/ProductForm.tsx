@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { ImageUploader } from '@/components/ui/image-uploader';
 import { apiRequest } from '@/lib/queryClient';
-import { ApiProduct, ApiCategory, centsToMad } from '@/lib/types';
+import { ApiProduct, ApiCategory, centsToMad, PRODUCT_SIZES, ProductSize } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Plus, Trash2 } from 'lucide-react';
 
@@ -31,6 +31,9 @@ export function ProductForm({ onSuccess, initialData }: ProductFormProps) {
     const [categoryId, setCategoryId] = useState(initialData?.categoryId || '');
     const [images, setImages] = useState<string[]>(initialData?.images || []);
     const [inStock, setInStock] = useState(initialData ? initialData.inStock : true);
+    const [availableSizes, setAvailableSizes] = useState<ProductSize[]>(
+        initialData?.availableSizes ?? []
+    );
     const [specialities, setSpecialities] = useState<{ id: string, name: string, value: string }[]>(
         initialData?.specs
             ? Object.entries(initialData.specs).map(([name, value]) => ({ id: generateId(), name, value: String(value) }))
@@ -89,7 +92,8 @@ export function ProductForm({ onSuccess, initialData }: ProductFormProps) {
             categoryId,
             images,
             inStock,
-            specs
+            specs,
+            availableSizes,
         };
 
         createMutation.mutate(payload);
@@ -137,6 +141,34 @@ export function ProductForm({ onSuccess, initialData }: ProductFormProps) {
                             ))}
                         </SelectContent>
                     </Select>
+                </div>
+            </div>
+
+            {/* ─── Available Sizes ─────────────────────────────────────── */}
+            <div className="space-y-3">
+                <Label className="text-base font-bold">Tailles disponibles</Label>
+                <p className="text-xs text-muted-foreground">Laissez vide pour un produit sans tailles (taille unique).</p>
+                <div className="flex flex-wrap gap-2">
+                    {PRODUCT_SIZES.map((size) => {
+                        const selected = availableSizes.includes(size);
+                        return (
+                            <button
+                                key={size}
+                                type="button"
+                                onClick={() =>
+                                    setAvailableSizes(prev =>
+                                        selected ? prev.filter(s => s !== size) : [...prev, size]
+                                    )
+                                }
+                                className={`px-4 py-1.5 text-xs font-bold uppercase tracking-widest border rounded-none transition-all ${selected
+                                        ? 'bg-primary text-white border-primary shadow-sm'
+                                        : 'bg-background border-border text-muted-foreground hover:border-primary hover:text-primary'
+                                    }`}
+                            >
+                                {size}
+                            </button>
+                        );
+                    })}
                 </div>
             </div>
 

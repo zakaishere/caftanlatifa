@@ -82,11 +82,11 @@ export class PublicService {
         const [dbProducts, settings] = await Promise.all([
             prisma.product.findMany({
                 where: { id: { in: productIds } },
-                select: { id: true, name: true, price: true, inStock: true },
+                select: { id: true, name: true, price: true, inStock: true, availableSizes: true },
             }),
             prisma.settings.findUnique({ where: { id: 1 } })
         ]);
-        // Validate every requested product exists and is in stock
+        // Validate every requested product exists, is in stock, and size is valid
         const productMap = new Map(dbProducts.map((p) => [p.id, p]));
         for (const item of items) {
             const product = productMap.get(item.productId);
@@ -95,6 +95,15 @@ export class PublicService {
             }
             if (!product.inStock) {
                 throw new AppError(409, `Product "${product.name}" is out of stock`, 'OUT_OF_STOCK');
+            }
+            // Size validation: only enforce when product has configured sizes
+            if (product.availableSizes && product.availableSizes.length > 0) {
+                if (!item.size) {
+                    throw new AppError(400, `Please select a size for "${product.name}"`, 'SIZE_REQUIRED');
+                }
+                if (!product.availableSizes.includes(item.size)) {
+                    throw new AppError(400, `Invalid size "${item.size}" for "${product.name}"`, 'INVALID_SIZE');
+                }
             }
         }
         // Calculate subtotal from DB prices
@@ -121,6 +130,7 @@ export class PublicService {
                         name: productMap.get(item.productId).name, // Use DB name (snapshot)
                         price: productMap.get(item.productId).price, // Use DB price (snapshot)
                         quantity: item.quantity,
+                        size: item.size ?? null,
                     })),
                 },
             },

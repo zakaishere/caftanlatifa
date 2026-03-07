@@ -11,13 +11,15 @@ import {
   Accordion, AccordionContent, AccordionItem, AccordionTrigger,
 } from "@/components/ui/accordion";
 import { ProductGallery } from '@/components/ui/product-gallery';
-import type { ApiProduct, ApiInitData } from '@/lib/types';
+import type { ApiProduct, ApiInitData, ProductSize } from '@/lib/types';
 import { centsToMad } from '@/lib/types';
 
 export default function ProductDetails({ params }: { params: { id: string } }) {
   const { addToCart } = useCart();
   const [quantity, setQuantity] = useState(1);
   const [added, setAdded] = useState(false);
+  const [selectedSize, setSelectedSize] = useState<ProductSize | null>(null);
+  const [sizeError, setSizeError] = useState(false);
 
   const { data: product, isLoading, isError } = useQuery<ApiProduct>({
     queryKey: [`/api/public/products/${params.id}`],
@@ -29,9 +31,22 @@ export default function ProductDetails({ params }: { params: { id: string } }) {
 
   const handleAddToCart = () => {
     if (!product) return;
-    addToCart(product, quantity);
+
+    if (product.availableSizes && product.availableSizes.length > 0 && !selectedSize) {
+      setSizeError(true);
+      // Scroll to size selector (optional, but good UX on mobile)
+      return;
+    }
+
+    setSizeError(false);
+    addToCart(product, quantity, selectedSize);
     setAdded(true);
     setTimeout(() => setAdded(false), 2000);
+  };
+
+  const handleSizeSelect = (size: ProductSize) => {
+    setSelectedSize(prev => prev === size ? null : size);
+    if (sizeError) setSizeError(false);
   };
 
   // ── Loading ───────────────────────────────────────────────────────
@@ -137,6 +152,48 @@ export default function ProductDetails({ params }: { params: { id: string } }) {
           {/* ── Divider ───────────────────────────────────────── */}
           <div className="h-px w-12 bg-[#C9A227]/30 mb-6" />
 
+          {/* ── Size Selector ─────────────────────────────────── */}
+          {product.availableSizes && product.availableSizes.length > 0 ? (
+            <div className="mb-6">
+              <div className="flex items-center gap-4 mb-3">
+                <span className="text-[10px] uppercase tracking-[0.3em] font-medium text-[#1A1A1A]/35 w-20 shrink-0">
+                  Taille
+                </span>
+                {sizeError && !selectedSize && (
+                  <span className="text-[9px] uppercase tracking-[0.2em] text-red-500 font-bold animate-pulse">
+                    Veuillez sélectionner une taille
+                  </span>
+                )}
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {product.availableSizes.map((size) => (
+                  <button
+                    key={size}
+                    type="button"
+                    onClick={() => handleSizeSelect(size)}
+                    className={`px-4 py-2 text-[10px] font-bold uppercase tracking-widest border transition-all duration-200 ${selectedSize === size
+                      ? 'bg-[#C9A227] text-black border-[#C9A227] shadow-md shadow-[#C9A227]/20'
+                      : sizeError
+                        ? 'bg-red-50 text-red-500 border-red-200 hover:border-red-300'
+                        : 'bg-white text-[#1A1A1A]/60 border-[#1A1A1A]/10 hover:border-[#C9A227]/50 hover:text-[#C9A227]'
+                      }`}
+                  >
+                    {size}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div className="flex items-center gap-4 mb-6">
+              <span className="text-[10px] uppercase tracking-[0.3em] font-medium text-[#1A1A1A]/35 w-20 shrink-0">
+                Taille
+              </span>
+              <span className="text-[10px] uppercase tracking-[0.2em] text-[#1A1A1A]/50 border border-[#1A1A1A]/10 px-3 py-1">
+                Taille unique
+              </span>
+            </div>
+          )}
+
           {/* ── Description ───────────────────────────────────── */}
           <p className="text-[13.5px] leading-relaxed text-[#1A1A1A]/60 font-light tracking-wide mb-8">
             {product.description}
@@ -174,7 +231,7 @@ export default function ProductDetails({ params }: { params: { id: string } }) {
           <div className="hidden md:block mb-10">
             <Button
               size="lg"
-              className="w-full h-14 rounded-none bg-[#C9A227] hover:bg-[#b8911f] text-black text-[11px] uppercase tracking-[0.4em] font-bold shadow-lg shadow-[#C9A227]/20 transition-all duration-300 gap-3"
+              className="w-full h-14 rounded-none bg-[#C9A227] hover:bg-[#b8911f] text-black text-[11px] uppercase tracking-[0.4em] font-bold shadow-lg shadow-[#C9A227]/20 transition-all duration-300 gap-3 disabled:opacity-40"
               onClick={handleAddToCart}
               disabled={!product.inStock}
             >
@@ -256,7 +313,7 @@ export default function ProductDetails({ params }: { params: { id: string } }) {
           </div>
           {/* CTA */}
           <Button
-            className="flex-1 h-12 rounded-none bg-[#C9A227] hover:bg-[#b8911f] text-black text-[10px] uppercase tracking-[0.3em] font-bold transition-all duration-300 gap-2 shrink-0"
+            className="flex-1 h-12 rounded-none bg-[#C9A227] hover:bg-[#b8911f] text-black text-[10px] uppercase tracking-[0.3em] font-bold transition-all duration-300 gap-2 shrink-0 disabled:opacity-40"
             onClick={handleAddToCart}
             disabled={!product.inStock}
           >

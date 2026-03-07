@@ -1,5 +1,8 @@
 // Shared API types matching the Prisma schema / backend responses
 
+export const PRODUCT_SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'ONE_SIZE'] as const;
+export type ProductSize = typeof PRODUCT_SIZES[number];
+
 export interface ApiCategory {
     id: string;
     name: string;
@@ -18,6 +21,7 @@ export interface ApiProduct {
     categoryId: string;
     category: ApiCategory;
     createdAt: string;
+    availableSizes: ProductSize[];
 }
 
 export interface ApiOrderItem {
@@ -27,6 +31,7 @@ export interface ApiOrderItem {
     name: string;
     price: number; // cents
     quantity: number;
+    size?: ProductSize | null;
 }
 
 export type OrderStatus = 'PENDING' | 'CONFIRMED' | 'DELIVERED' | 'CANCELLED';
@@ -128,6 +133,8 @@ export interface CartItem {
     category: ApiCategory;
     categoryId: string;
     quantity: number;
+    selectedSize?: ProductSize | null;
+    availableSizes: ProductSize[];
 }
 
 // Helper: convert cents to MAD display string

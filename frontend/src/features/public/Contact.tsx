@@ -104,7 +104,10 @@ export default function Contact() {
           <div className="bg-white border border-primary/10 shadow-2xl shadow-primary/5 p-10 md:p-16">
             <div className="space-y-4 mb-12">
               <h2 className="font-serif text-3xl text-foreground tracking-tight">Envoyez-nous un message</h2>
-              <div className="h-[1px] w-12 bg-primary/40"></div>
+              <p className="text-sm text-muted-foreground font-light italic">
+                Ou écrivez-nous directement à <a href="mailto:elhamadanizakariae@gmail.com" className="text-primary hover:underline font-medium">elhamadanizakariae@gmail.com</a>
+              </p>
+              <div className="h-[1px] w-12 bg-primary/40 mt-6"></div>
             </div>
 
             <form className="space-y-10" onSubmit={(e) => e.preventDefault()}>

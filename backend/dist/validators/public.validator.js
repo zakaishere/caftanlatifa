@@ -1,10 +1,12 @@
 import { z } from 'zod';
+import { PRODUCT_SIZES } from './admin.validator.js';
 // ─── Order Schemas ────────────────────────────────────────────────────────────
 export const orderItemSchema = z.object({
     /** Must be a valid product UUID — backend will fetch the price from DB */
     productId: z.string().uuid('productId must be a valid UUID'),
     name: z.string().min(1),
     quantity: z.number().int().positive(),
+    size: z.enum(PRODUCT_SIZES).optional().nullable(),
 });
 export const createOrderSchema = z.object({
     customerName: z.string().min(2, 'Customer name is required'),

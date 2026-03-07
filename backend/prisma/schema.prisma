@@ -14,17 +14,18 @@ model Category {
 }
 
 model Product {
-  id          String   @id @default(uuid())
-  name        String
-  price       Int
-  shippingFee Int      @default(0)
-  description String
-  inStock     Boolean  @default(true)
-  specs       Json?
-  categoryId  String
-  createdAt   DateTime @default(now())
-  images      String[]
-  category    Category @relation(fields: [categoryId], references: [id])
+  id             String        @id @default(uuid())
+  name           String
+  price          Int
+  shippingFee    Int           @default(0)
+  description    String
+  inStock        Boolean       @default(true)
+  specs          Json?
+  categoryId     String
+  createdAt      DateTime      @default(now())
+  images         String[]
+  availableSizes ProductSize[]
+  category       Category      @relation(fields: [categoryId], references: [id])
 
   @@index([name])
 }
@@ -49,13 +50,14 @@ model Order {
 }
 
 model OrderItem {
-  id        String  @id @default(uuid())
+  id        String       @id @default(uuid())
   orderId   String
   productId String?
   name      String
   price     Int
   quantity  Int
-  order     Order   @relation(fields: [orderId], references: [id])
+  size      ProductSize?
+  order     Order        @relation(fields: [orderId], references: [id])
 }
 
 model Settings {
@@ -85,4 +87,14 @@ enum OrderStatus {
   CONFIRMED
   DELIVERED
   CANCELLED
+}
+
+enum ProductSize {
+  XS
+  S
+  M
+  L
+  XL
+  XXL
+  ONE_SIZE
 }

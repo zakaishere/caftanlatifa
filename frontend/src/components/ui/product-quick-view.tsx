@@ -19,7 +19,7 @@ import {
     ShoppingCart, Minus, Plus, Check, Truck, ShieldCheck,
     RotateCcw, X, Image as ImageIcon, ChevronLeft, ChevronRight
 } from 'lucide-react';
-import { ApiProduct, ApiInitData, centsToMad } from '@/lib/types';
+import { ApiProduct, ApiInitData, centsToMad, ProductSize } from '@/lib/types';
 import { useCart } from '@/features/public/cart/cartContext';
 import { cn } from '@/lib/utils';
 
@@ -46,6 +46,8 @@ export function ProductQuickView({ product, open, onClose }: ProductQuickViewPro
     const { addToCart } = useCart();
     const [quantity, setQuantity] = useState(1);
     const [addedToCart, setAddedToCart] = useState(false);
+    const [selectedSize, setSelectedSize] = useState<ProductSize | null>(null);
+    const [sizeError, setSizeError] = useState(false);
     const isMobile = useIsMobile();
 
     const { data: initData } = useQuery<ApiInitData>({
@@ -53,14 +55,26 @@ export function ProductQuickView({ product, open, onClose }: ProductQuickViewPro
     });
 
     const handleOpenChange = (v: boolean) => {
-        if (!v) { onClose(); setQuantity(1); setAddedToCart(false); }
+        if (!v) { onClose(); setQuantity(1); setAddedToCart(false); setSelectedSize(null); setSizeError(false); }
     };
 
     const handleAddToCart = () => {
         if (!product) return;
-        addToCart(product, quantity);
+
+        if (product.availableSizes && product.availableSizes.length > 0 && !selectedSize) {
+            setSizeError(true);
+            return;
+        }
+
+        setSizeError(false);
+        addToCart(product, quantity, selectedSize);
         setAddedToCart(true);
         setTimeout(() => setAddedToCart(false), 2000);
+    };
+
+    const handleSizeSelect = (size: ProductSize) => {
+        setSelectedSize(prev => prev === size ? null : size);
+        if (sizeError) setSizeError(false);
     };
 
     if (!product) return null;
@@ -80,7 +94,13 @@ export function ProductQuickView({ product, open, onClose }: ProductQuickViewPro
                     {/* Scrollable content */}
                     <div className="overflow-y-auto flex-1 overscroll-contain">
                         <MobileGallery images={images} productName={product.name} />
-                        <MobileDetails product={product} initData={initData} />
+                        <MobileDetails
+                            product={product}
+                            initData={initData}
+                            selectedSize={selectedSize}
+                            sizeError={sizeError}
+                            onSizeSelect={handleSizeSelect}
+                        />
                     </div>
                     {/* Sticky bottom CTA */}
                     <div className="flex-shrink-0 bg-white border-t border-[#1A1A1A]/5 px-5 pt-3 pb-safe-5 pb-5">
@@ -155,7 +175,13 @@ export function ProductQuickView({ product, open, onClose }: ProductQuickViewPro
                     <DesktopGallery images={images} productName={product.name} />
                     {/* Details side */}
                     <div className="flex flex-col overflow-y-auto max-h-[82vh] bg-white">
-                        <MobileDetails product={product} initData={initData} />
+                        <MobileDetails
+                            product={product}
+                            initData={initData}
+                            selectedSize={selectedSize}
+                            sizeError={sizeError}
+                            onSizeSelect={handleSizeSelect}
+                        />
                         {/* Desktop quantity + CTA */}
                         <div className="mt-auto border-t border-[#1A1A1A]/5 p-8 space-y-5 bg-white">
                             <div className="flex items-center gap-6">
@@ -326,7 +352,15 @@ function DesktopGallery({ images, productName }: { images: string[]; productName
 /* ────────────────────────────────────────────────────────────────────────────
    Shared Details Section (no CTA — handled by parent)
    ──────────────────────────────────────────────────────────────────────────── */
-function MobileDetails({ product, initData }: { product: ApiProduct; initData?: ApiInitData | null }) {
+interface MobileDetailsProps {
+    product: ApiProduct;
+    initData?: ApiInitData | null;
+    selectedSize: ProductSize | null;
+    sizeError: boolean;
+    onSizeSelect: (size: ProductSize) => void;
+}
+
+function MobileDetails({ product, initData, selectedSize, sizeError, onSizeSelect }: MobileDetailsProps) {
     const specsEntries = product.specs ? Object.entries(product.specs) : [];
 
     return (
@@ -365,6 +399,48 @@ function MobileDetails({ product, initData }: { product: ApiProduct; initData?: 
             </div>
 
             <div className="h-px w-10 bg-[#C9A227]/30" />
+
+            {/* ── Size Selector ─────────────────────────────────── */}
+            {product.availableSizes && product.availableSizes.length > 0 ? (
+                <div>
+                    <div className="flex items-center gap-4 mb-2">
+                        <span className="text-[10px] uppercase tracking-[0.3em] font-medium text-[#1A1A1A]/35 w-20 shrink-0">
+                            Taille
+                        </span>
+                        {sizeError && !selectedSize && (
+                            <span className="text-[9px] uppercase tracking-[0.2em] text-red-500 font-bold animate-pulse">
+                                Veuillez sélectionner une taille
+                            </span>
+                        )}
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                        {product.availableSizes.map((size) => (
+                            <button
+                                key={size}
+                                type="button"
+                                onClick={() => onSizeSelect(size)}
+                                className={`px-4 py-2 text-[10px] font-bold uppercase tracking-widest border transition-all duration-200 ${selectedSize === size
+                                    ? 'bg-[#C9A227] text-black border-[#C9A227] shadow-md shadow-[#C9A227]/20'
+                                    : sizeError
+                                        ? 'bg-red-50 text-red-500 border-red-200 hover:border-red-300'
+                                        : 'bg-white text-[#1A1A1A]/60 border-[#1A1A1A]/10 hover:border-[#C9A227]/50 hover:text-[#C9A227]'
+                                    }`}
+                            >
+                                {size}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            ) : (
+                <div className="flex items-center gap-4">
+                    <span className="text-[10px] uppercase tracking-[0.3em] font-medium text-[#1A1A1A]/35 w-20 shrink-0">
+                        Taille
+                    </span>
+                    <span className="text-[10px] uppercase tracking-[0.2em] text-[#1A1A1A]/50 border border-[#1A1A1A]/10 px-3 py-1">
+                        Taille unique
+                    </span>
+                </div>
+            )}
 
             {/* Description */}
             <p className="text-[13px] leading-relaxed text-[#1A1A1A]/60 font-light tracking-wide">

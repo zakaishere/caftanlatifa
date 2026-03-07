@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { PRODUCT_SIZES } from './admin.validator.js';
 
 // ─── Order Schemas ────────────────────────────────────────────────────────────
 
@@ -7,6 +8,7 @@ export const orderItemSchema = z.object({
     productId: z.string().uuid('productId must be a valid UUID'),
     name: z.string().min(1),
     quantity: z.number().int().positive(),
+    size: z.enum(PRODUCT_SIZES).optional().nullable(),
 });
 
 export const createOrderSchema = z.object({

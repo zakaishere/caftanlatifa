@@ -1,5 +1,8 @@
 import { z } from 'zod';
 
+export const PRODUCT_SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'ONE_SIZE'] as const;
+export type ProductSizeValue = typeof PRODUCT_SIZES[number];
+
 // Auth schemas
 export const loginSchema = z.object({
     email: z.string().email(),
@@ -21,6 +24,7 @@ export const createProductSchema = z.object({
     images: z.array(z.string().url()).min(1, "At least one image is required"),
     specs: z.record(z.string()).optional(),
     inStock: z.boolean().optional(),
+    availableSizes: z.array(z.enum(PRODUCT_SIZES)).optional().default([]),
 });
 
 export const updateProductSchema = createProductSchema.partial().extend({

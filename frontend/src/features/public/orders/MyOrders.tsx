@@ -219,6 +219,9 @@ export default function MyOrders() {
                                             <p className="text-[9px] uppercase tracking-widest text-muted-foreground/50 mt-1 font-medium italic">
                                                 {item.quantity} × {centsToMad(item.price)} MAD
                                             </p>
+                                            <p className="text-[9px] uppercase tracking-widest text-muted-foreground/40 mt-0.5 font-medium">
+                                                {item.size ?? 'Taille unique'}
+                                            </p>
                                         </div>
                                         <span className="font-medium text-[13px] tracking-tight text-foreground whitespace-nowrap mt-1">
                                             {centsToMad(item.price * item.quantity)} MAD

@@ -108,7 +108,8 @@ export default function Checkout() {
           productId: item.id,
           name: item.name,
           price: item.price,
-          quantity: item.quantity
+          quantity: item.quantity,
+          size: item.selectedSize ?? null,
         }))
       });
       const data = await res.json();
@@ -352,6 +353,7 @@ export default function Checkout() {
                       <span className="font-black text-slate-900 text-xs whitespace-nowrap ml-2">{centsToMad(item.price * item.quantity)}</span>
                     </div>
                     <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mt-0.5">{item.quantity}x {centsToMad(item.price)}</p>
+                    {item.selectedSize && <p className="text-[9px] uppercase tracking-widest text-slate-400 mt-0.5">Taille: {item.selectedSize}</p>}
                   </div>
                 </div>
               ))}
@@ -543,6 +545,7 @@ export default function Checkout() {
                         <span className="text-xs font-black text-slate-900 tracking-tight whitespace-nowrap">{centsToMad(item.price * item.quantity)}</span>
                       </div>
                       <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mt-0.5">{item.quantity}x {centsToMad(item.price)}</p>
+                      {item.selectedSize && <p className="text-[9px] uppercase tracking-widest text-slate-400 mt-0.5">Taille: {item.selectedSize}</p>}
                     </div>
                   </div>
                 ))}
