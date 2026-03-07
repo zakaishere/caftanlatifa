@@ -13,6 +13,7 @@ export interface ApiCategory {
 export interface ApiProduct {
     id: string;
     name: string;
+    slug?: string;
     price: number; // in cents (MAD × 100)
     description: string;
     images: string[];
@@ -32,6 +33,7 @@ export interface ApiOrderItem {
     price: number; // cents
     quantity: number;
     size?: ProductSize | null;
+    image?: string | null;
 }
 
 export type OrderStatus = 'PENDING' | 'CONFIRMED' | 'DELIVERED' | 'CANCELLED';

@@ -22,6 +22,7 @@ import {
 import { ApiProduct, ApiInitData, centsToMad, ProductSize } from '@/lib/types';
 import { useCart } from '@/features/public/cart/cartContext';
 import { cn } from '@/lib/utils';
+import Link from 'next/link';
 
 // ─── Simple media query hook ──────────────────────────────────────────────────
 function useIsMobile(breakpoint = 768) {
@@ -100,6 +101,7 @@ export function ProductQuickView({ product, open, onClose }: ProductQuickViewPro
                             selectedSize={selectedSize}
                             sizeError={sizeError}
                             onSizeSelect={handleSizeSelect}
+                            onClose={handleOpenChange.bind(null, false)}
                         />
                     </div>
                     {/* Sticky bottom CTA */}
@@ -181,6 +183,7 @@ export function ProductQuickView({ product, open, onClose }: ProductQuickViewPro
                             selectedSize={selectedSize}
                             sizeError={sizeError}
                             onSizeSelect={handleSizeSelect}
+                            onClose={handleOpenChange.bind(null, false)}
                         />
                         {/* Desktop quantity + CTA */}
                         <div className="mt-auto border-t border-[#1A1A1A]/5 p-8 space-y-5 bg-white">
@@ -358,9 +361,10 @@ interface MobileDetailsProps {
     selectedSize: ProductSize | null;
     sizeError: boolean;
     onSizeSelect: (size: ProductSize) => void;
+    onClose: () => void;
 }
 
-function MobileDetails({ product, initData, selectedSize, sizeError, onSizeSelect }: MobileDetailsProps) {
+function MobileDetails({ product, initData, selectedSize, sizeError, onSizeSelect, onClose }: MobileDetailsProps) {
     const specsEntries = product.specs ? Object.entries(product.specs) : [];
 
     return (
@@ -477,6 +481,17 @@ function MobileDetails({ product, initData, selectedSize, sizeError, onSizeSelec
                         <span className="text-[9px] uppercase tracking-[0.1em] text-[#1A1A1A]/45 leading-tight">{label}</span>
                     </div>
                 ))}
+            </div>
+
+            {/* Link to Full Product Page */}
+            <div className="pt-5 pb-2 flex justify-center">
+                <Link
+                    href={`/product/${product.slug || product.id}`}
+                    onClick={onClose}
+                    className="text-[10px] uppercase tracking-[0.2em] font-medium text-[#C9A227] hover:text-[#b8911f] border-b border-[#C9A227]/30 hover:border-[#C9A227] transition-colors pb-0.5"
+                >
+                    Voir plus de détails
+                </Link>
             </div>
         </div>
     );

@@ -20,6 +20,11 @@ export class PublicController {
         res.json(product);
     });
 
+    static getRelatedProducts = asyncHandler(async (req: Request, res: Response) => {
+        const products = await PublicService.getRelatedProducts(req.params.id as string);
+        res.json(products);
+    });
+
     static createOrder = asyncHandler(async (req: Request, res: Response) => {
         const validatedData = createOrderSchema.parse(req.body);
         const order = await PublicService.createOrder(validatedData);

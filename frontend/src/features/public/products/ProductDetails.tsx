@@ -11,10 +11,14 @@ import {
   Accordion, AccordionContent, AccordionItem, AccordionTrigger,
 } from "@/components/ui/accordion";
 import { ProductGallery } from '@/components/ui/product-gallery';
+import { ProductCard } from '@/components/ui/product-card';
 import type { ApiProduct, ApiInitData, ProductSize } from '@/lib/types';
 import { centsToMad } from '@/lib/types';
 
-export default function ProductDetails({ params }: { params: { id: string } }) {
+import { use } from 'react';
+
+export default function ProductDetails({ params }: { params: Promise<{ id: string }> | { id: string } }) {
+  const resolvedParams = params instanceof Promise ? use(params) : params;
   const { addToCart } = useCart();
   const [quantity, setQuantity] = useState(1);
   const [added, setAdded] = useState(false);
@@ -22,11 +26,16 @@ export default function ProductDetails({ params }: { params: { id: string } }) {
   const [sizeError, setSizeError] = useState(false);
 
   const { data: product, isLoading, isError } = useQuery<ApiProduct>({
-    queryKey: [`/api/public/products/${params.id}`],
+    queryKey: [`/api/public/products/${resolvedParams.id}`],
   });
 
   const { data: initData } = useQuery<ApiInitData>({
     queryKey: ['/api/public/init'],
+  });
+
+  const { data: relatedProducts } = useQuery<ApiProduct[]>({
+    queryKey: [`/api/public/products/related/${resolvedParams.id}`],
+    enabled: !!product,
   });
 
   const handleAddToCart = () => {
@@ -298,6 +307,20 @@ export default function ProductDetails({ params }: { params: { id: string } }) {
           </Accordion>
         </div>
       </div>
+
+      {/* ── Related Products ──────────────────────────────────────── */}
+      {relatedProducts && relatedProducts.length > 0 && (
+        <div className="max-w-7xl mx-auto px-6 md:px-12 py-16 border-t border-[#1A1A1A]/5">
+          <h3 className="font-serif text-2xl md:text-3xl text-center text-[#1A1A1A] mb-12">
+            Vous aimerez aussi
+          </h3>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8">
+            {relatedProducts.slice(0, 4).map((related) => (
+              <ProductCard key={related.id} product={related} />
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* ── Mobile Sticky Bottom CTA ─────────────────────────────── */}
       <div className="fixed bottom-0 inset-x-0 z-50 md:hidden bg-white/95 backdrop-blur-md border-t border-[#1A1A1A]/5 pb-safe">

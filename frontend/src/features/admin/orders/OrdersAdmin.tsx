@@ -14,6 +14,8 @@ import { apiRequest, queryClient } from '@/lib/queryClient';
 import type { ApiOrder, OrderStatus } from '@/lib/types';
 import { centsToMad } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
+import { OrderItemsList } from '@/components/ui/order-items-list';
+
 
 const STATUS_COLORS: Record<OrderStatus, string> = {
   PENDING: 'bg-amber-50 text-amber-700 border-amber-200',
@@ -119,23 +121,13 @@ export default function OrdersAdmin() {
                             </div>
 
                             <div>
-                              <h3 className="font-semibold mb-2">Items</h3>
-                              <div className="border rounded-md divide-y">
-                                {order.items.map((item) => (
-                                  <div key={item.id} className="p-3 text-sm flex justify-between">
-                                    <span>{item.quantity}× {item.name}</span>
-                                    <span className="font-medium">{centsToMad(item.price * item.quantity)} MAD</span>
-                                  </div>
-                                ))}
-                                <div className="p-3 bg-muted/20 flex justify-between text-xs text-muted-foreground">
-                                  <span>Delivery</span>
-                                  <span>{centsToMad(order.deliveryFee)} MAD</span>
-                                </div>
-                                <div className="p-3 bg-muted/20 flex justify-between font-bold">
-                                  <span>Total</span>
-                                  <span>{centsToMad(order.total)} MAD</span>
-                                </div>
-                              </div>
+                              <h3 className="font-semibold mb-3">Items</h3>
+                              <OrderItemsList
+                                items={order.items}
+                                deliveryFee={order.deliveryFee}
+                                total={order.total}
+                                enableProductLinks={true}
+                              />
                             </div>
 
                             <div className="space-y-2">

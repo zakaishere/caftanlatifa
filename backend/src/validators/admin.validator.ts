@@ -25,6 +25,7 @@ export const createProductSchema = z.object({
     specs: z.record(z.string()).optional(),
     inStock: z.boolean().optional(),
     availableSizes: z.array(z.enum(PRODUCT_SIZES)).optional().default([]),
+    slug: z.string().optional(),
 });
 
 export const updateProductSchema = createProductSchema.partial().extend({

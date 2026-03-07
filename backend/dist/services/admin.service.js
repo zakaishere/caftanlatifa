@@ -2,6 +2,18 @@ import prisma from '../lib/prisma.js';
 import { AppError } from '../utils/errors.js';
 import bcrypt from 'bcrypt';
 import { generateToken } from '../utils/auth.js';
+import { attachFallbackImages } from '../utils/order.utils.js';
+import crypto from 'crypto';
+function generateSlug(name) {
+    const baseSlug = name
+        .toLowerCase()
+        .trim()
+        .replace(/[^\w\s-]/g, '')
+        .replace(/[\s_-]+/g, '-')
+        .replace(/^-+|-+$/g, '');
+    const randomSuffix = crypto.randomBytes(3).toString('hex');
+    return `${baseSlug}-${randomSuffix}`;
+}
 const SALT_ROUNDS = 12;
 export class AdminService {
     // ─── Auth ─────────────────────────────────────────────────────────────────
@@ -95,12 +107,17 @@ export class AdminService {
         });
     }
     static async createProduct(data) {
-        return prisma.product.create({ data, include: { category: true } });
+        const slug = data.slug || generateSlug(data.name);
+        return prisma.product.create({ data: { ...data, slug }, include: { category: true } });
     }
     static async updateProduct(id, data) {
+        const payload = { ...data };
+        if (data.name && !data.slug) {
+            payload.slug = generateSlug(data.name);
+        }
         return prisma.product.update({
             where: { id },
-            data,
+            data: payload,
             include: { category: true },
         });
     }
@@ -121,18 +138,20 @@ export class AdminService {
     }
     // ─── Orders ───────────────────────────────────────────────────────────────
     static async getOrders(status) {
-        return prisma.order.findMany({
+        const orders = await prisma.order.findMany({
             where: status ? { status } : {},
             include: { items: true },
             orderBy: { createdAt: 'desc' },
         });
+        return attachFallbackImages(orders);
     }
     static async updateOrderStatus(id, status) {
-        return prisma.order.update({
+        const order = await prisma.order.update({
             where: { id },
             data: { status },
             include: { items: true },
         });
+        return (await attachFallbackImages([order]))[0];
     }
     // ─── Settings ─────────────────────────────────────────────────────────────
     static async getSettings() {

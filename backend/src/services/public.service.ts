@@ -1,5 +1,6 @@
 import prisma from '../lib/prisma.js';
 import { AppError } from '../utils/errors.js';
+import { attachFallbackImages } from '../utils/order.utils.js';
 import type { z } from 'zod';
 import type { createOrderSchema, productParamsSchema } from '../validators/public.validator.js';
 // import { sendOrderReceipt } from '../emails/receipt.js';
@@ -68,14 +69,43 @@ export class PublicService {
         };
     }
 
-    static async getProductById(id: string) {
-        const product = await prisma.product.findUnique({
-            where: { id },
+    static async getProductById(identifier: string) {
+        const isUuid = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(identifier);
+        const where = isUuid ? { id: identifier } : { slug: identifier };
+
+        const product = await prisma.product.findFirst({
+            where,
             include: { category: true },
         });
 
         if (!product) throw new AppError(404, 'Product not found', 'PRODUCT_NOT_FOUND');
         return product;
+    }
+
+    static async getRelatedProducts(id: string) {
+        // Identify product to get its categoryId
+        const isUuid = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(id);
+        const where = isUuid ? { id } : { slug: id };
+
+        const product = await prisma.product.findFirst({
+            where,
+            select: { id: true, categoryId: true, name: true }
+        });
+
+        if (!product) throw new AppError(404, 'Product not found', 'PRODUCT_NOT_FOUND');
+
+        const related = await prisma.product.findMany({
+            where: {
+                categoryId: product.categoryId,
+                id: { not: product.id },
+                inStock: true
+            },
+            take: 8,
+            include: { category: true },
+            orderBy: { createdAt: 'desc' },
+        });
+
+        return related;
     }
 
     /**
@@ -100,7 +130,7 @@ export class PublicService {
         const [dbProducts, settings] = await Promise.all([
             prisma.product.findMany({
                 where: { id: { in: productIds } },
-                select: { id: true, name: true, price: true, inStock: true, availableSizes: true },
+                select: { id: true, name: true, price: true, inStock: true, availableSizes: true, images: true },
             }),
             prisma.settings.findUnique({ where: { id: 1 } })
         ]);
@@ -148,13 +178,17 @@ export class PublicService {
                 total,
                 deliveryFee,
                 items: {
-                    create: items.map((item) => ({
-                        productId: item.productId,
-                        name: productMap.get(item.productId)!.name, // Use DB name (snapshot)
-                        price: productMap.get(item.productId)!.price, // Use DB price (snapshot)
-                        quantity: item.quantity,
-                        size: item.size ?? null,
-                    })),
+                    create: items.map((item) => {
+                        const product = productMap.get(item.productId)!;
+                        return {
+                            productId: item.productId,
+                            name: product.name, // Use DB name (snapshot)
+                            price: product.price, // Use DB price (snapshot)
+                            quantity: item.quantity,
+                            size: item.size ?? null,
+                            image: product.images && product.images.length > 0 ? product.images[0] : null,
+                        };
+                    }),
                 },
             },
             include: { items: true },
@@ -164,15 +198,16 @@ export class PublicService {
     }
     static async getOrdersByIds(ids: string[]) {
         if (!ids || ids.length === 0) return [];
-        return prisma.order.findMany({
+        const orders = await prisma.order.findMany({
             where: { id: { in: ids } },
             include: { items: true },
             orderBy: { createdAt: 'desc' },
         });
+        return attachFallbackImages(orders);
     }
 
     static async searchOrders(query: string) {
-        return prisma.order.findMany({
+        const orders = await prisma.order.findMany({
             where: {
                 OR: [
                     { id: { startsWith: query, mode: 'insensitive' } },
@@ -184,6 +219,7 @@ export class PublicService {
             orderBy: { createdAt: 'desc' },
             take: 10 // Limit results to prevent abuse
         });
+        return attachFallbackImages(orders);
     }
 
     static async cancelOrder(id: string) {

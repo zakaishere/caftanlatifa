@@ -15,6 +15,10 @@ export class PublicController {
         const product = await PublicService.getProductById(req.params.id);
         res.json(product);
     });
+    static getRelatedProducts = asyncHandler(async (req, res) => {
+        const products = await PublicService.getRelatedProducts(req.params.id);
+        res.json(products);
+    });
     static createOrder = asyncHandler(async (req, res) => {
         const validatedData = createOrderSchema.parse(req.body);
         const order = await PublicService.createOrder(validatedData);

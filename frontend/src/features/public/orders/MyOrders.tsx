@@ -7,10 +7,19 @@ import { ApiOrder, centsToMad, ApiInitData } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Loader2, Search, ArrowRight, MessageSquare, Clipboard, Check, XCircle, Clock, CheckCircle2, Truck, ShoppingBag } from 'lucide-react';
+import { Loader2, Search, ArrowRight, MessageSquare, Clipboard, Check, XCircle, Clock, CheckCircle2, Truck, ShoppingBag, Image as ImageIcon } from 'lucide-react';
 import { toast } from 'sonner';
 import Link from 'next/link';
+import Image from 'next/image';
 import { cn } from '@/lib/utils';
+import {
+    Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger,
+} from "@/components/ui/sheet";
+import {
+    Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle, DrawerTrigger,
+} from "@/components/ui/drawer";
+import { OrderItemsList } from '@/components/ui/order-items-list';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const statusConfig = {
     PENDING: {
@@ -39,6 +48,7 @@ export default function MyOrders() {
     const { orderIds, trackOrder, untrackOrder } = useMyOrders();
     const queryClient = useQueryClient();
     const [copiedId, setCopiedId] = useState<string | null>(null);
+    const isMobile = useIsMobile();
 
     const { data: initData } = useQuery<ApiInitData>({
         queryKey: ['/api/public/init'],
@@ -174,108 +184,154 @@ export default function MyOrders() {
             <div className="space-y-6">
                 {orders?.map((order) => {
                     const status = statusConfig[order.status as keyof typeof statusConfig] || statusConfig.PENDING;
+                    const itemsText = order.items.length === 1 ? '1 article' : `${order.items.length} articles`;
 
                     return (
                         <div key={order.id} className="bg-white border border-primary/10 shadow-sm overflow-hidden group">
 
                             {/* Header: 2 Lines Responsive Layout */}
-                            <div className="p-4 md:p-6 bg-[#F9F7F4]/50 border-b border-primary/5">
-                                {/* Line 1: Ref & Status */}
-                                <div className="flex items-center justify-between mb-2">
+                            <div className="p-4 md:p-6 bg-[#F9F7F4]/50 border-b border-primary/5 flex items-center justify-between">
+                                <div className="space-y-1">
                                     <div className="flex items-center gap-1.5">
                                         <span className="text-[10px] uppercase tracking-wider text-muted-foreground/40 font-bold">Réf.</span>
                                         <span className="font-mono font-bold text-[13px] md:text-base tracking-tight">
                                             #{truncateRef(order.id.split('-')[0].toUpperCase())}
                                         </span>
+                                        <button
+                                            onClick={() => copyToClipboard(order.id)}
+                                            className="ml-1 h-5 w-5 flex items-center justify-center border border-primary/10 rounded-sm text-muted-foreground/40 hover:text-primary transition-colors active:scale-90"
+                                            aria-label="Copier la référence complète"
+                                        >
+                                            {copiedId === order.id ? <Check className="h-2.5 w-2.5 text-emerald-500" /> : <Clipboard className="h-2.5 w-2.5" />}
+                                        </button>
                                     </div>
-                                    <Badge className={cn("rounded-none px-2 py-0.5 text-[9px] font-black tracking-[0.1em] border shadow-none", status.color)}>
-                                        {status.label}
-                                    </Badge>
-                                </div>
-
-                                {/* Line 2: Date & Copy Button */}
-                                <div className="flex items-center justify-between">
-                                    <time className="text-[11px] text-muted-foreground font-medium">
+                                    <time className="block text-[11px] text-muted-foreground font-medium">
                                         {new Date(order.createdAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
                                     </time>
-                                    <button
-                                        onClick={() => copyToClipboard(order.id)}
-                                        className="h-7 w-7 flex items-center justify-center border border-primary/10 text-muted-foreground/40 hover:text-primary transition-colors active:scale-90"
-                                        aria-label="Copier la référence complète"
-                                    >
-                                        {copiedId === order.id ? <Check className="h-3 w-3 text-emerald-500" /> : <Clipboard className="h-3 w-3" />}
-                                    </button>
+                                </div>
+                                <div className="text-right">
+                                    <Badge className={cn("rounded-none px-2 py-0.5 text-[9px] font-black tracking-[0.1em] border shadow-none mb-1", status.color)}>
+                                        {status.label}
+                                    </Badge>
+                                    <div className="font-serif text-[15px] font-medium tracking-tight mt-1">
+                                        {centsToMad(order.total)} MAD
+                                    </div>
                                 </div>
                             </div>
 
-                            {/* Body: Compact Items (Text-Only) */}
-                            <div className="p-4 md:p-6 divide-y divide-primary/5">
-                                {order.items.map((item) => (
-                                    <div key={item.id} className="py-3 first:pt-0 last:pb-0 flex justify-between items-start gap-4">
-                                        <div className="flex-1 min-w-0">
-                                            <h3 className="font-serif text-[15px] text-foreground leading-snug truncate">
-                                                {item.name}
-                                            </h3>
-                                            <p className="text-[9px] uppercase tracking-widest text-muted-foreground/50 mt-1 font-medium italic">
-                                                {item.quantity} × {centsToMad(item.price)} MAD
-                                            </p>
-                                            <p className="text-[9px] uppercase tracking-widest text-muted-foreground/40 mt-0.5 font-medium">
-                                                {item.size ?? 'Taille unique'}
-                                            </p>
+                            {/* Body: Summary Text + Action Toggle */}
+                            <div className="p-4 md:p-6 flex items-center justify-between">
+                                <p className="text-[11px] uppercase tracking-widest text-muted-foreground/60 font-medium">
+                                    {itemsText}
+                                </p>
+
+                                {/* Order Details Content inside the Drawer/Sheet */}
+                                {(() => {
+                                    const detailsContent = (
+                                        <div className="space-y-6 mt-4">
+                                            {/* Status Box */}
+                                            <div className="bg-[#FAF7F2] p-4 border border-primary/5 rounded-sm">
+                                                <h4 className="text-[10px] uppercase tracking-widest text-muted-foreground/60 mb-2 font-bold">État actuel</h4>
+                                                <div className={cn("flex items-center gap-2 font-black text-sm uppercase tracking-[0.1em]", status.color.replace('bg-', 'text-').replace('border-', 'fill-'))}>
+                                                    <status.icon className="h-5 w-5" /> {status.label}
+                                                </div>
+                                            </div>
+
+                                            {/* Reusable Item List */}
+                                            <div>
+                                                <h4 className="text-[10px] uppercase tracking-widest text-muted-foreground/60 mb-3 font-bold">Articles ({order.items.length})</h4>
+                                                <OrderItemsList
+                                                    items={order.items}
+                                                    deliveryFee={order.deliveryFee}
+                                                    total={order.total}
+                                                    enableProductLinks={false}
+                                                />
+                                            </div>
+
+                                            {/* Action Buttons Inside Drawer */}
+                                            <div className="pt-4 space-y-3">
+                                                <Link
+                                                    href={`https://wa.me/${settings?.whatsappNumber?.replace(/\+/g, '') || '212600000000'}?text=${encodeURIComponent(`Bonjour, suivi commande #${order.id.split('-')[0].toUpperCase()}`)}`}
+                                                    target="_blank"
+                                                    className="w-full block"
+                                                >
+                                                    <Button className="w-full h-12 rounded-none bg-black text-white hover:bg-[#C9A227] text-[10px] font-bold uppercase tracking-[0.2em] gap-2 shadow-lg shadow-black/5 transition-all active:scale-[0.98]">
+                                                        <MessageSquare className="h-4 w-4" /> Demander assistance
+                                                    </Button>
+                                                </Link>
+
+                                                {order.status === 'PENDING' && (
+                                                    <Button
+                                                        variant="outline"
+                                                        className="w-full h-12 rounded-none border-primary/10 text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground/80 hover:text-red-600 hover:border-red-200 transition-all"
+                                                        onClick={() => {
+                                                            if (confirm('Souhaitez-vous vraiment annuler ?')) {
+                                                                cancelMutation.mutate(order.id);
+                                                            }
+                                                        }}
+                                                        disabled={cancelMutation.isPending}
+                                                    >
+                                                        {cancelMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Annuler la commande"}
+                                                    </Button>
+                                                )}
+
+                                                {order.status === 'CANCELLED' && (
+                                                    <Button
+                                                        variant="ghost"
+                                                        className="w-full h-12 rounded-none text-[9px] uppercase tracking-widest text-muted-foreground/40 hover:text-foreground transition-colors"
+                                                        onClick={() => untrackOrder(order.id)}
+                                                    >
+                                                        Retirer de l'historique
+                                                    </Button>
+                                                )}
+                                            </div>
                                         </div>
-                                        <span className="font-medium text-[13px] tracking-tight text-foreground whitespace-nowrap mt-1">
-                                            {centsToMad(item.price * item.quantity)} MAD
-                                        </span>
-                                    </div>
-                                ))}
-                            </div>
+                                    );
 
-                            {/* Total Row */}
-                            <div className="px-4 py-3 md:px-6 md:py-4 bg-[#FAF7F2]/20 flex justify-between items-baseline border-t border-primary/5">
-                                <span className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground/60 font-medium italic">
-                                    Total à la livraison
-                                </span>
-                                <span className="font-serif text-lg text-[#C9A227] tracking-tight">
-                                    {centsToMad(order.total)} MAD
-                                </span>
-                            </div>
+                                    const TriggerButton = (
+                                        <Button variant="ghost" className="h-8 px-4 text-[10px] font-bold uppercase tracking-[0.2em] hover:bg-primary/5 hover:text-[#C9A227] transition-colors rounded-none">
+                                            Voir détails <ArrowRight className="h-3 w-3 ml-2" />
+                                        </Button>
+                                    );
 
-                            {/* Actions Row: Responsive Stacking */}
-                            <div className="p-4 md:p-6 pt-2 flex flex-col min-[361px]:flex-row gap-2">
-                                <Link
-                                    href={`https://wa.me/${settings?.whatsappNumber?.replace(/\+/g, '') || '212600000000'}?text=${encodeURIComponent(`Bonjour, suivi commande #${order.id.split('-')[0].toUpperCase()}`)}`}
-                                    className="flex-1"
-                                    target="_blank"
-                                >
-                                    <Button className="w-full h-11 rounded-none bg-black text-white hover:bg-[#C9A227] text-[10px] font-bold uppercase tracking-[0.2em] gap-2 shadow-lg shadow-black/5">
-                                        <MessageSquare className="h-3.5 w-3.5" /> Assistance
-                                    </Button>
-                                </Link>
+                                    if (isMobile) {
+                                        return (
+                                            <Drawer>
+                                                <DrawerTrigger asChild>{TriggerButton}</DrawerTrigger>
+                                                <DrawerContent className="bg-[#FAF7F2] max-h-[90vh]">
+                                                    <DrawerHeader className="pb-4 border-b border-primary/5 text-left">
+                                                        <DrawerTitle className="font-serif text-2xl tracking-tight text-foreground flex items-center gap-2">
+                                                            Détails de la commande
+                                                        </DrawerTitle>
+                                                        <DrawerDescription className="font-mono text-xs text-muted-foreground/80">
+                                                            ID: {order.id.toUpperCase()}
+                                                        </DrawerDescription>
+                                                    </DrawerHeader>
+                                                    <div className="overflow-y-auto px-4 pb-8">
+                                                        {detailsContent}
+                                                    </div>
+                                                </DrawerContent>
+                                            </Drawer>
+                                        );
+                                    }
 
-                                {order.status === 'PENDING' && (
-                                    <Button
-                                        variant="outline"
-                                        className="h-11 rounded-none border-primary/10 text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground/60 hover:text-red-600 hover:border-red-100 min-[361px]:px-6"
-                                        onClick={() => {
-                                            if (confirm('Souhaitez-vous vraiment annuler ?')) {
-                                                cancelMutation.mutate(order.id);
-                                            }
-                                        }}
-                                        disabled={cancelMutation.isPending}
-                                    >
-                                        {cancelMutation.isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : "Annuler"}
-                                    </Button>
-                                )}
-
-                                {order.status === 'CANCELLED' && (
-                                    <Button
-                                        variant="ghost"
-                                        className="h-11 rounded-none text-[9px] uppercase tracking-widest text-muted-foreground/40"
-                                        onClick={() => untrackOrder(order.id)}
-                                    >
-                                        Retirer de l'historique
-                                    </Button>
-                                )}
+                                    return (
+                                        <Sheet>
+                                            <SheetTrigger asChild>{TriggerButton}</SheetTrigger>
+                                            <SheetContent className="w-full sm:max-w-md overflow-y-auto bg-white/95 backdrop-blur-xl border-l-primary/10">
+                                                <SheetHeader className="pb-6 border-b border-primary/5 text-left">
+                                                    <SheetTitle className="font-serif text-2xl tracking-tight text-foreground flex items-center gap-2">
+                                                        Détails de la commande
+                                                    </SheetTitle>
+                                                    <SheetDescription className="font-mono text-xs text-muted-foreground/80">
+                                                        ID: {order.id.toUpperCase()}
+                                                    </SheetDescription>
+                                                </SheetHeader>
+                                                {detailsContent}
+                                            </SheetContent>
+                                        </Sheet>
+                                    );
+                                })()}
                             </div>
                         </div>
                     );

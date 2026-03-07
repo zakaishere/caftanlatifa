@@ -5,6 +5,7 @@ const router = Router();
 
 router.get('/init', PublicController.getInitData);
 router.get('/products', PublicController.getProducts);
+router.get('/products/related/:id', PublicController.getRelatedProducts);
 router.get('/products/:id', PublicController.getProductById);
 router.post('/orders', PublicController.createOrder);
 router.get('/orders/search', PublicController.searchOrders);

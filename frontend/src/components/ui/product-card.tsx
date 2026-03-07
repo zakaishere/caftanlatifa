@@ -3,6 +3,7 @@
 import { useState, memo } from 'react';
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
+import Link from 'next/link';
 import { ApiProduct, centsToMad } from '@/lib/types';
 import { Image as ImageIcon } from 'lucide-react';
 
@@ -27,13 +28,12 @@ export const ProductCard = memo(function ProductCard({ product }: ProductCardPro
 
   return (
     <>
-      <button
-        className="group flex flex-col w-full text-left cursor-pointer focus-visible:outline-none"
-        onClick={() => setQuickViewOpen(true)}
-        aria-label={`Voir les détails de ${product.name}`}
-      >
+      <div className="group flex flex-col w-full text-left">
         {/* ── Image Container (Portrait 4:5) ─────────────────────────────── */}
-        <div className="relative w-full aspect-[4/5] overflow-hidden bg-[#F3EFE9]">
+        <div
+          className="relative w-full aspect-[4/5] overflow-hidden bg-[#F3EFE9] cursor-pointer"
+          onClick={() => setQuickViewOpen(true)}
+        >
           {hasImage ? (
             <Image
               src={product.images![0]}
@@ -58,27 +58,54 @@ export const ProductCard = memo(function ProductCard({ product }: ProductCardPro
             </div>
           )}
 
-          {/* ── Desktop: Slide-up "Voir" button overlay ───────────────────── */}
-          <div className="hidden sm:flex absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-500 items-center justify-center pointer-events-none">
-            <span className="text-[9px] uppercase tracking-[0.3em] bg-white/90 text-black px-4 py-2 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 ease-out shadow-lg">
-              Voir le produit
-            </span>
+          {/* ── Desktop: Dual Action Overlay ────────────────────────────────── */}
+          <div className="hidden sm:flex absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-500 items-end justify-center pb-8 pointer-events-none opacity-0 group-hover:opacity-100">
+            <div className="flex flex-col gap-2 pointer-events-auto translate-y-4 group-hover:translate-y-0 transition-transform duration-500 w-34">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  e.preventDefault();
+                  setQuickViewOpen(true);
+                }}
+                className="w-full text-[9px] uppercase tracking-[0.2em] bg-white text-black px-4 py-2.5 shadow-lg hover:bg-[#F3EFE9] transition-colors text-center font-medium"
+              >
+                Aperçu rapide
+              </button>
+              <Link
+                href={`/product/${product.slug || product.id}`}
+                onClick={(e) => e.stopPropagation()}
+                className="w-full text-[9px] uppercase tracking-[0.2em] bg-black/80 backdrop-blur-sm text-white px-4 py-2.5 shadow-lg hover:bg-black transition-colors text-center font-medium"
+              >
+                Voir détails
+              </Link>
+            </div>
           </div>
         </div>
 
         {/* ── Product Content (Under Image) ──────────────────────────────── */}
         <div className="flex flex-col gap-1.5 pt-4 pb-2">
-          {/* Product Name (1 line clamp) */}
-          <h3 className="text-[12px] sm:text-[13px] uppercase tracking-[0.15em] text-foreground font-light line-clamp-1 group-hover:text-[#C9A227] transition-colors duration-300">
+          {/* Product Name (Link) */}
+          <Link
+            href={`/product/${product.slug || product.id}`}
+            className="text-[12px] sm:text-[13px] uppercase tracking-[0.15em] text-foreground font-light line-clamp-1 hover:text-[#C9A227] transition-colors duration-300 w-fit"
+          >
             {product.name}
-          </h3>
+          </Link>
 
-          {/* Price (Gold) */}
-          <span className="font-medium text-[#C9A227] text-[13px] sm:text-[14px] tracking-wide">
-            {centsToMad(product.price)} MAD
-          </span>
+          {/* Price & Mobile Link */}
+          <div className="flex items-center justify-between">
+            <span className="font-medium text-[#C9A227] text-[13px] sm:text-[14px] tracking-wide">
+              {centsToMad(product.price)} MAD
+            </span>
+            <Link
+              href={`/product/${product.slug || product.id}`}
+              className="sm:hidden text-[9px] uppercase tracking-[0.1em] text-[#1A1A1A]/40 hover:text-[#C9A227] transition-colors flex items-center gap-1"
+            >
+              Voir détails <span className="text-[10px] leading-none mb-0.5">&rarr;</span>
+            </Link>
+          </div>
         </div>
-      </button>
+      </div>
 
       <ProductQuickView
         product={product}

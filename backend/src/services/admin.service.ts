@@ -3,6 +3,7 @@ import { AppError } from '../utils/errors.js';
 import bcrypt from 'bcrypt';
 import { generateToken } from '../utils/auth.js';
 import { OrderStatus } from '@prisma/client';
+import { attachFallbackImages } from '../utils/order.utils.js';
 import type { z } from 'zod';
 import type {
     createProductSchema,
@@ -17,6 +18,19 @@ type UpdateProductInput = z.infer<typeof updateProductSchema>;
 type CreateCategoryInput = z.infer<typeof createCategorySchema>;
 type UpdateSettingsInput = z.infer<typeof updateSettingsSchema>;
 type RegisterInput = z.infer<typeof registerSchema>;
+
+import crypto from 'crypto';
+
+function generateSlug(name: string): string {
+    const baseSlug = name
+        .toLowerCase()
+        .trim()
+        .replace(/[^\w\s-]/g, '')
+        .replace(/[\s_-]+/g, '-')
+        .replace(/^-+|-+$/g, '');
+    const randomSuffix = crypto.randomBytes(3).toString('hex');
+    return `${baseSlug}-${randomSuffix}`;
+}
 
 const SALT_ROUNDS = 12;
 
@@ -127,13 +141,18 @@ export class AdminService {
     }
 
     static async createProduct(data: CreateProductInput) {
-        return prisma.product.create({ data, include: { category: true } });
+        const slug = data.slug || generateSlug(data.name);
+        return prisma.product.create({ data: { ...data, slug }, include: { category: true } });
     }
 
     static async updateProduct(id: string, data: UpdateProductInput) {
+        const payload: any = { ...data };
+        if (data.name && !data.slug) {
+            payload.slug = generateSlug(data.name);
+        }
         return prisma.product.update({
             where: { id },
-            data,
+            data: payload,
             include: { category: true },
         });
     }
@@ -161,19 +180,21 @@ export class AdminService {
     // ─── Orders ───────────────────────────────────────────────────────────────
 
     static async getOrders(status?: OrderStatus) {
-        return prisma.order.findMany({
+        const orders = await prisma.order.findMany({
             where: status ? { status } : {},
             include: { items: true },
             orderBy: { createdAt: 'desc' },
         });
+        return attachFallbackImages(orders);
     }
 
     static async updateOrderStatus(id: string, status: OrderStatus) {
-        return prisma.order.update({
+        const order = await prisma.order.update({
             where: { id },
             data: { status },
             include: { items: true },
         });
+        return (await attachFallbackImages([order]))[0];
     }
 
     // ─── Settings ─────────────────────────────────────────────────────────────
