@@ -6,9 +6,9 @@ export const STORE_TIMEZONE = 'Africa/Casablanca';
 
 export type StoreStatus = {
     isOpenNow: boolean;
-    statusText: string;
+    statusTextKey: string;
     closeTime?: string;
-    nextOpenTime?: { day: string; time: string; isToday: boolean };
+    nextOpenTime?: { dayKey: string; time: string; isToday: boolean };
     exceptionName?: string;
 };
 
@@ -27,7 +27,7 @@ export function extractGoogleMapsUrl(input: string): string {
 
 export function getStoreStatus(config?: BusinessHoursConfig | null): StoreStatus {
     if (!config) {
-        return { isOpenNow: false, statusText: "Horaires indisponibles" };
+        return { isOpenNow: false, statusTextKey: "businessHours.unavailable" };
     }
 
     const now = new Date();
@@ -55,7 +55,7 @@ export function getStoreStatus(config?: BusinessHoursConfig | null): StoreStatus
     if (!todaysSchedule?.isOpen || !todaysSchedule.slots || todaysSchedule.slots.length === 0) {
         return {
             isOpenNow: false,
-            statusText: "Fermé",
+            statusTextKey: "businessHours.closed",
             nextOpenTime: findNextOpenSlot(config, zonedNow, timeZone),
             exceptionName: exception?.name
         };
@@ -66,7 +66,7 @@ export function getStoreStatus(config?: BusinessHoursConfig | null): StoreStatus
         if (currentHHMM >= slot.start && currentHHMM < slot.end) {
             return {
                 isOpenNow: true,
-                statusText: "Ouvert maintenant",
+                statusTextKey: "businessHours.openNow",
                 closeTime: slot.end,
                 exceptionName: exception?.name
             };
@@ -79,8 +79,8 @@ export function getStoreStatus(config?: BusinessHoursConfig | null): StoreStatus
     if (currentHHMM < firstSlot.start) {
         return {
             isOpenNow: false,
-            statusText: "Fermé",
-            nextOpenTime: { day: 'aujourd\'hui', time: firstSlot.start, isToday: true },
+            statusTextKey: "businessHours.closed",
+            nextOpenTime: { dayKey: 'businessHours.today', time: firstSlot.start, isToday: true },
             exceptionName: exception?.name
         };
     }
@@ -91,8 +91,8 @@ export function getStoreStatus(config?: BusinessHoursConfig | null): StoreStatus
         if (currentHHMM >= firstSlot.end && currentHHMM < secondSlot.start) {
             return {
                 isOpenNow: false,
-                statusText: "Pause Midi",
-                nextOpenTime: { day: 'aujourd\'hui', time: secondSlot.start, isToday: true },
+                statusTextKey: "businessHours.lunchBreak",
+                nextOpenTime: { dayKey: 'businessHours.today', time: secondSlot.start, isToday: true },
                 exceptionName: exception?.name
             };
         }
@@ -101,7 +101,7 @@ export function getStoreStatus(config?: BusinessHoursConfig | null): StoreStatus
     // We are past the last slot of the day.
     return {
         isOpenNow: false,
-        statusText: "Fermé",
+        statusTextKey: "businessHours.closed",
         nextOpenTime: findNextOpenSlot(config, zonedNow, timeZone),
         exceptionName: exception?.name
     };
@@ -128,12 +128,8 @@ function findNextOpenSlot(config: BusinessHoursConfig, zonedNow: Date, timeZone:
 
         if (schedule?.isOpen && schedule.slots && schedule.slots.length > 0) {
             // Return the first slot of that day
-
-            // Formatting the display day name (e.g., Lundi, Mardi)
-            const displayDay = futureDayName.charAt(0).toUpperCase() + futureDayName.slice(1);
-
             return {
-                day: offset === 1 ? 'demain' : displayDay,
+                dayKey: offset === 1 ? 'businessHours.tomorrow' : `days.${futureDayName}`,
                 time: schedule.slots[0].start,
                 isToday: false
             };

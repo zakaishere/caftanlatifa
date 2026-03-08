@@ -1,0 +1,641 @@
+{
+  "home": {
+    "hero": {
+      "eyebrow": "تشكيلة رمضان · 2026",
+      "titlePart1": "أناقة ",
+      "titleHighlight": "القفطان",
+      "titlePart2": " المغربي",
+      "subtitle": "إبداعات يدوية صُممت بعناية، تجمع بين التراث الأصيل والخياطة المعاصرة.",
+      "cta": "اكتشف التشكيلة",
+      "trust1": "الدفع عند الاستلام",
+      "trust2": "توصيل لجميع مدن المغرب",
+      "trust3": "جودة عالية ولمسات فاخرة"
+    },
+    "collections": {
+      "eyebrow": "عوالمنا",
+      "title": "التشكيلات",
+      "viewAll": "عرض الكل",
+      "itemsCount": "{count} قطعة"
+    },
+    "newArrivals": {
+      "eyebrow": "مختاراتنا",
+      "title": "وصل حديثاً",
+      "viewAll": "عرض الكل",
+      "viewAllMobile": "عرض التشكيلة كاملة"
+    },
+    "whyUs": {
+      "eyebrow": "مشغل لطيفة",
+      "title": "لماذا تختارنا؟",
+      "reasons": {
+        "1": {
+          "title": "حرفية أصيلة",
+          "body": "كل قطعة تُصنع على يد أمهر الحرفيين المغاربة، بتطريزات يدوية دقيقة."
+        },
+        "2": {
+          "title": "توصيل سريع",
+          "body": "توصيل خلال 24–48 ساعة للمدن الكبرى، مع الدفع نقداً عند الاستلام."
+        },
+        "3": {
+          "title": "جودة لا تُضاهى",
+          "body": "أقمشة فاخرة تُختار بعناية لنعومتها وثباتها: جورجيت، مخمل، وحرير أصيل."
+        }
+      }
+    },
+    "footerCta": {
+      "eyebrow": "خدمة العملاء",
+      "title": "لديك استفسار عن طلبك؟",
+      "body": "خبراؤنا متاحون للرد عليكم عبر الواتساب، من الإثنين إلى السبت، من 9 صباحاً حتى 9 مساءً.",
+      "whatsappBtn": "تواصل عبر الواتساب",
+      "contactBtn": "اتصل بنا",
+      "whatsappMessage": "مرحباً، أود الحصول على مزيد من المعلومات حول القفاطين."
+    }
+  },
+  "layout": {
+    "topbar": {
+      "tagline": "أناقة القفطان المغربي",
+      "customerService": "خدمة العملاء:",
+      "freeShipping": "توصيل مجاني +{amount} درهم"
+    },
+    "header": {
+      "subtitle": "دار الأزياء",
+      "searchPlaceholder": "بحث...",
+      "menuOpen": "فتح القائمة",
+      "menuClose": "إغلاق القائمة"
+    },
+    "nav": {
+      "home": "الرئيسية",
+      "collection": "التشكيلة",
+      "collections": "التشكيلات",
+      "contact": "تواصل معنا",
+      "orders": "طلباتي",
+      "cart": "السلة",
+      "myCart": "حقيبة التسوق"
+    },
+    "footer": {
+      "description": "تراث الحرفية المغربية معزز بأناقة معاصرة. كل قطعة تروي قصة شغف وتقاليد.",
+      "collections": {
+        "title": "التشكيلات",
+        "all": "جميع التصاميم",
+        "takchita": "تكشيطات استثنائية",
+        "caftan": "قفاطين الهوت كوتور",
+        "accessories": "إكسسوارات ومجوهرات"
+      },
+      "house": {
+        "title": "دار الأزياء",
+        "atelier": "مشغلنا",
+        "sizes": "دليل المقاسات",
+        "shipping": "التوصيل والإرجاع",
+        "faq": "الأسئلة الشائعة"
+      },
+      "contact": {
+        "title": "تواصل معنا",
+        "whatsapp": "دعم الواتساب"
+      },
+      "copyright": "جميع الحقوق محفوظة.",
+      "madeIn": "صُمم في المغرب 🇲🇦",
+      "artOfLiving": "فن العيش المغربي"
+    }
+  },
+  "product": {
+    "soldOut": "نفذت الكمية",
+    "quickView": "نظرة سريعة",
+    "viewDetails": "عرض التفاصيل",
+    "inStock": "في المخزن",
+    "size": "المقاس",
+    "oneSize": "مقاس واحد",
+    "selectSizePrompt": "يرجى تحديد المقاس",
+    "features": "المميزات",
+    "quantity": "الكمية",
+    "price": "السعر",
+    "addedToCart": "تم الإضافة !",
+    "addToCart": "أضف",
+    "addedToCartLong": "تمت إضافة المنتج إلى السلة بنجاح",
+    "addToCartLong": "أضف إلى السلة",
+    "deliveryFee": "+ {amount} للتوصيل",
+    "close": "إغلاق",
+    "imageNext": "الصورة التالية",
+    "imagePrev": "الصورة السابقة",
+    "points": {
+      "cod": "الدفع عند الاستلام",
+      "shipping": "التوصيل بالمغرب",
+      "quality": "جودة حرفية",
+      "return": "إرجاع خلال 7 أيام"
+    },
+    "decrease": "تقليل الكمية",
+    "increase": "زيادة الكمية",
+    "gallery": {
+      "viewFullscreen": "عرض الصورة {index} بملء الشاشة",
+      "goToImage": "الذهاب إلى الصورة {index}",
+      "title": "المعرض — {name}"
+    }
+  },
+  "products": {
+    "titlePrefix": "المجموعة",
+    "loading": "جاري التحميل...",
+    "piecesCount": "{count} قطع استثنائية",
+    "noProducts": "لم يتم العثور على منتجات",
+    "searchPlaceholder": "البحث في المجموعة...",
+    "filters": "تصفية",
+    "activeFilters": "{count} تصفية نشطة",
+    "reset": "إعادة ضبط",
+    "resetFilters": "إعادة ضبط الفلاتر",
+    "sortBy": "ترتيب حسب",
+    "sort": "ترتيب :",
+    "sortOptions": {
+      "newest": "الأحدث",
+      "priceAsc": "السعر (تصاعدي)",
+      "priceDesc": "السعر (تنازلي)"
+    },
+    "collections": "المجموعات",
+    "allPieces": "جميع الإبداعات",
+    "availability": "التوفر",
+    "inStockOnly": "في المخزن فقط",
+    "price": "السعر",
+    "applyFilters": "عرض {count} قطعة",
+    "applyFiltersEmpty": "عرض النتائج",
+    "loadingBrand": "بصمة لطيفة...",
+    "loadMore": "اكتشف المزيد",
+    "showingCount": "عرض {current} من أصل {total} قطعة",
+    "noResultsTitle": "لم يتم العثور على أي قطعة",
+    "noResultsDesc": "لم نعثر على أي إبداعات تطابق معاييرك. حاول تعديل الفلاتر الخاصة بك."
+  },
+  "productDetails": {
+    "notFoundTitle": "الإبداع غير موجود",
+    "notFoundDesc": "عذرًا، هذه القطعة لم تعد متوفرة في مجموعتنا.",
+    "backCol": "العودة إلى المجموعة",
+    "shippingTab": "الشحن والتوصيل",
+    "shippingTabContent": "يتم توصيل قطعنا إلى جميع مدن المغرب. تستغرق مدة التوصيل بشكل عام من 24 إلى 48 ساعة للمدن الكبرى وما يصل إلى 72 ساعة للمناطق النائية. الدفع نقدًا عند الاستلام.",
+    "returnsTab": "الإرجاع والاستبدال",
+    "returnsTabContent": "في قفطان لطيفة، نقبل الإرجاع والاستبدال خلال 7 أيام، بشرط أن تكون القطعة في حالتها الأصلية. يتحمل العميل تكاليف الإرجاع، باستثناء حالات عيوب التصنيع.",
+    "related": "قد يعجبك أيضاً",
+    "chooseSize": "اختر المقاس",
+    "decrease": "تقليل الكمية",
+    "increase": "زيادة الكمية"
+  },
+  "contact": {
+    "customerService": "خدمة الزبناء",
+    "title": "اتصل بنا",
+    "description": "هل لديك أسئلة حول إبداعاتنا أو طلبك؟ فريقنا المخصص تحت تصرفك ليقدم لك تجربة استثنائية تليق بدار قفطان لطيفة.",
+    "directContact": "اتصال مباشر",
+    "call": "اتصال",
+    "whatsappMsg": "مرحبا، أحتاج إلى المساعدة.",
+    "emailSupport": "دعم البريد الإلكتروني",
+    "writeUs": "راسلنا",
+    "headquarters": "المقر الرئيسي",
+    "defaultCity": "الدار البيضاء، 20000، المغرب",
+    "sendMessage": "أرسل لنا رسالة",
+    "orEmailUs": "أو راسلنا مباشرة على",
+    "fullName": "الاسم الكامل",
+    "namePlaceholder": "اسمك",
+    "emailLabel": "البريد الإلكتروني",
+    "emailPlaceholder": "your@email.com",
+    "subject": "الموضوع",
+    "subjectPlaceholder": "عن ماذا يتعلق الأمر ؟",
+    "messageLabel": "الرسالة",
+    "messagePlaceholder": "صف طلبك بالتفصيل...",
+    "send": "إرسال",
+    "ourShowroom": "معرضنا"
+  },
+  "businessHours": {
+    "title": "أوقات العمل",
+    "subtitle": "المشغل والمعرض",
+    "unavailable": "الأوقات غير متوفرة",
+    "unconfigured": "أوقات العمل غير مهيأة.",
+    "closed": "مغلق",
+    "openNow": "مفتوح الآن",
+    "lunchBreak": "استراحة الغداء",
+    "todayUntil": "اليوم حتى",
+    "opens": "يفتح",
+    "at": "على الساعة",
+    "closedCurrently": "مغلق حاليا",
+    "viewWeekDetails": "عرض تفاصيل الأسبوع",
+    "today": "اليوم",
+    "tomorrow": "غدا"
+  },
+  "days": {
+    "lundi": "الإثنين",
+    "mardi": "الثلاثاء",
+    "mercredi": "الأربعاء",
+    "jeudi": "الخميس",
+    "vendredi": "الجمعة",
+    "samedi": "السبت",
+    "dimanche": "الأحد"
+  },
+  "cart": {
+    "emptyTitle": "سلة التسوق فارغة",
+    "emptyDesc": "يبدو أنك لم تضف أي قطع إلى مختاراتك بعد.",
+    "discoverCol": "اكتشف المجموعة",
+    "yourSelection": "مختاراتك",
+    "title": "سلة التسوق",
+    "itemsCount": "عنصر {count}",
+    "itemsCountPlural": "عناصر {count}",
+    "tableItem": "القطعة",
+    "tableQty": "الكمية",
+    "tableUnitPrice": "سعر الوحدة",
+    "tableTotal": "المجموع",
+    "oneSize": "مقاس موحد",
+    "size": "المقاس",
+    "remove": "حذف",
+    "decreaseQty": "تقليل",
+    "increaseQty": "زيادة",
+    "clearCart": "إفراغ السلة",
+    "summary": "الملخص",
+    "subtotal": "المجموع الفرعي",
+    "subtotalWithCount": "المجموع الفرعي ({count} قطع)",
+    "shipping": "التوصيل",
+    "freeShipping": "مجاني",
+    "total": "المجموع الإجمالي",
+    "checkout": "إتمام الطلب",
+    "checkoutMobile": "الدفع",
+    "continueShopping": "مواصلة التسوق",
+    "securePayment": "دفع آمن عند الاستلام",
+    "cod": "الدفع عند الاستلام"
+  },
+  "checkout": {
+    "validation": {
+      "fullName": "الاسم الكامل مطلوب",
+      "email": "البريد الإلكتروني صالح مطلوب",
+      "phone": "رقم هاتف صالح مطلوب",
+      "city": "المدينة مطلوبة للتوصيل",
+      "address": "عنوان التوصيل الكامل مطلوب"
+    },
+    "copySuccess": "تم نسخ المرجع ✓",
+    "copyFail": "تعذر النسخ",
+    "copyFailDesc": "انسخ المرجع يدويًا.",
+    "successTitle": "تم تأكيد الطلب!",
+    "successDesc1": "شكرا لطلبك. لضمان معالجة سريعة ،",
+    "successDesc2": "يرجى إنهاء التأكيد عبر واتساب أدناه.",
+    "orderRef": "مرجع الطلب",
+    "copyAria": "نسخ المرجع",
+    "paymentMethod": "طريقة الدفع",
+    "cod": "الدفع عند الاستلام",
+    "finalAmount": "المبلغ النهائي :",
+    "actionRequired": "إجراء مطلوب",
+    "pendingMsg": "طلبك معلق. للشحن اليوم ، يرجى النقر أدناه للتأكيد عبر واتساب.",
+    "confirmWhatsapp": "التأكيد عبر واتساب",
+    "backHome": "العودة للرئيسية",
+    "viewHistory": "عرض سجل الطلبات",
+    "hideSummary": "إخفاء الملخص",
+    "reviewSummary": "مراجعة الملخص",
+    "subtotal": "المجموع الفرعي",
+    "shipping": "التوصيل",
+    "free": "مجاني",
+    "bag": "السلة",
+    "secureCheckout": "دفع آمن",
+    "shippingDetails": "تفاصيل الشحن",
+    "shippingDesc": "أكمل طلبك. الدفع عند الاستلام.",
+    "deliveryMethod": "التوصيل",
+    "methodDelivery": "توصيل للمنزل",
+    "methodDeliveryDesc": "يشحن إليك",
+    "methodPickup": "استلام من المتجر",
+    "methodPickupDesc": "جاهز فورا",
+    "information": "معلومات",
+    "fullName": "الاسم الكامل",
+    "fullNamePlaceholder": "أدخل اسمك الكامل",
+    "phone": "رقم الهاتف",
+    "phonePlaceholder": "06XXXXXXXX",
+    "city": "المدينة",
+    "cityPlaceholder": "أدخل مدينتك",
+    "address": "العنوان الكامل",
+    "addressPlaceholder": "الشارع ، الحي ، الخ.",
+    "notes": "ملاحظات (اختياري)",
+    "notesPlaceholder": "تعليمات خاصة...",
+    "summary": "الملخص",
+    "safePayment": "دفع آمن عند الاستلام.",
+    "grandTotal": "المجموع الإجمالي",
+    "confirmOrder": "تأكيد الطلب",
+    "totalToPay": "المجموع للدفع",
+    "orderNow": "اطلب الآن",
+    "whatsapp": {
+      "newOrder": "طلب جديد",
+      "customer": "الزبون",
+      "phone": "الهاتف",
+      "delivery": "التوصيل",
+      "deliveryTo": "التوصيل إلى",
+      "pickup": "الاستلام من المتجر",
+      "items": "العناصر",
+      "payments": "المدفوعات"
+    },
+    "steps": {
+      "cart": "السلة",
+      "shipping": "الشحن",
+      "done": "تم"
+    }
+  },
+  "admin": {
+    "menu": {
+      "overview": "نظرة عامة",
+      "categories": "التصنيفات",
+      "products": "المنتجات",
+      "orders": "الطلبات",
+      "settings": "الإعدادات"
+    },
+    "logout": "تسجيل الخروج",
+    "menuTitle": "قائمة الإدارة",
+    "dashboard": {
+      "title": "لوحة القيادة",
+      "subtitle": "نظرة عامة على أداء متجرك.",
+      "fromLastMonth": "منذ الشهر الماضي",
+      "weeklyRevenue": "الإيرادات الأسبوعية",
+      "recentOrders": "الطلبات الأخيرة",
+      "noOrders": "لا توجد طلبات بعد",
+      "viewAllOrders": "عرض جميع الطلبات",
+      "status": {
+        "PENDING": "قيد الانتظار",
+        "CONFIRMED": "مؤكد",
+        "DELIVERED": "تم التوصيل",
+        "CANCELLED": "ملغى"
+      },
+      "kpi": {
+        "totalrevenue": "إجمالي الإيرادات",
+        "orders": "الطلبات",
+        "pending": "قيد الانتظار",
+        "outofstock": "غير متوفر"
+      }
+    },
+    "orders": {
+      "title": "الطلبات",
+      "subtitle": "إدارة ومعالجة طلبات العملاء.",
+      "allOrders": "جميع الطلبات",
+      "noOrders": "لا توجد طلبات بعد.",
+      "table": {
+        "id": "رقم الطلب",
+        "customer": "العميل",
+        "city": "المدينة",
+        "total": "المجموع",
+        "date": "التاريخ",
+        "status": "الحالة",
+        "actions": "إجراءات"
+      },
+      "view": "عرض",
+      "detailsTitle": "تفاصيل الطلب",
+      "customerInfo": "معلومات العميل",
+      "info": {
+        "name": "الاسم:",
+        "phone": "الهاتف:",
+        "city": "المدينة:",
+        "address": "العنوان:",
+        "notes": "ملاحظات:"
+      },
+      "items": "العناصر",
+      "actions": {
+        "confirm": "تأكيد الطلب",
+        "deliver": "تحديد كمُسلَّم",
+        "cancel": "إلغاء الطلب"
+      },
+      "toast": {
+        "statusUpdated": "تم تحديث حالة الطلب",
+        "errorTitle": "خطأ"
+      }
+    },
+    "categories": {
+      "title": "التصنيفات",
+      "subtitle": "إدارة تصنيفات المنتجات.",
+      "addCategory": "إضافة تصنيف",
+      "addNew": "إضافة تصنيف جديد",
+      "addNewDesc": "قم بإنشاء تصنيف جديد لمنتجاتك.",
+      "name": "الاسم",
+      "namePlaceholder": "اسم التصنيف",
+      "slug": "الرابط (Slug)",
+      "slugPlaceholder": "رابط-التصنيف",
+      "save": "حفظ التصنيف",
+      "saving": "جاري الحفظ...",
+      "allCategories": "جميع التصنيفات",
+      "table": {
+        "name": "الاسم",
+        "slug": "الرابط (Slug)",
+        "productsCount": "عدد المنتجات",
+        "actions": "إجراءات"
+      },
+      "toast": {
+        "created": "تم إنشاء التصنيف",
+        "deleted": "تم حذف التصنيف",
+        "errorTitle": "خطأ"
+      }
+    },
+    "products": {
+      "title": "المنتجات",
+      "subtitle": "إدارة كتالوج المنتجات الخاص بك.",
+      "addProduct": "إضافة منتج",
+      "addNew": "إضافة منتج جديد",
+      "addNewDesc": "قم بإنشاء منتج جديد مع عدة صور.",
+      "editProduct": "تعديل المنتج",
+      "editProductDesc": "تحديث تفاصيل المنتج والصور والأسعار.",
+      "searchPlaceholder": "البحث عن المنتجات...",
+      "allProducts": "جميع المنتجات",
+      "noProducts": "لم يتم العثور على منتجات.",
+      "inStock": "متوفر",
+      "outOfStock": "نفد",
+      "table": {
+        "image": "الصورة",
+        "name": "الاسم",
+        "category": "التصنيف",
+        "price": "السعر",
+        "status": "الحالة",
+        "actions": "إجراءات"
+      },
+      "actionsMenu": {
+        "title": "إجراءات",
+        "edit": "تعديل",
+        "delete": "حذف"
+      },
+      "toast": {
+        "deleted": "تم حذف المنتج",
+        "availabilityUpdated": "تم تحديث التوفر",
+        "errorTitle": "خطأ"
+      },
+      "openMenu": "فتح القائمة"
+    },
+    "productForm": {
+      "name": "اسم المنتج *",
+      "namePlaceholder": "مثال: قميص",
+      "price": "السعر (درهم) *",
+      "category": "التصنيف *",
+      "categoryPlaceholder": "اختر تصنيفاً",
+      "loadingCategory": "جاري التحميل...",
+      "availableSizes": "المقاسات المتوفرة",
+      "availableSizesHint": "اتركه فارغاً للمنتجات التي لا تحتوي على مقاسات (مقاس واحد).",
+      "description": "الوصف *",
+      "descriptionPlaceholder": "وصف مفصل للمنتج...",
+      "specialities": "المواصفات",
+      "addSpeciality": "إضافة مواصفة",
+      "specName": "الاسم",
+      "specNamePlaceholder": "مثال: المادة",
+      "specValue": "القيمة",
+      "specValuePlaceholder": "مثال: جلد",
+      "noSpecialities": "لم تتم إضافة أي مواصفات. انقر على \"إضافة مواصفة\" لإضافة تفاصيل مثل المادة أو اللون.",
+      "images": "صور المنتج *",
+      "inStock": "متوفر (متاح للشراء)",
+      "createProduct": "إنشاء المنتج",
+      "updateProduct": "تحديث المنتج",
+      "validationError": "خطأ في التحقق",
+      "validationErrorDesc": "يرجى ملء جميع الحقول المطلوبة، بما في ذلك صورة واحدة على الأقل.",
+      "toast": {
+        "created": "تم إنشاء المنتج بنجاح",
+        "updated": "تم تحديث المنتج بنجاح",
+        "errorCreating": "خطأ في إنشاء المنتج",
+        "errorUpdating": "خطأ في تحديث المنتج"
+      }
+    },
+    "settings": {
+      "title": "إعدادات",
+      "subtitle": "إدارة تكوين متجرك.",
+      "generalInfo": "معلومات عامة",
+      "generalInfoDesc": "تفاصيل المتجر الأساسية المرئية للعملاء.",
+      "brandVisual": "هوية العلامة التجارية",
+      "brandVisualDesc": "الصورة الرئيسية المعروضة في قسم الهيرو على الصفحة الرئيسية.",
+      "contactSupport": "الاتصال والدعم",
+      "contactSupportDesc": "كيف يمكن للعملاء الوصول إليك.",
+      "deliverySettings": "إعدادات التوصيل",
+      "deliverySettingsDesc": "تكوين تكاليف الشحن العالمية وعتبة الشحن المجاني.",
+      "storeName": "اسم المتجر",
+      "heroImage": "صورة الهيرو",
+      "heroImageTip": "نصيحة: استخدم صورة احترافية عالية الجودة لـ \"قفطان مغربي فاخر\" للحصول على أفضل شعور بالمتجر.",
+      "whatsappNumber": "رقم الواتساب",
+      "supportEmail": "بريد الدعم الإلكتروني (اختياري)",
+      "businessAddress": "عنوان العمل (اختياري)",
+      "googleMapsEmbed": "رابط تضمين خرائط جوجل (اختياري)",
+      "googleMapsHint": "الصق سمة src من رمز تضمين خرائط جوجل.",
+      "freeShipping": "شحن مجاني",
+      "freeShippingDesc": "تمكين الشحن المجاني فوق إجمالي سلة معين.",
+      "freeShippingThreshold": "عتبة الشحن المجاني (درهم)",
+      "standardDeliveryFee": "رسوم التوصيل القياسية (درهم)",
+      "saveChanges": "حفظ التغييرات",
+      "saving": "جاري الحفظ...",
+      "toast": {
+        "success": "تم حفظ الإعدادات بنجاح",
+        "error": "فشل في حفظ الإعدادات"
+      }
+    },
+    "businessHoursEditor": {
+      "title": "ساعات العمل",
+      "subtitle": "قم بتكوين ساعات العمل الخاصة بك (بتوقيت الدار البيضاء).",
+      "advancedMode": "الوضع المتقدم",
+      "simpleModeHint": "يقوم الوضع البسيط بتطبيق يوم الاثنين كنموذج طوال الأسبوع (باستثناء الأيام المغلقة).",
+      "adjustStandardHours": "ضبط الساعات القياسية",
+      "to": "إلى",
+      "closedDays": "الأيام المغلقة",
+      "weeklySchedule": "جدول الأسبوع",
+      "applyMondayToAll": "تطبيق الاثنين على الكل",
+      "closed": "مغلق",
+      "addBreak": "إضافة استراحة",
+      "days": {
+        "lundi": "الإثنين",
+        "mardi": "الثلاثاء",
+        "mercredi": "الأربعاء",
+        "jeudi": "الخميس",
+        "vendredi": "الجمعة",
+        "samedi": "السبت",
+        "dimanche": "الأحد"
+      }
+    },
+    "login": {
+      "title": "تسجيل دخول المشرف",
+      "description": "أدخل بريدك الإلكتروني وكلمة المرور للوصول إلى لوحة التحكم",
+      "email": "البريد الإلكتروني",
+      "password": "كلمة المرور",
+      "loggingIn": "جاري تسجيل الدخول...",
+      "loginBtn": "تسجيل الدخول",
+      "validation": {
+        "email": "عنوان بريد إلكتروني غير صالح",
+        "password": "يجب أن تتكون كلمة المرور من 6 أحرف على الأقل"
+      }
+    }
+  },
+  "myOrders": {
+    "title": "طلباتي",
+    "subtitle": "سجل الطلبات",
+    "trackOrder": "تتبع الطلب",
+    "trackOrderDesc": "أدخل المرجع الخاص بك أو رقم هاتفك لرؤية حالة الطرد الخاص بك.",
+    "placeholder": "مرجع الطلب أو الهاتف",
+    "search": "بحث",
+    "searching": "جاري البحث...",
+    "ref": "مرجع",
+    "copySuccess": "تم النسخ ✅",
+    "copyAria": "نسخ المرجع الكامل",
+    "viewDetails": "عرض التفاصيل",
+    "orderDetails": "تفاصيل الطلب",
+    "currentStatus": "الحالة الحالية",
+    "articles": "العناصر",
+    "needHelp": "طلب المساعدة",
+    "cancelOrder": "إلغاء الطلب",
+    "cancelConfirm": "هل ترغب حقاً في الإلغاء؟",
+    "removeHistory": "إزالة من السجل",
+    "clearHistory": "مسح السجل المحلي",
+    "noOrdersFound": "لم يتم العثور على أي طلب",
+    "ordersFound": "طلب(ات) وجدت",
+    "searchError": "خطأ في البحث",
+    "cancelSuccess": "تم إلغاء الطلب",
+    "cancelSuccessDesc": "تم إلغاء الطلب {id}.",
+    "cancelFail": "فشل الإلغاء",
+    "statuses": {
+      "PENDING": "قيد الانتظار",
+      "CONFIRMED": "تم التأكيد",
+      "DELIVERED": "تم التوصيل",
+      "CANCELLED": "ملغى"
+    }
+  },
+  "orderItems": {
+    "size": "المقاس",
+    "qty": "الكمية",
+    "deliveryFee": "رسوم التوصيل",
+    "total": "المجموع",
+    "unique": "موحد"
+  },
+  "errors": {
+    "404": {
+      "title": "الصفحة غير موجودة",
+      "description": "عذراً، الصفحة التي تبحث عنها غير موجودة أو تم نقلها.",
+      "backHome": "العودة إلى الرئيسية"
+    }
+  },
+  "imageUploader": {
+    "title": "تحميل صور المنتج",
+    "dropzone": "اسحب وأفلت أو انقر للتصفح (بحد أقصى {max} صور)",
+    "uploading": "جاري التحميل...",
+    "browse": "تصفح الملفات",
+    "uploadedCount": "الصور المحملة ({count}/{max})",
+    "remove": "إزالة الصورة",
+    "makePrimary": "تعيين كأساسية",
+    "primary": "أساسية",
+    "errors": {
+      "tooMany": "صور كثيرة جداً",
+      "tooManyDesc": "يمكنك تحميل ما يصل إلى {max} صور فقط.",
+      "invalidType": "يرجى تحديد ملفات الصور فقط.",
+      "tooLarge": "يجب ألا يتجاوز حجم الملف 5 ميجابايت.",
+      "uploadFailed": "فشل التحميل",
+      "uploadFailedDesc": "حدث خطأ غير متوقع أثناء التحميل.",
+      "genericFailed": "فشل تحميل الصورة"
+    },
+    "success": {
+      "title": "نجاح",
+      "desc": "تم تحميل {count} صورة بنجاح."
+    }
+  },
+  "common": {
+    "currency": "درهم",
+    "whatsapp": "واتساب",
+    "admin": "الإدارة",
+    "loading": "جاري التحميل...",
+    "errorTitle": "خطأ",
+    "notFound": "غير موجود",
+    "days": {
+      "short": {
+        "mon": "إثنين",
+        "tue": "ثلاثاء",
+        "wed": "أربعاء",
+        "thu": "خميس",
+        "fri": "جمعة",
+        "sat": "سبت",
+        "sun": "أحد"
+      }
+    }
+  },
+  "metadata": {
+    "defaultTitle": "قفطان لطيفة | بيت التصميم",
+    "description": "تراث الصناعة التقليدية المغربية مع لمسة من الأناقة العصرية. قفاطين وتكشيطات استثنائية مصنوعة يدوياً.",
+    "ogDescription": "اكتشفوا مجموعتنا من القفاطين والتكشيطات الاستثنائية التي تمزج بين الأصالة المغربية والحداثة.",
+    "twitterDescription": "تراث الصناعة التقليدية المغربية برؤية عصرية أنيقة.",
+    "productNotFound": "التصميم غير موجود"
+  }
+}

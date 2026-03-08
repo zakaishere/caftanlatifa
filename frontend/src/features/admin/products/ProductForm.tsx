@@ -13,6 +13,7 @@ import { apiRequest } from '@/lib/queryClient';
 import { ApiProduct, ApiCategory, centsToMad, PRODUCT_SIZES, ProductSize } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Plus, Trash2 } from 'lucide-react';
+import { useTranslation } from '@/i18n/provider';
 
 const generateId = () => Math.random().toString(36).substring(2, 9);
 
@@ -23,6 +24,7 @@ interface ProductFormProps {
 
 export function ProductForm({ onSuccess, initialData }: ProductFormProps) {
     const { toast } = useToast();
+    const { t } = useTranslation();
     const queryClient = useQueryClient();
 
     const [name, setName] = useState(initialData?.name || '');
@@ -59,11 +61,11 @@ export function ProductForm({ onSuccess, initialData }: ProductFormProps) {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['/api/admin/products'] });
-            toast({ title: `Product ${isEdit ? 'updated' : 'created'} successfully` });
+            toast({ title: isEdit ? t('admin.productForm.toast.updated') : t('admin.productForm.toast.created') });
             onSuccess?.();
         },
         onError: (err: Error) => {
-            toast({ title: `Error ${isEdit ? 'updating' : 'creating'} product`, description: err.message, variant: 'destructive' });
+            toast({ title: isEdit ? t('admin.productForm.toast.errorUpdating') : t('admin.productForm.toast.errorCreating'), description: err.message, variant: 'destructive' });
         }
     });
 
@@ -71,7 +73,7 @@ export function ProductForm({ onSuccess, initialData }: ProductFormProps) {
         e.preventDefault();
 
         if (!name || !priceMad || !description || !categoryId || images.length === 0) {
-            toast({ title: 'Validation Error', description: 'Please fill all required fields, including at least 1 image.', variant: 'destructive' });
+            toast({ title: t('admin.productForm.validationError'), description: t('admin.productForm.validationErrorDesc'), variant: 'destructive' });
             return;
         }
 
@@ -100,22 +102,22 @@ export function ProductForm({ onSuccess, initialData }: ProductFormProps) {
     };
 
     return (
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-6 text-start">
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                    <Label htmlFor="name">Product Name *</Label>
+                    <Label htmlFor="name">{t('admin.productForm.name')}</Label>
                     <Input
                         id="name"
                         value={name}
                         onChange={e => setName(e.target.value)}
-                        placeholder="e.g. T-Shirt"
+                        placeholder={t('admin.productForm.namePlaceholder')}
                         required
                     />
                 </div>
 
                 <div className="space-y-2">
-                    <Label htmlFor="price">Price (MAD) *</Label>
+                    <Label htmlFor="price">{t('admin.productForm.price')}</Label>
                     <Input
                         id="price"
                         type="number"
@@ -124,20 +126,21 @@ export function ProductForm({ onSuccess, initialData }: ProductFormProps) {
                         onChange={e => setPriceMad(e.target.value)}
                         placeholder="0.00"
                         required
+                        dir="ltr"
                     />
                 </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                    <Label htmlFor="category">Category *</Label>
+                    <Label htmlFor="category">{t('admin.productForm.category')}</Label>
                     <Select value={categoryId} onValueChange={setCategoryId} required>
-                        <SelectTrigger>
-                            <SelectValue placeholder={isLoadingCategories ? "Loading..." : "Select a category"} />
+                        <SelectTrigger className="text-start">
+                            <SelectValue placeholder={isLoadingCategories ? t('admin.productForm.loadingCategory') : t('admin.productForm.categoryPlaceholder')} />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent className="text-start">
                             {categories.map(cat => (
-                                <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
+                                <SelectItem key={cat.id} value={cat.id} className="text-start">{cat.name}</SelectItem>
                             ))}
                         </SelectContent>
                     </Select>
@@ -146,8 +149,8 @@ export function ProductForm({ onSuccess, initialData }: ProductFormProps) {
 
             {/* ─── Available Sizes ─────────────────────────────────────── */}
             <div className="space-y-3">
-                <Label className="text-base font-bold">Tailles disponibles</Label>
-                <p className="text-xs text-muted-foreground">Laissez vide pour un produit sans tailles (taille unique).</p>
+                <Label className="text-base font-bold">{t('admin.productForm.availableSizes')}</Label>
+                <p className="text-xs text-muted-foreground">{t('admin.productForm.availableSizesHint')}</p>
                 <div className="flex flex-wrap gap-2">
                     {PRODUCT_SIZES.map((size) => {
                         const selected = availableSizes.includes(size);
@@ -173,19 +176,19 @@ export function ProductForm({ onSuccess, initialData }: ProductFormProps) {
             </div>
 
             <div className="space-y-2">
-                <Label htmlFor="description">Description *</Label>
+                <Label htmlFor="description">{t('admin.productForm.description')}</Label>
                 <Textarea
                     id="description"
                     value={description}
                     onChange={e => setDescription(e.target.value)}
-                    placeholder="Detailed description of the product..."
+                    placeholder={t('admin.productForm.descriptionPlaceholder')}
                     required
                 />
             </div>
 
             <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                    <Label className="text-base font-bold">Specialities (Specifications)</Label>
+                    <Label className="text-base font-bold">{t('admin.productForm.specialities')}</Label>
                     <Button
                         type="button"
                         variant="outline"
@@ -193,18 +196,18 @@ export function ProductForm({ onSuccess, initialData }: ProductFormProps) {
                         onClick={() => setSpecialities([...specialities, { id: generateId(), name: '', value: '' }])}
                         className="gap-2"
                     >
-                        <Plus className="h-4 w-4" /> Add Speciality
+                        <Plus className="h-4 w-4" /> {t('admin.productForm.addSpeciality')}
                     </Button>
                 </div>
 
                 {specialities.length > 0 ? (
                     <div className="space-y-3">
                         {specialities.map((spec, index) => (
-                            <div key={spec.id} className="flex items-end gap-3 group">
-                                <div className="flex-1 space-y-2">
-                                    <Label className="text-xs text-muted-foreground">Name</Label>
+                            <div key={spec.id} className="flex flex-col sm:flex-row items-end gap-3 group">
+                                <div className="flex-1 space-y-2 w-full">
+                                    <Label className="text-xs text-muted-foreground">{t('admin.productForm.specName')}</Label>
                                     <Input
-                                        placeholder="e.g. Material"
+                                        placeholder={t('admin.productForm.specNamePlaceholder')}
                                         value={spec.name}
                                         onChange={(e) => {
                                             const newSpecs = [...specialities];
@@ -213,10 +216,10 @@ export function ProductForm({ onSuccess, initialData }: ProductFormProps) {
                                         }}
                                     />
                                 </div>
-                                <div className="flex-1 space-y-2">
-                                    <Label className="text-xs text-muted-foreground">Value</Label>
+                                <div className="flex-1 space-y-2 w-full">
+                                    <Label className="text-xs text-muted-foreground">{t('admin.productForm.specValue')}</Label>
                                     <Input
-                                        placeholder="e.g. Leather"
+                                        placeholder={t('admin.productForm.specValuePlaceholder')}
                                         value={spec.value}
                                         onChange={(e) => {
                                             const newSpecs = [...specialities];
@@ -239,13 +242,13 @@ export function ProductForm({ onSuccess, initialData }: ProductFormProps) {
                     </div>
                 ) : (
                     <div className="text-sm text-muted-foreground italic border border-dashed rounded-lg p-4 text-center">
-                        No specialities added. Click "Add Speciality" to add details like Material, Color, or Size.
+                        {t('admin.productForm.noSpecialities')}
                     </div>
                 )}
             </div>
 
             <div className="space-y-2">
-                <Label>Product Images *</Label>
+                <Label>{t('admin.productForm.images')}</Label>
                 <ImageUploader
                     value={images}
                     onChange={setImages}
@@ -253,13 +256,13 @@ export function ProductForm({ onSuccess, initialData }: ProductFormProps) {
                 />
             </div>
 
-            <div className="flex items-center space-x-2 pb-4">
+            <div className="flex items-center space-x-2 pb-4 space-x-reverse">
                 <Switch
                     id="in-stock"
                     checked={inStock}
                     onCheckedChange={setInStock}
                 />
-                <Label htmlFor="in-stock">In Stock (Available for purchase)</Label>
+                <Label htmlFor="in-stock" className="rtl:mr-2">{t('admin.productForm.inStock')}</Label>
             </div>
 
             <div className="flex justify-end pt-4 border-t">
@@ -267,8 +270,8 @@ export function ProductForm({ onSuccess, initialData }: ProductFormProps) {
                     type="submit"
                     disabled={createMutation.isPending || images.length === 0}
                 >
-                    {createMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    {isEdit ? 'Update Product' : 'Create Product'}
+                    {createMutation.isPending && <Loader2 className="rtl:ml-2 ltr:mr-2 h-4 w-4 animate-spin" />}
+                    {isEdit ? t('admin.productForm.updateProduct') : t('admin.productForm.createProduct')}
                 </Button>
             </div>
         </form>

@@ -3,6 +3,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Image as ImageIcon } from 'lucide-react';
 import { ApiOrderItem, centsToMad } from '@/lib/types';
+import { useTranslation } from '@/i18n/provider';
 
 interface OrderItemsListProps {
     items: ApiOrderItem[];
@@ -13,10 +14,11 @@ interface OrderItemsListProps {
 }
 
 export function OrderItemsList({ items, deliveryFee, total, enableProductLinks = false }: OrderItemsListProps) {
+    const { t } = useTranslation();
     return (
         <div className="border border-primary/5 rounded-md divide-y divide-primary/5 bg-[#FAF7F2]/30">
             {items.map((item) => (
-                <div key={item.id} className="p-4 flex items-center gap-4 hover:bg-[#F3EFE9]/30 transition-colors">
+                <div key={item.id} className="p-4 flex items-center gap-4 hover:bg-[#F3EFE9]/30 transition-colors text-start">
                     {/* Thumbnail 48px */}
                     <div className="relative w-12 h-12 rounded-sm overflow-hidden bg-white flex-shrink-0 border border-primary/5">
                         {item.image ? (
@@ -45,32 +47,32 @@ export function OrderItemsList({ items, deliveryFee, total, enableProductLinks =
                         )}
                         <div className="flex items-center gap-1.5 mt-1.5">
                             <span className="text-[10px] uppercase tracking-widest text-muted-foreground/60 font-medium">
-                                Taille: <span className="text-foreground font-bold">{item.size ?? 'Unique'}</span>
+                                {t('orderItems.size')}: <span className="text-foreground font-bold">{item.size ?? t('orderItems.unique')}</span>
                             </span>
                             <span className="text-[8px] text-muted-foreground/30">•</span>
                             <span className="text-[10px] uppercase tracking-widest text-[#C9A227] font-semibold">
-                                Qté: {item.quantity}
+                                {t('orderItems.qty')}: {item.quantity}
                             </span>
                         </div>
                     </div>
 
                     {/* Right: Line Total */}
-                    <div className="text-right whitespace-nowrap pl-2">
-                        <span className="font-serif text-[14px] tracking-tight text-foreground">
-                            {centsToMad(item.price * item.quantity)} <span className="text-[10px] uppercase tracking-widest text-muted-foreground/50 ml-0.5">MAD</span>
+                    <div className="text-end whitespace-nowrap rtl:pr-2 ltr:pl-2">
+                        <span className="font-serif text-[14px] tracking-tight text-foreground" dir="ltr">
+                            {centsToMad(item.price * item.quantity)} <span className="text-[10px] uppercase tracking-widest text-muted-foreground/50 rtl:mr-0.5 ltr:ml-0.5">{t('common.currency')}</span>
                         </span>
                     </div>
                 </div>
             ))}
             <div className="p-4 bg-muted/20 flex justify-between text-xs text-muted-foreground">
-                <span className="text-[11px] uppercase tracking-widest font-medium">Frais de livraison</span>
-                <span className="font-serif text-[14px] tracking-tight text-foreground">
-                    {centsToMad(deliveryFee)} <span className="text-[10px] uppercase tracking-widest text-muted-foreground/50 ml-0.5">MAD</span>
+                <span className="text-[11px] uppercase tracking-widest font-medium">{t('orderItems.deliveryFee')}</span>
+                <span className="font-serif text-[14px] tracking-tight text-foreground" dir="ltr">
+                    {centsToMad(deliveryFee)} <span className="text-[10px] uppercase tracking-widest text-muted-foreground/50 rtl:mr-0.5 ltr:ml-0.5">{t('common.currency')}</span>
                 </span>
             </div>
             <div className="p-4 bg-[#FAF7F2] flex justify-between items-baseline border-t border-primary/10">
-                <span className="text-[11px] uppercase tracking-widest font-black text-foreground">Total</span>
-                <span className="font-serif text-lg tracking-tight text-[#C9A227]">{centsToMad(total)} MAD</span>
+                <span className="text-[11px] uppercase tracking-widest font-black text-foreground">{t('orderItems.total')}</span>
+                <span className="font-serif text-lg tracking-tight text-[#C9A227]" dir="ltr">{centsToMad(total)} {t('common.currency')}</span>
             </div>
         </div>
     );

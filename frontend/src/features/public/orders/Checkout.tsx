@@ -25,6 +25,7 @@ import { apiRequest } from '@/lib/queryClient';
 import { centsToMad } from '@/lib/types';
 import { useMyOrders } from '@/hooks/useMyOrders';
 import { cn } from '@/lib/utils';
+import { useTranslation } from '@/i18n/provider';
 
 // ─── Simple media query hook ──────────────────────────────────────────────────
 function useIsMobile(breakpoint = 768) {
@@ -39,30 +40,31 @@ function useIsMobile(breakpoint = 768) {
   return isMobile;
 }
 
-const baseFormSchema = z.object({
-  fullName: z.string().min(2, 'Full name is required'),
-  email: z.string().email('Valid email is required').optional().or(z.literal('')),
-  phone: z.string().min(10, 'Valid phone number is required'),
+const getBaseFormSchema = (t: (key: string) => string) => z.object({
+  fullName: z.string().min(2, t('checkout.validation.fullName')),
+  email: z.string().email(t('checkout.validation.email')).optional().or(z.literal('')),
+  phone: z.string().min(10, t('checkout.validation.phone')),
   deliveryMethod: z.enum(['DELIVERY', 'PICKUP']),
   city: z.string().optional(),
   address: z.string().optional(),
   notes: z.string().optional(),
 });
 
-const formSchema = baseFormSchema.superRefine((data, ctx) => {
+const getFormSchema = (t: (key: string) => string) => getBaseFormSchema(t).superRefine((data, ctx) => {
   if (data.deliveryMethod === 'DELIVERY') {
     if (!data.city || data.city.length < 2) {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'City is required for delivery', path: ['city'] });
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: t('checkout.validation.city'), path: ['city'] });
     }
     if (!data.address || data.address.length < 5) {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Full delivery address is required', path: ['address'] });
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: t('checkout.validation.address'), path: ['address'] });
     }
   }
 });
 
-type FormValues = z.infer<typeof baseFormSchema>;
+type FormValues = z.infer<ReturnType<typeof getBaseFormSchema>>;
 
 export default function Checkout() {
+  const { t } = useTranslation();
   const { items, cartTotal, clearCart } = useCart();
   const { trackOrder } = useMyOrders();
   const { data } = useQuery<ApiInitData>({ queryKey: ['/api/public/init'] });
@@ -82,7 +84,7 @@ export default function Checkout() {
   const router = useRouter();
 
   const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(getFormSchema(t)),
     defaultValues: {
       fullName: '',
       email: '',
@@ -151,15 +153,15 @@ export default function Checkout() {
     const onSuccess = () => {
       setCopied(true);
       setTimeout(() => setCopied(false), 1500);
-      toast.success('Référence copiée ✓', {
+      toast.success(t('checkout.copySuccess'), {
         description: text,
         duration: 2500,
       });
     };
 
     const onError = () => {
-      toast.error('Impossible de copier', {
-        description: 'Copiez la référence manuellement.',
+      toast.error(t('checkout.copyFail'), {
+        description: t('checkout.copyFailDesc'),
         duration: 3000,
       });
     };
@@ -198,20 +200,20 @@ export default function Checkout() {
     const storeNumber = settings?.whatsappNumber?.replace(/[^0-9]/g, '') || '';
     if (!storeNumber || !finalOrderData) return '#';
 
-    let message = `*NEW ORDER: ${finalOrderData.orderId}*\n\n`;
-    message += `*Customer:* ${finalOrderData.fullName}\n`;
-    message += `*Phone:* ${finalOrderData.phone}\n`;
-    message += `*Delivery:* ${finalOrderData.deliveryMethod === 'DELIVERY' ? 'Delivery to ' + finalOrderData.city : 'Pick up from store'}\n\n`;
-    message += `*Items:*\n`;
+    let message = `*${t('checkout.whatsapp.newOrder')}: ${finalOrderData.orderId}*\n\n`;
+    message += `*${t('checkout.whatsapp.customer')}:* ${finalOrderData.fullName}\n`;
+    message += `*${t('checkout.whatsapp.phone')}:* ${finalOrderData.phone}\n`;
+    message += `*${t('checkout.whatsapp.delivery')}:* ${finalOrderData.deliveryMethod === 'DELIVERY' ? t('checkout.whatsapp.deliveryTo') + ' ' + finalOrderData.city : t('checkout.whatsapp.pickup')}\n\n`;
+    message += `*${t('checkout.whatsapp.items')}:*\n`;
     finalOrderData.items.forEach((item: any) => {
-      message += `- ${item.quantity}x ${item.name} (${centsToMad(item.price * item.quantity)} MAD)\n`;
+      message += `- ${item.quantity}x ${item.name} (${centsToMad(item.price * item.quantity)} ${t('common.currency')})\n`;
     });
-    message += `\n*Total Payments:*\n`;
-    message += `Subtotal: ${centsToMad(finalOrderData.cartTotal)} MAD\n`;
+    message += `\n*${t('checkout.whatsapp.payments')}:*\n`;
+    message += `${t('checkout.subtotal')}: ${centsToMad(finalOrderData.cartTotal)} ${t('common.currency')}\n`;
     if (finalOrderData.deliveryMethod === 'DELIVERY') {
-      message += `Shipping: ${finalOrderData.displayShipping === 0 ? 'Free' : `${centsToMad(finalOrderData.displayShipping)} MAD`}\n`;
+      message += `${t('checkout.shipping')}: ${finalOrderData.displayShipping === 0 ? t('checkout.free') : `${centsToMad(finalOrderData.displayShipping)} ${t('common.currency')}`}\n`;
     }
-    message += `*Grand Total: ${centsToMad(finalOrderData.grandTotal)} MAD*\n`;
+    message += `*${t('checkout.grandTotal')}: ${centsToMad(finalOrderData.grandTotal)} ${t('common.currency')}*\n`;
 
     return `https://wa.me/${storeNumber}?text=${encodeURIComponent(message)}`;
   };
@@ -224,15 +226,15 @@ export default function Checkout() {
         <div className="bg-emerald-50 text-emerald-500 h-20 w-20 rounded-full flex items-center justify-center mx-auto mb-6 shadow-sm border border-emerald-100/50">
           <CheckCircle2 className="h-10 w-10 animate-in zoom-in duration-500" />
         </div>
-        <h1 className="text-2xl md:text-3xl font-black mb-2 text-slate-900 tracking-tight">Order Confirmed!</h1>
+        <h1 className="text-2xl md:text-3xl font-black mb-2 text-slate-900 tracking-tight">{t('checkout.successTitle')}</h1>
         <p className="text-slate-500 mb-8 text-sm md:text-base font-medium leading-relaxed px-4">
-          Thank you for your order. To ensure fast processing, <br className="hidden sm:block" />
-          <span className="text-primary font-bold">please finalize confirmation via WhatsApp below.</span>
+          {t('checkout.successDesc1')} <br className="hidden sm:block" />
+          <span className="text-primary font-bold">{t('checkout.successDesc2')}</span>
         </p>
 
-        <Card className="mb-8 text-left border-slate-200 overflow-hidden shadow-xl shadow-slate-200/40 rounded-[1.5rem] bg-white">
-          <div className="bg-[#F9F6F0] px-6 py-5 border-b border-[#C9A227]/10">
-            <p className="text-[9px] font-bold text-[#1A1A1A]/40 uppercase tracking-[0.3em] mb-3 leading-none">Référence de commande</p>
+        <Card className="mb-8 text-start border-slate-200 overflow-hidden shadow-xl shadow-slate-200/40 rounded-[1.5rem] bg-white text-start">
+          <div className="bg-[#F9F6F0] px-6 py-5 border-b border-[#C9A227]/10 text-start">
+            <p className="text-[9px] font-bold text-[#1A1A1A]/40 uppercase tracking-[0.3em] mb-3 leading-none">{t('checkout.orderRef')}</p>
             {/* Stable reference row — never changes size */}
             <div className="flex items-center gap-2">
               <span className="font-mono font-bold text-lg text-[#1A1A1A] tracking-wider truncate flex-1 min-w-0">
@@ -241,8 +243,8 @@ export default function Checkout() {
               {/* Fixed-size icon button — only the icon inside animates */}
               <button
                 onClick={() => copyToClipboard(finalOrderData?.orderId)}
-                aria-label="Copier la référence"
-                title="Copier la référence"
+                aria-label={t('checkout.copyAria')}
+                title={t('checkout.copyAria')}
                 className="flex-shrink-0 h-8 w-8 flex items-center justify-center rounded-none border border-[#C9A227]/20 text-[#1A1A1A]/30 hover:text-[#C9A227] hover:border-[#C9A227]/50 hover:bg-[#C9A227]/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C9A227]/30 transition-colors active:scale-95 duration-150"
               >
                 {copied ? (
@@ -253,26 +255,26 @@ export default function Checkout() {
               </button>
             </div>
           </div>
-          <CardContent className="space-y-6 p-6 md:p-8">
+          <CardContent className="space-y-6 p-6 md:p-8 text-start">
             <div className="flex justify-between items-center text-xs">
-              <span className="text-slate-400 font-bold uppercase tracking-widest text-[9px]">Payment Method</span>
+              <span className="text-slate-400 font-bold uppercase tracking-widest text-[9px]">{t('checkout.paymentMethod')}</span>
               <Badge variant="outline" className="text-slate-900 bg-slate-50 border-slate-200 font-black uppercase tracking-widest text-[9px] px-2 py-0.5 rounded-full">
-                CASH ON DELIVERY
+                {t('checkout.cod')}
               </Badge>
             </div>
 
             <div className="bg-primary/5 rounded-2xl p-5 md:p-6 border border-primary/10">
               <div className="flex justify-between items-center mb-4">
-                <span className="text-sm font-bold text-slate-700">Final Amount:</span>
-                <span className="text-2xl font-black text-primary tracking-tighter">{centsToMad(finalOrderData?.grandTotal || 0)} MAD</span>
+                <span className="text-sm font-bold text-slate-700">{t('checkout.finalAmount')}</span>
+                <span className="text-2xl font-black text-primary tracking-tighter" dir="ltr">{centsToMad(finalOrderData?.grandTotal || 0)} {t('common.currency')}</span>
               </div>
               <div className="space-y-3">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 text-start">
                   <div className="h-2 w-2 rounded-full bg-primary animate-pulse shadow-[0_0_8px_rgba(var(--primary),0.6)]" />
-                  <p className="text-[10px] font-black text-slate-900 uppercase tracking-widest">Action Required</p>
+                  <p className="text-[10px] font-black text-slate-900 uppercase tracking-widest">{t('checkout.actionRequired')}</p>
                 </div>
                 <p className="text-xs text-slate-500 font-medium leading-relaxed">
-                  Your order is pending. To ship today, please click below to confirm via WhatsApp.
+                  {t('checkout.pendingMsg')}
                 </p>
                 <a
                   href={generateWhatsAppMessage()}
@@ -282,8 +284,8 @@ export default function Checkout() {
                   onClick={() => setHasClickedWhatsApp(true)}
                 >
                   <Button className="w-full bg-[#25D366] hover:bg-[#20bd5a] text-white gap-2 h-14 text-base font-black rounded-xl shadow-lg shadow-[#25D366]/20 transition-all active:scale-95">
-                    <MessageCircle className="h-5 w-5" />
-                    Confirm on WhatsApp
+                    <MessageCircle className="h-5 w-5 rtl:-scale-x-100" />
+                    {t('checkout.confirmWhatsapp')}
                   </Button>
                 </a>
               </div>
@@ -294,10 +296,10 @@ export default function Checkout() {
         {hasClickedWhatsApp && (
           <div className="flex flex-col gap-2 animate-in fade-in slide-in-from-top-2 duration-500 max-w-sm mx-auto">
             <Button variant="outline" className="h-10 w-full text-xs font-bold rounded-lg border-slate-200" onClick={() => router.push('/')}>
-              Back to Home
+              {t('checkout.backHome')}
             </Button>
             <Button variant="ghost" className="h-10 w-full text-[10px] font-black uppercase tracking-widest text-slate-400" onClick={() => router.push('/orders')}>
-              View Order History
+              {t('checkout.viewHistory')}
             </Button>
           </div>
         )}
@@ -320,10 +322,10 @@ export default function Checkout() {
               <div className="h-7 w-7 rounded-lg bg-slate-50 flex items-center justify-center border border-slate-100">
                 <ShoppingBag className="h-3.5 w-3.5 text-primary" />
               </div>
-              <span>{showSummaryMobile ? 'Hide' : 'Review'} Summary</span>
+              <span>{showSummaryMobile ? t('checkout.hideSummary') : t('checkout.reviewSummary')}</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="font-black text-slate-900 text-sm">{centsToMad(grandTotal)} MAD</span>
+              <span className="font-black text-slate-900 text-sm" dir="ltr">{centsToMad(grandTotal)} {t('common.currency')}</span>
               {showSummaryMobile ? <ChevronUp className="h-4 w-4 text-slate-400" /> : <ChevronDown className="h-4 w-4 text-slate-400" />}
             </div>
           </button>
@@ -347,25 +349,25 @@ export default function Checkout() {
                       </div>
                     )}
                   </div>
-                  <div className="flex-1 min-w-0 flex flex-col justify-center">
+                  <div className="flex-1 min-w-0 flex flex-col justify-center text-start">
                     <div className="flex justify-between items-start">
                       <h4 className="font-bold text-slate-900 text-xs line-clamp-1">{item.name}</h4>
-                      <span className="font-black text-slate-900 text-xs whitespace-nowrap ml-2">{centsToMad(item.price * item.quantity)}</span>
+                      <span className="font-black text-slate-900 text-xs whitespace-nowrap mx-2" dir="ltr">{centsToMad(item.price * item.quantity)}</span>
                     </div>
-                    <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mt-0.5">{item.quantity}x {centsToMad(item.price)}</p>
-                    {item.selectedSize && <p className="text-[9px] uppercase tracking-widest text-slate-400 mt-0.5">Taille: {item.selectedSize}</p>}
+                    <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mt-0.5">{item.quantity}x <span dir="ltr">{centsToMad(item.price)}</span></p>
+                    {item.selectedSize && <p className="text-[9px] uppercase tracking-widest text-slate-400 mt-0.5">{t('cart.size')}: {item.selectedSize}</p>}
                   </div>
                 </div>
               ))}
               <Separator className="bg-slate-100/50" />
               <div className="space-y-2">
                 <div className="flex justify-between text-xs">
-                  <span className="text-slate-400 font-bold text-[9px] uppercase tracking-widest">Subtotal</span>
-                  <span className="font-black text-slate-900">{centsToMad(cartTotal)}</span>
+                  <span className="text-slate-400 font-bold text-[9px] uppercase tracking-widest">{t('checkout.subtotal')}</span>
+                  <span className="font-black text-slate-900" dir="ltr">{centsToMad(cartTotal)}</span>
                 </div>
                 <div className="flex justify-between text-xs">
-                  <span className="text-slate-400 font-bold text-[9px] uppercase tracking-widest">Shipping</span>
-                  <span className="font-black text-slate-900">{displayShipping === 0 ? 'Free' : `${centsToMad(displayShipping)}`}</span>
+                  <span className="text-slate-400 font-bold text-[9px] uppercase tracking-widest">{t('checkout.shipping')}</span>
+                  <span className="font-black text-slate-900" dir="ltr">{displayShipping === 0 ? t('checkout.free') : `${centsToMad(displayShipping)}`}</span>
                 </div>
               </div>
             </div>
@@ -373,33 +375,33 @@ export default function Checkout() {
         </div>
       )}
 
-      <Button variant="ghost" className="mb-4 pl-0 h-8 py-0 hover:bg-transparent text-[10px] font-bold uppercase tracking-widest text-slate-400 hover:text-slate-900" onClick={() => router.push('/cart')}>
-        <ArrowLeft className="mr-1.5 h-3 w-3" /> Bag
+      <Button variant="ghost" className="mb-4 rtl:pr-0 ltr:pl-0 h-8 py-0 hover:bg-transparent text-[10px] font-bold uppercase tracking-widest text-slate-400 hover:text-slate-900" onClick={() => router.push('/cart')}>
+        <ArrowLeft className="rtl:ml-1.5 ltr:mr-1.5 h-3 w-3 rtl:-scale-x-100" /> {t('checkout.bag')}
       </Button>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 animate-in fade-in duration-500">
         {/* Left: Form */}
-        <div className="lg:col-span-7 space-y-8">
+        <div className="lg:col-span-7 space-y-8 text-start">
           <div className="mb-2">
-            <Badge className="bg-primary/10 text-primary border-none text-[9px] font-black uppercase tracking-widest px-2 py-0.5 mb-2">Secure Checkout</Badge>
-            <h1 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight">Shipping Details</h1>
-            <p className="text-slate-500 text-sm font-medium mt-1">Complete your order. Payment is Cash on Delivery.</p>
+            <Badge className="bg-primary/10 text-primary border-none text-[9px] font-black uppercase tracking-widest px-2 py-0.5 mb-2">{t('checkout.secureCheckout')}</Badge>
+            <h1 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight">{t('checkout.shippingDetails')}</h1>
+            <p className="text-slate-500 text-sm font-medium mt-1">{t('checkout.shippingDesc')}</p>
           </div>
 
           <Form {...form}>
             <form id="checkout-form" onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               {/* Delivery Method */}
-              <Card className="border-slate-200 shadow shadow-slate-200/40 rounded-2xl overflow-hidden bg-white">
-                <CardHeader className="bg-slate-50 py-4 px-6 border-b border-slate-100">
+              <Card className="border-slate-200 shadow shadow-slate-200/40 rounded-2xl overflow-hidden bg-white text-start">
+                <CardHeader className="bg-slate-50 py-4 px-6 border-b border-slate-100 text-start">
                   <CardTitle className="text-[9px] font-black tracking-[0.2em] flex items-center gap-2 text-slate-400 uppercase">
-                    <Truck className="h-3.5 w-3.5 text-primary/60" /> Delivery
+                    <Truck className="h-3.5 w-3.5 text-primary/60 rtl:-scale-x-100" /> {t('checkout.deliveryMethod')}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="p-5 md:p-6 lg:p-8">
                   <div className="flex flex-col sm:flex-row gap-3">
                     {[
-                      { id: 'DELIVERY', label: 'Delivery', desc: 'Ships to you', icon: Truck },
-                      { id: 'PICKUP', label: 'In-Store', desc: 'Instant Ready', icon: Store },
+                      { id: 'DELIVERY', label: t('checkout.methodDelivery'), desc: t('checkout.methodDeliveryDesc'), icon: Truck },
+                      { id: 'PICKUP', label: t('checkout.methodPickup'), desc: t('checkout.methodPickupDesc'), icon: Store },
                     ].map((method) => {
                       const selected = form.watch('deliveryMethod') === method.id;
                       return (
@@ -415,7 +417,7 @@ export default function Checkout() {
                             "h-10 w-10 rounded-lg flex items-center justify-center transition-colors",
                             selected ? 'bg-primary text-white' : 'bg-white text-slate-400 border border-slate-100'
                           )}>
-                            <method.icon className="h-5 w-5" />
+                              <method.icon className={cn("h-5 w-5", method.icon === Truck ? "rtl:-scale-x-100" : "")} />
                           </div>
                           <div>
                             <h4 className={cn("text-[13px] font-black uppercase tracking-tight", selected ? 'text-slate-900' : 'text-slate-500')}>{method.label}</h4>
@@ -429,9 +431,9 @@ export default function Checkout() {
               </Card>
 
               {/* Customer Information */}
-              <Card className="border-slate-200 shadow shadow-slate-200/40 rounded-2xl overflow-hidden bg-white">
-                <CardHeader className="bg-slate-50 py-4 px-6 border-b border-slate-100">
-                  <CardTitle className="text-[9px] font-black tracking-[0.2em] text-slate-400 uppercase">Information</CardTitle>
+              <Card className="border-slate-200 shadow shadow-slate-200/40 rounded-2xl overflow-hidden bg-white text-start">
+                <CardHeader className="bg-slate-50 py-4 px-6 border-b border-slate-100 text-start">
+                  <CardTitle className="text-[9px] font-black tracking-[0.2em] text-slate-400 uppercase">{t('checkout.information')}</CardTitle>
                 </CardHeader>
                 <CardContent className="p-5 md:p-6 lg:p-8 space-y-5">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -440,9 +442,9 @@ export default function Checkout() {
                       name="fullName"
                       render={({ field }) => (
                         <FormItem className="space-y-1.5">
-                          <FormLabel className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">Full Name</FormLabel>
+                          <FormLabel className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">{t('checkout.fullName')}</FormLabel>
                           <FormControl>
-                            <Input placeholder="Enter your full name" className="h-11 bg-slate-50 border-slate-100 rounded-lg focus-visible:ring-primary/20 text-sm font-medium" {...field} />
+                            <Input placeholder={t('checkout.fullNamePlaceholder')} className="h-11 bg-slate-50 border-slate-100 rounded-lg focus-visible:ring-primary/20 text-sm font-medium" {...field} />
                           </FormControl>
                           <FormMessage className="text-[10px]" />
                         </FormItem>
@@ -453,9 +455,9 @@ export default function Checkout() {
                       name="phone"
                       render={({ field }) => (
                         <FormItem className="space-y-1.5">
-                          <FormLabel className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">Phone Number</FormLabel>
+                          <FormLabel className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">{t('checkout.phone')}</FormLabel>
                           <FormControl>
-                            <Input placeholder="06XXXXXXXX" className="h-11 bg-slate-50 border-slate-100 rounded-lg focus-visible:ring-primary/20 text-sm font-medium" {...field} />
+                            <Input placeholder={t('checkout.phonePlaceholder')} className="h-11 bg-slate-50 border-slate-100 rounded-lg focus-visible:ring-primary/20 text-sm font-medium" {...field} />
                           </FormControl>
                           <FormMessage className="text-[10px]" />
                         </FormItem>
@@ -471,9 +473,9 @@ export default function Checkout() {
                         name="city"
                         render={({ field }) => (
                           <FormItem className="space-y-1.5">
-                            <FormLabel className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">City</FormLabel>
+                            <FormLabel className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">{t('checkout.city')}</FormLabel>
                             <FormControl>
-                              <Input placeholder="Enter your city" className="h-11 bg-slate-50 border-slate-100 rounded-lg focus-visible:ring-primary/20 text-sm font-medium" {...field} />
+                              <Input placeholder={t('checkout.cityPlaceholder')} className="h-11 bg-slate-50 border-slate-100 rounded-lg focus-visible:ring-primary/20 text-sm font-medium" {...field} />
                             </FormControl>
                             <FormMessage className="text-[10px]" />
                           </FormItem>
@@ -484,9 +486,9 @@ export default function Checkout() {
                         name="address"
                         render={({ field }) => (
                           <FormItem className="space-y-1.5">
-                            <FormLabel className="text-[9px] font-black uppercase tracking-[0.1em] text-slate-400 font-black">Full Address</FormLabel>
+                            <FormLabel className="text-[9px] font-black uppercase tracking-[0.1em] text-slate-400 font-black">{t('checkout.address')}</FormLabel>
                             <FormControl>
-                              <Textarea placeholder="Street, district, etc." className="min-h-[80px] bg-slate-50 border-slate-100 rounded-lg focus-visible:ring-primary/20 text-sm font-medium" {...field} />
+                              <Textarea placeholder={t('checkout.addressPlaceholder')} className="min-h-[80px] bg-slate-50 border-slate-100 rounded-lg focus-visible:ring-primary/20 text-sm font-medium" {...field} />
                             </FormControl>
                             <FormMessage className="text-[10px]" />
                           </FormItem>
@@ -501,9 +503,9 @@ export default function Checkout() {
                     name="notes"
                     render={({ field }) => (
                       <FormItem className="space-y-1.5">
-                        <FormLabel className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">Notes (Optional)</FormLabel>
+                        <FormLabel className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">{t('checkout.notes')}</FormLabel>
                         <FormControl>
-                          <Input placeholder="Special instructions..." className="h-11 bg-slate-50 border-slate-100 rounded-lg focus-visible:ring-primary/20 text-sm font-medium" {...field} />
+                          <Input placeholder={t('checkout.notesPlaceholder')} className="h-11 bg-slate-50 border-slate-100 rounded-lg focus-visible:ring-primary/20 text-sm font-medium" {...field} />
                         </FormControl>
                       </FormItem>
                     )}
@@ -515,10 +517,10 @@ export default function Checkout() {
         </div>
 
         {/* Right: Summary */}
-        <div className="lg:col-span-5">
+        <div className="lg:col-span-5 text-start">
           <Card className="sticky top-24 shadow-lg shadow-slate-200/40 border-slate-200 rounded-[1.5rem] overflow-hidden bg-white">
-            <CardHeader className="bg-slate-50 px-6 py-4 border-b border-slate-100">
-              <CardTitle className="text-[9px] font-black tracking-[0.2em] text-slate-400 uppercase">Summary</CardTitle>
+            <CardHeader className="bg-slate-50 px-6 py-4 border-b border-slate-100 text-start">
+              <CardTitle className="text-[9px] font-black tracking-[0.2em] text-slate-400 uppercase">{t('checkout.summary')}</CardTitle>
             </CardHeader>
             <CardContent className="p-6 space-y-5">
               <div className="max-h-[300px] overflow-y-auto space-y-4 pr-1 custom-scrollbar">
@@ -542,10 +544,10 @@ export default function Checkout() {
                     <div className="flex-1 flex flex-col justify-center min-w-0">
                       <div className="flex justify-between items-start gap-2">
                         <h4 className="font-bold text-slate-900 text-xs line-clamp-1 leading-snug">{item.name}</h4>
-                        <span className="text-xs font-black text-slate-900 tracking-tight whitespace-nowrap">{centsToMad(item.price * item.quantity)}</span>
+                        <span className="text-xs font-black text-slate-900 tracking-tight whitespace-nowrap" dir="ltr">{centsToMad(item.price * item.quantity)}</span>
                       </div>
-                      <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mt-0.5">{item.quantity}x {centsToMad(item.price)}</p>
-                      {item.selectedSize && <p className="text-[9px] uppercase tracking-widest text-slate-400 mt-0.5">Taille: {item.selectedSize}</p>}
+                      <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mt-0.5">{item.quantity}x <span dir="ltr">{centsToMad(item.price)}</span></p>
+                      {item.selectedSize && <p className="text-[9px] uppercase tracking-widest text-slate-400 mt-0.5">{t('cart.size')}: {item.selectedSize}</p>}
                     </div>
                   </div>
                 ))}
@@ -555,12 +557,12 @@ export default function Checkout() {
 
               <div className="space-y-2">
                 <div className="flex justify-between text-xs">
-                  <span className="text-slate-400 font-bold text-[9px] uppercase tracking-widest">Subtotal</span>
-                  <span className="font-black text-slate-900 tracking-tight">{centsToMad(cartTotal)} MAD</span>
+                  <span className="text-slate-400 font-bold text-[9px] uppercase tracking-widest">{t('checkout.subtotal')}</span>
+                  <span className="font-black text-slate-900 tracking-tight" dir="ltr">{centsToMad(cartTotal)} {t('common.currency')}</span>
                 </div>
                 <div className="flex justify-between text-xs">
-                  <span className="text-slate-400 font-bold text-[9px] uppercase tracking-widest">Shipping</span>
-                  <span className="font-black text-emerald-600 uppercase text-[9px] tracking-widest">{displayShipping === 0 ? 'Free' : `${centsToMad(displayShipping)} MAD`}</span>
+                  <span className="text-slate-400 font-bold text-[9px] uppercase tracking-widest">{t('checkout.shipping')}</span>
+                  <span className="font-black text-emerald-600 uppercase text-[9px] tracking-widest" dir="ltr">{displayShipping === 0 ? t('checkout.free') : `${centsToMad(displayShipping)} ${t('common.currency')}`}</span>
                 </div>
               </div>
 
@@ -568,17 +570,17 @@ export default function Checkout() {
                 <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center border border-primary/20">
                   <Wallet className="h-4 w-4 text-primary" />
                 </div>
-                <div>
-                  <p className="font-black text-[9px] uppercase tracking-widest text-slate-900 leading-none mb-1">CASH ON DELIVERY</p>
-                  <p className="text-[9px] text-slate-400 font-medium">Safe payment upon delivery.</p>
+                <div className="text-start">
+                  <p className="font-black text-[9px] uppercase tracking-widest text-slate-900 leading-none mb-1">{t('checkout.cod')}</p>
+                  <p className="text-[9px] text-slate-400 font-medium">{t('checkout.safePayment')}</p>
                 </div>
               </div>
 
               <Separator className="bg-slate-50" />
 
               <div className="flex justify-between items-center bg-slate-900 p-5 rounded-2xl shadow-xl shadow-slate-900/10">
-                <span className="font-black text-[9px] uppercase tracking-widest text-slate-400">Grand Total</span>
-                <span className="font-black text-2xl text-white tracking-tighter">{centsToMad(grandTotal)} MAD</span>
+                <span className="font-black text-[9px] uppercase tracking-widest text-slate-400">{t('checkout.grandTotal')}</span>
+                <span className="font-black text-2xl text-white tracking-tighter" dir="ltr">{centsToMad(grandTotal)} {t('common.currency')}</span>
               </div>
 
               {/* Desktop/Tablet Button (Hidden on phones) */}
@@ -589,7 +591,7 @@ export default function Checkout() {
                 form="checkout-form"
                 disabled={isLoading}
               >
-                {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : 'CONFIRM ORDER'}
+                {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : t('checkout.confirmOrder')}
               </Button>
             </CardContent>
           </Card>
@@ -599,9 +601,9 @@ export default function Checkout() {
       {/* ── Mobile Sticky Button ── */}
       {!isSuccess && (
         <div className="fixed bottom-0 left-0 right-0 p-4 bg-white/95 backdrop-blur-md border-t border-slate-100 z-[100] flex items-center gap-4 md:hidden">
-          <div className="flex-1">
-            <p className="text-[9px] text-slate-400 font-black uppercase leading-none mb-1 tracking-widest">Total to Pay</p>
-            <p className="text-xl font-black text-primary leading-none tracking-tighter">{centsToMad(grandTotal)} MAD</p>
+          <div className="flex-1 text-start">
+            <p className="text-[9px] text-slate-400 font-black uppercase leading-none mb-1 tracking-widest">{t('checkout.totalToPay')}</p>
+            <p className="text-xl font-black text-primary leading-none tracking-tighter" dir="ltr">{centsToMad(grandTotal)} {t('common.currency')}</p>
           </div>
           <Button
             size="lg"
@@ -610,7 +612,7 @@ export default function Checkout() {
             form="checkout-form"
             disabled={isLoading}
           >
-            {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Order Now'}
+            {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : t('checkout.orderNow')}
           </Button>
         </div>
       )}

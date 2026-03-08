@@ -9,22 +9,25 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
+import { useTranslation } from "@/i18n/provider";
 
-const loginSchema = z.object({
-    email: z.string().email("Invalid email address"),
-    password: z.string().min(6, "Password must be at least 6 characters"),
-});
 
 export default function AdminLogin() {
+    const { t, locale } = useTranslation();
     const { login, user, isLoading } = useAuth();
     const router = useRouter();
 
+    const loginSchema = useMemo(() => z.object({
+        email: z.string().email(t('admin.login.validation.email')),
+        password: z.string().min(6, t('admin.login.validation.password')),
+    }), [t]);
+
     useEffect(() => {
         if (user && !isLoading) {
-            router.push("/admin");
+            router.push(`/${locale}/admin`);
         }
-    }, [user, isLoading, router]);
+    }, [user, isLoading, router, locale]);
 
     const form = useForm<z.infer<typeof loginSchema>>({
         resolver: zodResolver(loginSchema),
@@ -46,9 +49,9 @@ export default function AdminLogin() {
         <div className="min-h-screen flex items-center justify-center bg-muted/40 p-4">
             <Card className="w-full max-w-sm">
                 <CardHeader className="space-y-1">
-                    <CardTitle className="text-2xl text-center">Admin Login</CardTitle>
+                    <CardTitle className="text-2xl text-center">{t('admin.login.title')}</CardTitle>
                     <CardDescription className="text-center">
-                        Enter your email and password to access the dashboard
+                        {t('admin.login.description')}
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -59,7 +62,7 @@ export default function AdminLogin() {
                                 name="email"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Email</FormLabel>
+                                        <FormLabel>{t('admin.login.email')}</FormLabel>
                                         <FormControl>
                                             <Input placeholder="admin@example.com" {...field} />
                                         </FormControl>
@@ -72,7 +75,7 @@ export default function AdminLogin() {
                                 name="password"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Password</FormLabel>
+                                        <FormLabel>{t('admin.login.password')}</FormLabel>
                                         <FormControl>
                                             <Input type="password" placeholder="••••••••" {...field} />
                                         </FormControl>
@@ -81,7 +84,7 @@ export default function AdminLogin() {
                                 )}
                             />
                             <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
-                                {form.formState.isSubmitting ? "Logging in..." : "Login"}
+                                {form.formState.isSubmitting ? t('admin.login.loggingIn') : t('admin.login.loginBtn')}
                             </Button>
                         </form>
                     </Form>

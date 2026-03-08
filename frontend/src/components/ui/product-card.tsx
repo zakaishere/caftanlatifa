@@ -6,6 +6,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { ApiProduct, centsToMad } from '@/lib/types';
 import { Image as ImageIcon } from 'lucide-react';
+import { useTranslation } from '@/i18n/provider';
 
 // Dynamic import — keeps QuickView out of initial bundle
 const ProductQuickView = dynamic(
@@ -23,12 +24,13 @@ interface ProductCardProps {
 // Mobile retains the tap-to-open behaviour.
 // ──────────────────────────────────────────────────────────────────────────────
 export const ProductCard = memo(function ProductCard({ product }: ProductCardProps) {
+  const { t } = useTranslation();
   const [quickViewOpen, setQuickViewOpen] = useState(false);
   const hasImage = product.images && product.images.length > 0;
 
   return (
     <>
-      <div className="group flex flex-col w-full text-left">
+      <div className="group flex flex-col w-full text-start">
         {/* ── Image Container (Portrait 4:5) ─────────────────────────────── */}
         <div
           className="relative w-full aspect-[4/5] overflow-hidden bg-[#F3EFE9] cursor-pointer"
@@ -53,7 +55,7 @@ export const ProductCard = memo(function ProductCard({ product }: ProductCardPro
           {!product.inStock && (
             <div className="absolute inset-0 bg-black/40 backdrop-blur-[1px] flex items-center justify-center z-20">
               <span className="text-[10px] font-medium text-white uppercase tracking-[0.25em] border border-white/30 px-3 py-1">
-                Épuisé
+                {t('product.soldOut')}
               </span>
             </div>
           )}
@@ -69,14 +71,14 @@ export const ProductCard = memo(function ProductCard({ product }: ProductCardPro
                 }}
                 className="w-full text-[9px] uppercase tracking-[0.2em] bg-white text-black px-4 py-2.5 shadow-lg hover:bg-[#F3EFE9] transition-colors text-center font-medium"
               >
-                Aperçu rapide
+                {t('product.quickView')}
               </button>
               <Link
                 href={`/product/${product.slug || product.id}`}
                 onClick={(e) => e.stopPropagation()}
                 className="w-full text-[9px] uppercase tracking-[0.2em] bg-black/80 backdrop-blur-sm text-white px-4 py-2.5 shadow-lg hover:bg-black transition-colors text-center font-medium"
               >
-                Voir détails
+                {t('product.viewDetails')}
               </Link>
             </div>
           </div>
@@ -87,21 +89,21 @@ export const ProductCard = memo(function ProductCard({ product }: ProductCardPro
           {/* Product Name (Link) */}
           <Link
             href={`/product/${product.slug || product.id}`}
-            className="text-[12px] sm:text-[13px] uppercase tracking-[0.15em] text-foreground font-light line-clamp-1 hover:text-[#C9A227] transition-colors duration-300 w-fit"
+            className="text-[12px] sm:text-[13px] uppercase tracking-[0.15em] text-foreground font-light line-clamp-1 hover:text-[#C9A227] transition-colors duration-300 w-fit text-start"
           >
             {product.name}
           </Link>
 
           {/* Price & Mobile Link */}
           <div className="flex items-center justify-between">
-            <span className="font-medium text-[#C9A227] text-[13px] sm:text-[14px] tracking-wide">
-              {centsToMad(product.price)} MAD
+            <span className="font-medium text-[#C9A227] text-[13px] sm:text-[14px] tracking-wide" dir="ltr">
+              {centsToMad(product.price)} {t('common.currency')}
             </span>
             <Link
               href={`/product/${product.slug || product.id}`}
               className="sm:hidden text-[9px] uppercase tracking-[0.1em] text-[#1A1A1A]/40 hover:text-[#C9A227] transition-colors flex items-center gap-1"
             >
-              Voir détails <span className="text-[10px] leading-none mb-0.5">&rarr;</span>
+              {t('product.viewDetails')} <span className="text-[10px] leading-none mb-0.5 rtl:-scale-x-100">&rarr;</span>
             </Link>
           </div>
         </div>
@@ -115,3 +117,4 @@ export const ProductCard = memo(function ProductCard({ product }: ProductCardPro
     </>
   );
 });
+

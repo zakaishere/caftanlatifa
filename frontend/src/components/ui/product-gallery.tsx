@@ -4,15 +4,20 @@ import * as React from "react";
 import Image from "next/image";
 import useEmblaCarousel from "embla-carousel-react";
 import { X, ChevronLeft, ChevronRight } from "lucide-react";
+import { useTranslation } from "@/i18n/provider";
 import { cn } from "@/lib/utils";
-
+ 
 interface ProductGalleryProps {
     images: string[];
     productName: string;
 }
-
+ 
 export function ProductGallery({ images, productName }: ProductGalleryProps) {
-    const [mainViewportRef, emblaMainApi] = useEmblaCarousel({ loop: true });
+    const { t, locale } = useTranslation();
+    const [mainViewportRef, emblaMainApi] = useEmblaCarousel({ 
+        loop: true,
+        direction: locale === 'ar' ? 'rtl' : 'ltr'
+    });
     const [selectedIndex, setSelectedIndex] = React.useState(0);
     const [lightboxOpen, setLightboxOpen] = React.useState(false);
 
@@ -57,7 +62,7 @@ export function ProductGallery({ images, productName }: ProductGalleryProps) {
                                 className="relative flex-[0_0_100%] min-w-0 h-full cursor-zoom-in"
                                 onClick={() => setLightboxOpen(true)}
                                 role="button"
-                                aria-label={`Voir image ${index + 1} en plein écran`}
+                                aria-label={t('product.gallery.viewFullscreen', { index: index + 1 })}
                             >
                                 <Image
                                     src={img}
@@ -80,7 +85,7 @@ export function ProductGallery({ images, productName }: ProductGalleryProps) {
                             <button
                                 key={i}
                                 onClick={(e) => { e.stopPropagation(); scrollTo(i); }}
-                                aria-label={`Aller à l'image ${i + 1}`}
+                                aria-label={t('product.gallery.goToImage', { index: i + 1 })}
                                 className={cn(
                                     "rounded-full transition-all duration-300",
                                     i === selectedIndex
@@ -107,14 +112,14 @@ export function ProductGallery({ images, productName }: ProductGalleryProps) {
                         <button
                             className="hidden md:flex absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 items-center justify-center bg-white/90 hover:bg-white text-black shadow-sm transition-all opacity-0 group-hover:opacity-100 rounded-none"
                             onClick={() => emblaMainApi?.scrollPrev()}
-                            aria-label="Image précédente"
+                            aria-label={t('product.imagePrev')}
                         >
                             <ChevronLeft className="w-5 h-5" />
                         </button>
                         <button
                             className="hidden md:flex absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 items-center justify-center bg-white/90 hover:bg-white text-black shadow-sm transition-all opacity-0 group-hover:opacity-100 rounded-none"
                             onClick={() => emblaMainApi?.scrollNext()}
-                            aria-label="Image suivante"
+                            aria-label={t('product.imageNext')}
                         >
                             <ChevronRight className="w-5 h-5" />
                         </button>
@@ -135,7 +140,7 @@ export function ProductGallery({ images, productName }: ProductGalleryProps) {
                                     : "border-transparent opacity-50 hover:opacity-80"
                             )}
                             onClick={() => scrollTo(index)}
-                            aria-label={`Aller à l'image ${index + 1}`}
+                            aria-label={t('product.gallery.goToImage', { index: index + 1 })}
                         >
                             <Image
                                 src={img}
@@ -179,7 +184,12 @@ function LightboxModal({
     onClose: () => void;
     onIndexChange: (i: number) => void;
 }) {
-    const [viewportRef, emblaApi] = useEmblaCarousel({ loop: true, startIndex: initialIndex });
+    const { t, locale } = useTranslation();
+    const [viewportRef, emblaApi] = useEmblaCarousel({ 
+        loop: true, 
+        startIndex: initialIndex,
+        direction: locale === 'ar' ? 'rtl' : 'ltr'
+    });
     const [currentIndex, setCurrentIndex] = React.useState(initialIndex);
 
     const onSelect = React.useCallback(() => {
@@ -215,7 +225,7 @@ function LightboxModal({
             className="fixed inset-0 z-[100] bg-black flex flex-col"
             role="dialog"
             aria-modal="true"
-            aria-label={`Galerie — ${productName}`}
+            aria-label={t('product.gallery.title', { name: productName })}
         >
             {/* Header */}
             <div className="flex items-center justify-between px-6 pt-safe py-4 text-white/60 shrink-0">
@@ -225,7 +235,7 @@ function LightboxModal({
                 <button
                     onClick={onClose}
                     className="w-10 h-10 flex items-center justify-center text-white/70 hover:text-white transition-colors"
-                    aria-label="Fermer"
+                    aria-label={t('product.close')}
                 >
                     <X className="w-6 h-6" />
                 </button>
@@ -258,7 +268,7 @@ function LightboxModal({
                         <button
                             key={i}
                             onClick={() => emblaApi?.scrollTo(i)}
-                            aria-label={`Image ${i + 1}`}
+                            aria-label={t('product.gallery.goToImage', { index: i + 1 })}
                             className={cn(
                                 "rounded-full transition-all duration-300",
                                 i === currentIndex
@@ -276,14 +286,14 @@ function LightboxModal({
                     <button
                         className="hidden md:flex absolute left-8 top-1/2 -translate-y-1/2 w-14 h-14 items-center justify-center text-white/40 hover:text-white transition-colors"
                         onClick={() => emblaApi?.scrollPrev()}
-                        aria-label="Image précédente"
+                        aria-label={t('product.imagePrev')}
                     >
                         <ChevronLeft className="w-8 h-8" />
                     </button>
                     <button
                         className="hidden md:flex absolute right-8 top-1/2 -translate-y-1/2 w-14 h-14 items-center justify-center text-white/40 hover:text-white transition-colors"
                         onClick={() => emblaApi?.scrollNext()}
-                        aria-label="Image suivante"
+                        aria-label={t('product.imageNext')}
                     >
                         <ChevronRight className="w-8 h-8" />
                     </button>

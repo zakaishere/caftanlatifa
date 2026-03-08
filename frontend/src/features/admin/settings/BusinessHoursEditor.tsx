@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
 import { Plus, Trash2, Copy, AlertCircle } from 'lucide-react';
+import { useTranslation } from '@/i18n/provider';
 
 interface BusinessHoursEditorProps {
     value?: BusinessHoursConfig | null;
@@ -34,6 +35,7 @@ const DAY_KEYS: (keyof BusinessHoursConfig['regularHours'])[] = [
 ];
 
 export function BusinessHoursEditor({ value, onChange }: BusinessHoursEditorProps) {
+    const { t } = useTranslation();
     const [config, setConfig] = useState<BusinessHoursConfig>(value || DEFAULT_CONFIG);
     const [isAdvanced, setIsAdvanced] = useState(false);
 
@@ -120,14 +122,14 @@ export function BusinessHoursEditor({ value, onChange }: BusinessHoursEditorProp
 
     return (
         <Card>
-            <CardHeader>
-                <div className="flex justify-between items-center">
-                    <div>
-                        <CardTitle>Horaires d'ouverture</CardTitle>
-                        <CardDescription>Configurez vos heures de travail (Heure de Casablanca).</CardDescription>
+            <CardHeader className="text-start">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <div className="text-start">
+                        <CardTitle className="text-start">{t('admin.businessHoursEditor.title')}</CardTitle>
+                        <CardDescription className="text-start">{t('admin.businessHoursEditor.subtitle')}</CardDescription>
                     </div>
                     <div className="flex items-center gap-2">
-                        <Label htmlFor="advanced-mode" className="text-xs">Mode Avancé</Label>
+                        <Label htmlFor="advanced-mode" className="text-xs">{t('admin.businessHoursEditor.advancedMode')}</Label>
                         <Switch id="advanced-mode" checked={isAdvanced} onCheckedChange={setIsAdvanced} />
                     </div>
                 </div>
@@ -136,14 +138,14 @@ export function BusinessHoursEditor({ value, onChange }: BusinessHoursEditorProp
 
                 {/* SIMPLE MODE */}
                 {!isAdvanced && (
-                    <div className="space-y-6">
+                    <div className="space-y-6 text-start">
                         <div className="bg-primary/5 p-4 rounded-md border border-primary/10 flex items-start gap-3 text-sm text-primary">
                             <AlertCircle className="h-5 w-5 shrink-0" />
-                            <p>Le mode simple applique le Lundi comme modèle pour toute la semaine (sauf les jours fermés).</p>
+                            <p>{t('admin.businessHoursEditor.simpleModeHint')}</p>
                         </div>
 
                         <div className="grid gap-4">
-                            <Label>Ajuster les horaires standards</Label>
+                            <Label className="text-start">{t('admin.businessHoursEditor.adjustStandardHours')}</Label>
                             <div className="flex items-center gap-4">
                                 <Input
                                     type="time"
@@ -159,7 +161,7 @@ export function BusinessHoursEditor({ value, onChange }: BusinessHoursEditorProp
                                         copyMondayToAll();
                                     }}
                                 />
-                                <span>à</span>
+                                <span>{t('admin.businessHoursEditor.to')}</span>
                                 <Input
                                     type="time"
                                     value={config.regularHours.lundi.slots[0]?.end || "19:00"}
@@ -176,7 +178,7 @@ export function BusinessHoursEditor({ value, onChange }: BusinessHoursEditorProp
                         </div>
 
                         <div className="grid gap-4">
-                            <Label>Jours Fermés</Label>
+                            <Label className="text-start">{t('admin.businessHoursEditor.closedDays')}</Label>
                             <div className="flex flex-wrap gap-2">
                                 {DAY_KEYS.map((day) => {
                                     const isClosed = !config.regularHours[day].isOpen;
@@ -190,7 +192,7 @@ export function BusinessHoursEditor({ value, onChange }: BusinessHoursEditorProp
                                                 updateDaySchedule(day, { isOpen: isClosed });
                                             }}
                                         >
-                                            {day}
+                                            {t(`admin.businessHoursEditor.days.${day}`)}
                                         </Button>
                                     );
                                 })}
@@ -201,11 +203,11 @@ export function BusinessHoursEditor({ value, onChange }: BusinessHoursEditorProp
 
                 {/* ADVANCED MODE */}
                 {isAdvanced && (
-                    <div className="space-y-6 animate-in fade-in">
+                    <div className="space-y-6 animate-in fade-in text-start">
                         <div className="flex justify-between items-center bg-muted/50 p-3 rounded border">
-                            <span className="text-sm font-medium">Programme de la semaine</span>
+                            <span className="text-sm font-medium">{t('admin.businessHoursEditor.weeklySchedule')}</span>
                             <Button size="sm" variant="outline" onClick={copyMondayToAll} className="h-8 text-xs">
-                                <Copy className="h-3 w-3 mr-2" /> Appliquer Lundi à Ven.
+                                <Copy className="h-3 w-3 rtl:ml-2 ltr:mr-2" /> {t('admin.businessHoursEditor.applyMondayToAll')}
                             </Button>
                         </div>
 
@@ -224,12 +226,12 @@ export function BusinessHoursEditor({ value, onChange }: BusinessHoursEditorProp
                                                     });
                                                 }}
                                             />
-                                            <span className="capitalize font-medium block">{day}</span>
+                                            <span className="font-medium block">{t(`admin.businessHoursEditor.days.${day}`)}</span>
                                         </div>
 
                                         <div className="flex-1 space-y-3">
                                             {!dayData.isOpen ? (
-                                                <span className="text-sm text-muted-foreground italic flex h-10 items-center">Fermé</span>
+                                                <span className="text-sm text-muted-foreground italic flex h-10 items-center">{t('admin.businessHoursEditor.closed')}</span>
                                             ) : (
                                                 <>
                                                     {dayData.slots.map((slot, idx) => (
@@ -259,7 +261,7 @@ export function BusinessHoursEditor({ value, onChange }: BusinessHoursEditorProp
                                                     ))}
                                                     {dayData.slots.length < 2 && (
                                                         <Button variant="ghost" size="sm" onClick={() => addSlot(day)} className="text-xs text-primary">
-                                                            <Plus className="h-3 w-3 mr-1" /> Ajouter une pause
+                                                            <Plus className="h-3 w-3 rtl:ml-1 ltr:mr-1" /> {t('admin.businessHoursEditor.addBreak')}
                                                         </Button>
                                                     )}
                                                 </>

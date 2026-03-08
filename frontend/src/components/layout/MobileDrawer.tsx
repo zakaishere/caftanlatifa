@@ -6,42 +6,20 @@ import {
     useCallback,
     useState,
     memo,
-    useMemo,
 } from "react";
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence, type Variants } from "framer-motion";
 import { X } from "lucide-react";
+import { useTranslation } from "@/i18n/provider";
 
 // ─── prefers-reduced-motion ───────────────────────────────────────────────────
-// Read once at module level — no hook needed, value never changes mid-session.
 const prefersReducedMotion =
     typeof window !== "undefined" &&
     window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 // ─── Animation Variants ───────────────────────────────────────────────────────
-// GPU rule: animate ONLY transform (translateX) and opacity.
-// translate3d string forces hardware compositing on every browser.
-// Removed backdrop-filter from overlay — it causes per-frame compositing cost.
-
-const PANEL_VARIANTS: Variants = prefersReducedMotion
-    ? { hidden: { opacity: 0 }, visible: { opacity: 1 } }
-    : {
-        hidden: {
-            x: "-100%",
-            transition: {
-                duration: 0.22,
-                ease: [0.72, 0, 0.28, 1] as [number, number, number, number],
-            },
-        },
-        visible: {
-            x: "0%",
-            transition: {
-                duration: 0.26,
-                ease: [0.32, 0.72, 0, 1] as [number, number, number, number],
-            },
-        },
-    };
+// Provide LTR and RTL variants dynamically inside the component instead of constants.
 
 const OVERLAY_VARIANTS: Variants = prefersReducedMotion
     ? { hidden: { opacity: 0 }, visible: { opacity: 1 } }
@@ -57,23 +35,11 @@ const OVERLAY_VARIANTS: Variants = prefersReducedMotion
     };
 
 // ─── Constants ────────────────────────────────────────────────────────────────
-
 const CLOSE_ANIMATION_MS = prefersReducedMotion ? 0 : 230;
 
-const NAV_LINKS = [
-    { href: "/", label: "Accueil" },
-    { href: "/products", label: "Collections" },
-    { href: "/cart", label: "Mon Panier" },
-    { href: "/contact", label: "Contact" },
-    { href: "/orders", label: "Mes Commandes" },
-];
-
 // ─── Scroll lock helper ───────────────────────────────────────────────────────
-// Uses overflow:hidden + padding compensation — avoids position:fixed which
-// triggers a full layout+paint on body (expensive on mobile).
 function lockScroll() {
-    const scrollbarWidth =
-        window.innerWidth - document.documentElement.clientWidth;
+    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
     document.body.style.paddingRight = `${scrollbarWidth}px`;
     document.body.style.overflow = "hidden";
     document.body.style.touchAction = "none";
@@ -83,8 +49,6 @@ function unlockScroll() {
     document.body.style.overflow = "";
     document.body.style.touchAction = "";
 }
-
-// ─── Types ────────────────────────────────────────────────────────────────────
 
 interface MobileDrawerProps {
     isOpen: boolean;
@@ -100,20 +64,52 @@ const DrawerPanel = memo(function DrawerPanel({
     onClose,
     onNavClick,
     panelRef,
+    isRtl,
+    t
 }: {
     storeName: string;
     pathname: string;
     onClose: () => void;
     onNavClick: (href: string) => void;
     panelRef: React.RefObject<HTMLDivElement | null>;
+    isRtl: boolean;
+    t: any;
 }) {
+
+    const PANEL_VARIANTS: Variants = prefersReducedMotion
+        ? { hidden: { opacity: 0 }, visible: { opacity: 1 } }
+        : {
+            hidden: {
+                x: isRtl ? "100%" : "-100%", // RTL slides out to right, LTR to left
+                transition: {
+                    duration: 0.22,
+                    ease: [0.72, 0, 0.28, 1] as [number, number, number, number],
+                },
+            },
+            visible: {
+                x: "0%",
+                transition: {
+                    duration: 0.26,
+                    ease: [0.32, 0.72, 0, 1] as [number, number, number, number],
+                },
+            },
+        };
+
+    const navLinks = [
+        { href: "/", label: t('layout.nav.home') },
+        { href: "/products", label: t('layout.nav.collections') },
+        { href: "/cart", label: t('layout.nav.myCart') },
+        { href: "/contact", label: t('layout.nav.contact') },
+        { href: "/orders", label: t('layout.nav.orders') },
+    ];
+
     return (
         <motion.div
             key="mobile-drawer-panel"
             ref={panelRef}
             role="dialog"
             aria-modal="true"
-            aria-label="Menu de navigation"
+            aria-label={t('layout.header.menuOpen')}
             tabIndex={-1}
             variants={PANEL_VARIANTS}
             initial="hidden"
@@ -122,19 +118,15 @@ const DrawerPanel = memo(function DrawerPanel({
             style={{
                 position: "fixed",
                 top: 0,
-                left: 0,
+                ...(isRtl ? { right: 0 } : { left: 0 }),
                 height: "100dvh",
                 zIndex: 9999,
                 width: "min(300px, 85vw)",
-                // Explicitly declare will-change so browser promotes the layer
-                // BEFORE the animation starts (no promotion jank on first frame).
                 willChange: "transform",
                 outline: "none",
-                // CSS containment: tell the browser this subtree is isolated.
-                // Prevents layout/style recalcs from propagating out.
                 contain: "layout style paint",
             }}
-            className="flex flex-col bg-background border-r border-border/40 shadow-lg overscroll-contain overflow-y-auto"
+            className="flex flex-col bg-background border-r border-border/40 shadow-lg overscroll-contain overflow-y-auto rtl:border-r-0 rtl:border-l"
         >
             {/* Header */}
             <div className="flex items-center justify-between px-6 pt-6 pb-4 flex-shrink-0">
@@ -143,12 +135,12 @@ const DrawerPanel = memo(function DrawerPanel({
                         {storeName}
                     </span>
                     <span className="text-[9px] uppercase tracking-[0.35em] text-muted-foreground font-light">
-                        Maison de Couture
+                        {t('layout.header.subtitle')}
                     </span>
                 </div>
                 <button
                     onClick={onClose}
-                    aria-label="Fermer le menu"
+                    aria-label={t('layout.header.menuClose')}
                     className="h-8 w-8 flex items-center justify-center rounded-full text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 >
                     <X className="h-4 w-4" />
@@ -164,16 +156,16 @@ const DrawerPanel = memo(function DrawerPanel({
 
             {/* Navigation */}
             <nav className="flex flex-col flex-1 px-4 gap-1" role="navigation">
-                {NAV_LINKS.map(({ href, label }) => {
+                {navLinks.map(({ href, label }) => {
                     const active = pathname === href;
                     return (
                         <button
                             key={href}
                             onClick={() => onNavClick(href)}
                             className={[
-                                "text-left w-full px-4 py-3.5 rounded-sm",
+                                "text-start w-full px-4 py-3.5 rounded-sm",
                                 "text-[15px] font-light transition-colors duration-150",
-                                "border-l-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                                "border-s-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                                 active
                                     ? "text-primary bg-primary/5 border-primary font-medium"
                                     : "text-foreground border-transparent hover:border-primary/30 hover:bg-muted/30 hover:text-primary/90",
@@ -191,8 +183,8 @@ const DrawerPanel = memo(function DrawerPanel({
                 className="px-6 pt-6 mt-auto flex-shrink-0 border-t border-border/30"
                 style={{ paddingBottom: "max(1.5rem, env(safe-area-inset-bottom))" }}
             >
-                <p className="text-[10px] uppercase tracking-[0.25em] text-muted-foreground/60 font-light">
-                    L'élégance du Caftan Marocain
+                <p className="text-[10px] uppercase tracking-[0.25em] text-muted-foreground/60 font-light text-start">
+                    {t('layout.topbar.tagline')}
                 </p>
             </div>
         </motion.div>
@@ -207,17 +199,23 @@ export function MobileDrawer({
     pathname,
     storeName = "Caftan Latifa",
 }: MobileDrawerProps) {
+    const { t } = useTranslation();
     const router = useRouter();
     const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const panelRef = useRef<HTMLDivElement>(null);
 
-    // Portal target — set once on client, never triggers re-render again.
+    // Read dir attribute to determine animation direction
+    const [isRtl, setIsRtl] = useState(false);
+    
+    // Portal target
     const [portalTarget, setPortalTarget] = useState<Element | null>(null);
+    
     useEffect(() => {
         setPortalTarget(document.body);
+        setIsRtl(document.documentElement.dir === 'rtl');
     }, []);
 
-    // Scroll lock — overflow:hidden approach (no position:fixed reflow).
+    // Scroll lock
     useEffect(() => {
         if (isOpen) {
             lockScroll();
@@ -247,7 +245,6 @@ export function MobileDrawer({
         };
     }, []);
 
-    // Delayed navigation — stable reference so DrawerPanel never re-renders on parent changes
     const handleNavClick = useCallback(
         (href: string) => {
             if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
@@ -259,7 +256,6 @@ export function MobileDrawer({
         [onClose, router]
     );
 
-    // Stable onClose ref passed to memo'd panel — prevents re-render if parent re-renders
     const stableOnClose = useCallback(onClose, [onClose]);
 
     if (!portalTarget) return null;
@@ -268,7 +264,7 @@ export function MobileDrawer({
         <AnimatePresence>
             {isOpen && (
                 <>
-                    {/* Overlay — opacity only, NO backdrop-filter (biggest perf win) */}
+                    {/* Overlay */}
                     <motion.div
                         key="mobile-drawer-overlay"
                         variants={OVERLAY_VARIANTS}
@@ -281,19 +277,20 @@ export function MobileDrawer({
                             position: "fixed",
                             inset: 0,
                             zIndex: 9998,
-                            // Solid semi-transparent color: zero compositing cost vs blur
                             backgroundColor: "rgba(11, 11, 11, 0.65)",
                             willChange: "opacity",
                         }}
                     />
 
-                    {/* Panel — rendered as memoized child to prevent re-paints */}
+                    {/* Panel */}
                     <DrawerPanel
                         storeName={storeName}
                         pathname={pathname}
                         onClose={stableOnClose}
                         onNavClick={handleNavClick}
                         panelRef={panelRef}
+                        isRtl={isRtl}
+                        t={t}
                     />
                 </>
             )}

@@ -1,0 +1,641 @@
+{
+  "home": {
+    "hero": {
+      "eyebrow": "Ramadan Collection · 2026",
+      "titlePart1": "L'Élégance du ",
+      "titleHighlight": "Caftan",
+      "titlePart2": " Marocain",
+      "subtitle": "Des créations artisanales façonnées avec soin, alliant héritage berbère et couture contemporaine.",
+      "cta": "Explorer la Collection",
+      "trust1": "Paiement à la livraison",
+      "trust2": "Livraison partout au Maroc",
+      "trust3": "Finitions premium"
+    },
+    "collections": {
+      "eyebrow": "Nos Univers",
+      "title": "Par Collection",
+      "viewAll": "Voir tout",
+      "itemsCount": "{count} pièces"
+    },
+    "newArrivals": {
+      "eyebrow": "Sélection",
+      "title": "Nouvelles Arrivées",
+      "viewAll": "Voir tout",
+      "viewAllMobile": "Voir toute la collection"
+    },
+    "whyUs": {
+      "eyebrow": "L'Atelier Latifa",
+      "title": "Pourquoi nous choisir ?",
+      "reasons": {
+        "1": {
+          "title": "Artisanat Authentique",
+          "body": "Chaque pièce est confectionnée par des artisans marocains experts, avec des broderies faites à la main."
+        },
+        "2": {
+          "title": "Livraison Rapide",
+          "body": "Livraison sous 24–48h dans toutes les grandes villes, paiement en espèces à la réception."
+        },
+        "3": {
+          "title": "Qualité Premium",
+          "body": "Des tissus nobles sélectionnés pour leur douceur et leur tenue : georgette, velours, soie artisanale."
+        }
+      }
+    },
+    "footerCta": {
+      "eyebrow": "Service Client",
+      "title": "Une question sur votre commande ?",
+      "body": "Nos experts vous répondent sur WhatsApp, du lundi au samedi, de 9h à 21h.",
+      "whatsappBtn": "Contacter sur WhatsApp",
+      "contactBtn": "Voir le contact",
+      "whatsappMessage": "Bonjour, j'aimerais avoir plus d'informations sur vos caftans."
+    }
+  },
+  "layout": {
+    "topbar": {
+      "tagline": "L'élégance du Caftan Marocain",
+      "customerService": "Service Client:",
+      "freeShipping": "Livraison Gratuite +{amount}"
+    },
+    "header": {
+      "subtitle": "Maison de Couture",
+      "searchPlaceholder": "Rechercher...",
+      "menuOpen": "Ouvrir le menu",
+      "menuClose": "Fermer le menu"
+    },
+    "nav": {
+      "home": "Accueil",
+      "collection": "Collection",
+      "collections": "Collections",
+      "contact": "Contact",
+      "orders": "Mes Commandes",
+      "cart": "Panier",
+      "myCart": "Mon Panier"
+    },
+    "footer": {
+      "description": "L'héritage de l'artisanat marocain sublimé par une élégance contemporaine. Chaque pièce raconte une histoire de passion et de tradition.",
+      "collections": {
+        "title": "Collections",
+        "all": "Tout les modèles",
+        "takchita": "Takchitas d'exception",
+        "caftan": "Caftans Haute Couture",
+        "accessories": "Accessoires & Parures"
+      },
+      "house": {
+        "title": "La Maison",
+        "atelier": "Notre Atelier",
+        "sizes": "Guide des Tailles",
+        "shipping": "Livraison & Retours",
+        "faq": "FAQ"
+      },
+      "contact": {
+        "title": "Contact",
+        "whatsapp": "WhatsApp Support"
+      },
+      "copyright": "Tous droits réservés.",
+      "madeIn": "Imaginé au Maroc 🇲🇦",
+      "artOfLiving": "L'Art de Vivre à la Marocaine"
+    }
+  },
+  "product": {
+    "soldOut": "Épuisé",
+    "quickView": "Aperçu rapide",
+    "viewDetails": "Voir détails",
+    "inStock": "En stock",
+    "size": "Taille",
+    "oneSize": "Taille unique",
+    "selectSizePrompt": "Veuillez sélectionner une taille",
+    "features": "Caractéristiques",
+    "quantity": "Quantité",
+    "price": "Prix",
+    "addedToCart": "Ajouté !",
+    "addToCart": "Ajouter",
+    "addedToCartLong": "Produit ajouté au panier avec succès",
+    "addToCartLong": "Ajouter au panier",
+    "deliveryFee": "+ {amount} livraison",
+    "close": "Fermer",
+    "imageNext": "Image suivante",
+    "imagePrev": "Image précédente",
+    "points": {
+      "cod": "Paiement à la livraison",
+      "shipping": "Livraison au Maroc",
+      "quality": "Qualité artisanale",
+      "return": "Retour sous 7 jours"
+    },
+    "decrease": "Diminuer la quantité",
+    "increase": "Augmenter la quantité",
+    "gallery": {
+      "viewFullscreen": "Voir image {index} en plein écran",
+      "goToImage": "Aller à l'image {index}",
+      "title": "Galerie — {name}"
+    }
+  },
+  "products": {
+    "titlePrefix": "La Collection",
+    "loading": "Chargement...",
+    "piecesCount": "{count} Pièces d'Exception",
+    "noProducts": "Aucun produit trouvé",
+    "searchPlaceholder": "Rechercher dans la collection...",
+    "filters": "Filtres",
+    "activeFilters": "{count} filtre(s) actif(s)",
+    "reset": "Réinitialiser",
+    "resetFilters": "Réinitialiser les filtres",
+    "sortBy": "Trier par",
+    "sort": "Trier :",
+    "sortOptions": {
+      "newest": "Nouveautés",
+      "priceAsc": "Prix croissant",
+      "priceDesc": "Prix décroissant"
+    },
+    "collections": "Collections",
+    "allPieces": "Toutes les créations",
+    "availability": "Disponibilité",
+    "inStockOnly": "En stock uniquement",
+    "price": "Prix",
+    "applyFilters": "Afficher {count} pièce(s)",
+    "applyFiltersEmpty": "Afficher les résultats",
+    "loadingBrand": "Signature Latifa...",
+    "loadMore": "Découvrir plus",
+    "showingCount": "Affichage de {current} sur {total} pièces",
+    "noResultsTitle": "Aucune pièce trouvée",
+    "noResultsDesc": "Nous n'avons pas trouvé de créations correspondant à vos critères. Essayez d'ajuster vos filtres."
+  },
+  "productDetails": {
+    "notFoundTitle": "Création Introuvable",
+    "notFoundDesc": "Désolé, cette pièce n'est plus disponible dans notre collection.",
+    "backCol": "Retour à la Collection",
+    "shippingTab": "Expédition & Livraison",
+    "shippingTabContent": "Nos pièces sont livrées dans toutes les villes du Maroc. Le délai de livraison est généralement de 24 à 48 heures pour les grandes villes et jusqu'à 72 heures pour les zones plus éloignées. Le paiement s'effectue en espèces à la réception.",
+    "returnsTab": "Retours & Échanges",
+    "returnsTabContent": "Chez Caftan Latifa, nous acceptons les retours et les échanges sous 7 jours, à condition que la pièce soit dans son état d'origine. Les frais de retour sont à la charge du client, sauf en cas de défaut de fabrication.",
+    "related": "Vous aimerez aussi",
+    "chooseSize": "Choisir une taille",
+    "decrease": "Diminuer la quantité",
+    "increase": "Augmenter la quantité"
+  },
+  "contact": {
+    "customerService": "Service Client",
+    "title": "Contactez-nous",
+    "description": "Questions sur nos créations ou votre commande ? Notre équipe dédiée est à votre disposition pour vous offrir une expérience d'exception à la hauteur de la Maison Caftan Latifa.",
+    "directContact": "Contact Direct",
+    "call": "Appeler",
+    "whatsappMsg": "Bonjour, j'ai besoin d'assistance.",
+    "emailSupport": "Email Support",
+    "writeUs": "Nous écrire",
+    "headquarters": "Siège Social",
+    "defaultCity": "Casablanca, 20000, Maroc",
+    "sendMessage": "Envoyez-nous un message",
+    "orEmailUs": "Ou écrivez-nous directement à",
+    "fullName": "Nom Complet",
+    "namePlaceholder": "Votre nom",
+    "emailLabel": "Email",
+    "emailPlaceholder": "votre@email.com",
+    "subject": "Sujet",
+    "subjectPlaceholder": "De quoi s'agit-il ?",
+    "messageLabel": "Message",
+    "messagePlaceholder": "Décrivez votre demande en détail...",
+    "send": "Envoyer",
+    "ourShowroom": "Notre Showroom"
+  },
+  "businessHours": {
+    "title": "Horaires",
+    "subtitle": "Atelier & Showroom",
+    "unavailable": "Horaires indisponibles",
+    "unconfigured": "Horaires d'ouverture non configurés.",
+    "closed": "Fermé",
+    "openNow": "Ouvert maintenant",
+    "lunchBreak": "Pause Midi",
+    "todayUntil": "Aujourd'hui jusqu'à",
+    "opens": "Ouvre",
+    "at": "à",
+    "closedCurrently": "Actuellement fermé",
+    "viewWeekDetails": "Voir le détail de la semaine",
+    "today": "aujourd'hui",
+    "tomorrow": "demain"
+  },
+  "days": {
+    "lundi": "lundi",
+    "mardi": "mardi",
+    "mercredi": "mercredi",
+    "jeudi": "jeudi",
+    "vendredi": "vendredi",
+    "samedi": "samedi",
+    "dimanche": "dimanche"
+  },
+  "cart": {
+    "emptyTitle": "Votre panier est vide",
+    "emptyDesc": "Il semble que vous n'ayez pas encore ajouté de pièces à votre sélection.",
+    "discoverCol": "Découvrir la Collection",
+    "yourSelection": "Votre Sélection",
+    "title": "Panier",
+    "itemsCount": "{count} article",
+    "itemsCountPlural": "{count} articles",
+    "tableItem": "Pièce",
+    "tableQty": "Quantité",
+    "tableUnitPrice": "Prix unit.",
+    "tableTotal": "Total",
+    "oneSize": "Taille unique",
+    "size": "Taille",
+    "remove": "Supprimer",
+    "decreaseQty": "Diminuer",
+    "increaseQty": "Augmenter",
+    "clearCart": "Vider le panier",
+    "summary": "Résumé",
+    "subtotal": "Sous-total",
+    "subtotalWithCount": "Sous-total ({count} art.)",
+    "shipping": "Livraison",
+    "freeShipping": "Gratuite",
+    "total": "Total",
+    "checkout": "Passer la commande",
+    "checkoutMobile": "Passer à la caisse",
+    "continueShopping": "Continuer vos achats",
+    "securePayment": "Paiement sécurisé à la livraison",
+    "cod": "Paiement à la livraison"
+  },
+  "checkout": {
+    "validation": {
+      "fullName": "Le nom complet est requis",
+      "email": "Un email valide est requis",
+      "phone": "Un numéro de téléphone valide est requis",
+      "city": "La ville est requise pour la livraison",
+      "address": "L'adresse complète de livraison est requise"
+    },
+    "copySuccess": "Référence copiée ✓",
+    "copyFail": "Impossible de copier",
+    "copyFailDesc": "Copiez la référence manuellement.",
+    "successTitle": "Commande confirmée !",
+    "successDesc1": "Merci pour votre commande. Pour assurer un traitement rapide,",
+    "successDesc2": "veuillez finaliser la confirmation via WhatsApp ci-dessous.",
+    "orderRef": "Référence de commande",
+    "copyAria": "Copier la référence",
+    "paymentMethod": "Méthode de paiement",
+    "cod": "PAIEMENT À LA LIVRAISON",
+    "finalAmount": "Montant final :",
+    "actionRequired": "Action requise",
+    "pendingMsg": "Votre commande est en attente. Pour une expédition aujourd'hui, veuillez cliquer ci-dessous pour confirmer via WhatsApp.",
+    "confirmWhatsapp": "Confirmer sur WhatsApp",
+    "backHome": "Retour à l'accueil",
+    "viewHistory": "Voir l'historique de commande",
+    "hideSummary": "Masquer le résumé",
+    "reviewSummary": "Vérifier le résumé",
+    "subtotal": "Sous-total",
+    "shipping": "Livraison",
+    "free": "Gratuite",
+    "bag": "Panier",
+    "secureCheckout": "Paiement sécurisé",
+    "shippingDetails": "Détails d'expédition",
+    "shippingDesc": "Complétez votre commande. Le paiement s'effectue à la livraison.",
+    "deliveryMethod": "Livraison",
+    "methodDelivery": "À Domicile",
+    "methodDeliveryDesc": "Expédié chez vous",
+    "methodPickup": "En Magasin",
+    "methodPickupDesc": "Prêt immédiatement",
+    "information": "Information",
+    "fullName": "Nom complet",
+    "fullNamePlaceholder": "Entrez votre nom complet",
+    "phone": "Numéro de téléphone",
+    "phonePlaceholder": "06XXXXXXXX",
+    "city": "Ville",
+    "cityPlaceholder": "Entrez votre ville",
+    "address": "Adresse complète",
+    "addressPlaceholder": "Rue, quartier, etc.",
+    "notes": "Notes (Optionnel)",
+    "notesPlaceholder": "Instructions spéciales...",
+    "summary": "Résumé",
+    "safePayment": "Paiement sécurisé à la livraison.",
+    "grandTotal": "Total général",
+    "confirmOrder": "CONFIRMER LA COMMANDE",
+    "totalToPay": "Total à payer",
+    "orderNow": "Commander",
+    "whatsapp": {
+      "newOrder": "NOUVELLE COMMANDE",
+      "customer": "Client",
+      "phone": "Téléphone",
+      "delivery": "Livraison",
+      "deliveryTo": "Livraison à",
+      "pickup": "Retrait en magasin",
+      "items": "Articles",
+      "payments": "Paiements"
+    },
+    "steps": {
+      "cart": "PANIER",
+      "shipping": "LIVRAISON",
+      "done": "TERMINÉ"
+    }
+  },
+  "admin": {
+    "menu": {
+      "overview": "Aperçu",
+      "categories": "Catégories",
+      "products": "Produits",
+      "orders": "Commandes",
+      "settings": "Paramètres"
+    },
+    "logout": "Déconnexion",
+    "menuTitle": "Menu d'administration",
+    "dashboard": {
+      "title": "Tableau de bord",
+      "subtitle": "Aperçu des performances de votre boutique.",
+      "fromLastMonth": "depuis le mois dernier",
+      "weeklyRevenue": "Revenus hebdomadaires",
+      "recentOrders": "Commandes récentes",
+      "noOrders": "Pas encore de commandes",
+      "viewAllOrders": "Voir toutes les commandes",
+      "status": {
+        "PENDING": "EN ATTENTE",
+        "CONFIRMED": "CONFIRMÉ",
+        "DELIVERED": "LIVRÉ",
+        "CANCELLED": "ANNULÉ"
+      },
+      "kpi": {
+        "totalrevenue": "Chiffre d'Affaires",
+        "orders": "Commandes",
+        "pending": "En Attente",
+        "outofstock": "En Rupture"
+      }
+    },
+    "orders": {
+      "title": "Commandes",
+      "subtitle": "Gérer et traiter les commandes clients.",
+      "allOrders": "Toutes les commandes",
+      "noOrders": "Pas encore de commandes.",
+      "table": {
+        "id": "ID Commande",
+        "customer": "Client",
+        "city": "Ville",
+        "total": "Total",
+        "date": "Date",
+        "status": "Statut",
+        "actions": "Actions"
+      },
+      "view": "Voir",
+      "detailsTitle": "Détails de la commande",
+      "customerInfo": "Infos Client",
+      "info": {
+        "name": "Nom:",
+        "phone": "Téléphone:",
+        "city": "Ville:",
+        "address": "Adresse:",
+        "notes": "Notes:"
+      },
+      "items": "Articles",
+      "actions": {
+        "confirm": "Confirmer la commande",
+        "deliver": "Marquer comme livrée",
+        "cancel": "Annuler la commande"
+      },
+      "toast": {
+        "statusUpdated": "Statut de la commande mis à jour",
+        "errorTitle": "Erreur"
+      }
+    },
+    "categories": {
+      "title": "Catégories",
+      "subtitle": "Gérer les catégories de produits.",
+      "addCategory": "Ajouter une catégorie",
+      "addNew": "Ajouter une nouvelle catégorie",
+      "addNewDesc": "Créer une nouvelle catégorie pour vos produits.",
+      "name": "Nom",
+      "namePlaceholder": "Nom de la catégorie",
+      "slug": "Slug",
+      "slugPlaceholder": "slug-de-la-categorie",
+      "save": "Enregistrer la catégorie",
+      "saving": "Enregistrement...",
+      "allCategories": "Toutes les catégories",
+      "table": {
+        "name": "Nom",
+        "slug": "Slug",
+        "productsCount": "Nombre de produits",
+        "actions": "Actions"
+      },
+      "toast": {
+        "created": "Catégorie créée",
+        "deleted": "Catégorie supprimée",
+        "errorTitle": "Erreur"
+      }
+    },
+    "products": {
+      "title": "Produits",
+      "subtitle": "Gérer votre catalogue de produits.",
+      "addProduct": "Ajouter un produit",
+      "addNew": "Ajouter un nouveau produit",
+      "addNewDesc": "Créer un nouveau produit avec plusieurs images.",
+      "editProduct": "Modifier le produit",
+      "editProductDesc": "Mettre à jour les détails, images et prix du produit.",
+      "searchPlaceholder": "Rechercher des produits...",
+      "allProducts": "Tous les produits",
+      "noProducts": "Aucun produit trouvé.",
+      "inStock": "En stock",
+      "outOfStock": "Rupture",
+      "table": {
+        "image": "Image",
+        "name": "Nom",
+        "category": "Catégorie",
+        "price": "Prix",
+        "status": "Statut",
+        "actions": "Actions"
+      },
+      "actionsMenu": {
+        "title": "Actions",
+        "edit": "Modifier",
+        "delete": "Supprimer"
+      },
+      "toast": {
+        "deleted": "Produit supprimé",
+        "availabilityUpdated": "Disponibilité mise à jour",
+        "errorTitle": "Erreur"
+      },
+      "openMenu": "Ouvrir le menu"
+    },
+    "productForm": {
+      "name": "Nom du produit *",
+      "namePlaceholder": "ex: T-Shirt",
+      "price": "Prix",
+      "category": "Catégorie *",
+      "categoryPlaceholder": "Sélectionnez une catégorie",
+      "loadingCategory": "Chargement...",
+      "availableSizes": "Tailles disponibles",
+      "availableSizesHint": "Laissez vide pour un produit sans tailles (taille unique).",
+      "description": "Description *",
+      "descriptionPlaceholder": "Description détaillée du produit...",
+      "specialities": "Spécificités (Caractéristiques)",
+      "addSpeciality": "Ajouter une spécificité",
+      "specName": "Nom",
+      "specNamePlaceholder": "ex: Matière",
+      "specValue": "Valeur",
+      "specValuePlaceholder": "ex: Cuir",
+      "noSpecialities": "Aucune spécificité ajoutée. Cliquez sur \"Ajouter une spécificité\" pour ajouter des détails comme la matière, la couleur, etc.",
+      "images": "Images du produit *",
+      "inStock": "En stock (Disponible à l'achat)",
+      "createProduct": "Créer le produit",
+      "updateProduct": "Mettre à jour le produit",
+      "validationError": "Erreur de validation",
+      "validationErrorDesc": "Veuillez remplir tous les champs obligatoires, dont au moins 1 image.",
+      "toast": {
+        "created": "Produit créé avec succès",
+        "updated": "Produit mis à jour avec succès",
+        "errorCreating": "Erreur lors de la création du produit",
+        "errorUpdating": "Erreur lors de la mise à jour du produit"
+      }
+    },
+    "settings": {
+      "title": "Paramètres",
+      "subtitle": "Gérer la configuration de votre boutique.",
+      "generalInfo": "Informations générales",
+      "generalInfoDesc": "Détails de base de la boutique visibles par les clients.",
+      "brandVisual": "Visuel de la marque",
+      "brandVisualDesc": "L'image principale affichée sur la section hero de la page d'accueil.",
+      "contactSupport": "Contact & Support",
+      "contactSupportDesc": "Comment les clients peuvent vous contacter.",
+      "deliverySettings": "Paramètres de livraison",
+      "deliverySettingsDesc": "Configurez les coûts d'expédition mondiaux et le seuil de livraison gratuite.",
+      "storeName": "Nom de la boutique",
+      "heroImage": "Image Hero",
+      "heroImageTip": "Conseil : Utilisez une photo verticale ou éditoriale de haute qualité d'un \"Caftan de luxe marocain\" pour une meilleure sensation de boutique.",
+      "whatsappNumber": "Numéro WhatsApp",
+      "supportEmail": "E-mail de support (Optionnel)",
+      "businessAddress": "Adresse professionnelle (Optionnel)",
+      "googleMapsEmbed": "URL d'intégration Google Maps (Optionnel)",
+      "googleMapsHint": "Collez l'attribut src du code d'intégration Google Maps.",
+      "freeShipping": "Livraison gratuite",
+      "freeShippingDesc": "Activer la livraison gratuite au-dessus d'un certain montant total.",
+      "freeShippingThreshold": "Seuil de livraison gratuite",
+      "standardDeliveryFee": "Frais de livraison standard",
+      "saveChanges": "Enregistrer les modifications",
+      "saving": "Enregistrement...",
+      "toast": {
+        "success": "Paramètres enregistrés avec succès",
+        "error": "Échec de l'enregistrement des paramètres"
+      }
+    },
+    "businessHoursEditor": {
+      "title": "Horaires d'ouverture",
+      "subtitle": "Configurez vos heures de travail (Heure de Casablanca).",
+      "advancedMode": "Mode Avancé",
+      "simpleModeHint": "Le mode simple applique le Lundi comme modèle pour toute la semaine (sauf les jours fermés).",
+      "adjustStandardHours": "Ajuster les horaires standards",
+      "to": "à",
+      "closedDays": "Jours Fermés",
+      "weeklySchedule": "Programme de la semaine",
+      "applyMondayToAll": "Appliquer Lundi à Ven.",
+      "closed": "Fermé",
+      "addBreak": "Ajouter une pause",
+      "days": {
+        "lundi": "Lundi",
+        "mardi": "Mardi",
+        "mercredi": "Mercredi",
+        "jeudi": "Jeudi",
+        "vendredi": "Vendredi",
+        "samedi": "Samedi",
+        "dimanche": "Dimanche"
+      }
+    },
+    "login": {
+      "title": "Connexion Admin",
+      "description": "Entrez votre email et mot de passe pour accéder au tableau de bord",
+      "email": "Email",
+      "password": "Mot de passe",
+      "loggingIn": "Connexion en cours...",
+      "loginBtn": "Se connecter",
+      "validation": {
+        "email": "Adresse email invalide",
+        "password": "Le mot de passe doit contenir au moins 6 caractères"
+      }
+    }
+  },
+  "myOrders": {
+    "title": "Mes Commandes",
+    "subtitle": "Votre Historique",
+    "trackOrder": "Suivre une commande",
+    "trackOrderDesc": "Entrez votre référence ou numéro de téléphone pour voir l'état de votre colis.",
+    "placeholder": "Référence ou Téléphone",
+    "search": "Rechercher",
+    "searching": "Recherche...",
+    "ref": "Réf.",
+    "copySuccess": "Copié ✅",
+    "copyAria": "Copier la référence complète",
+    "viewDetails": "Voir détails",
+    "orderDetails": "Détails de la commande",
+    "currentStatus": "État actuel",
+    "articles": "Articles",
+    "needHelp": "Demander assistance",
+    "cancelOrder": "Annuler la commande",
+    "cancelConfirm": "Souhaitez-vous vraiment annuler ?",
+    "removeHistory": "Retirer de l'historique",
+    "clearHistory": "Vider l'historique local",
+    "noOrdersFound": "Aucune commande trouvée",
+    "ordersFound": "commande(s) trouvée(s)",
+    "searchError": "Erreur de recherche",
+    "cancelSuccess": "Commande annulée",
+    "cancelSuccessDesc": "La commande {id} a été annulée.",
+    "cancelFail": "Échec de l'annulation",
+    "statuses": {
+      "PENDING": "EN ATTENTE",
+      "CONFIRMED": "CONFIRMÉE",
+      "DELIVERED": "LIVRÉE",
+      "CANCELLED": "ANNULÉE"
+    }
+  },
+  "orderItems": {
+    "size": "Taille",
+    "qty": "Qté",
+    "deliveryFee": "Frais de livraison",
+    "total": "Total",
+    "unique": "Unique"
+  },
+  "errors": {
+    "404": {
+      "title": "Page Introuvable",
+      "description": "Désolé, la page que vous recherchez n'existe pas ou a été déplacée.",
+      "backHome": "Retour à l'accueil"
+    }
+  },
+  "imageUploader": {
+    "title": "Télécharger des images du produit",
+    "dropzone": "Glissez-déposez ou cliquez pour parcourir (Max {max} images)",
+    "uploading": "Téléchargement...",
+    "browse": "Parcourir les fichiers",
+    "uploadedCount": "Images téléchargées ({count}/{max})",
+    "remove": "Supprimer l'image",
+    "makePrimary": "Définir comme principale",
+    "primary": "PRINCIPALE",
+    "errors": {
+      "tooMany": "Trop d'images",
+      "tooManyDesc": "Vous ne pouvez télécharger que {max} images.",
+      "invalidType": "Veuillez sélectionner uniquement des fichiers image.",
+      "tooLarge": "La taille du fichier ne doit pas dépasser 5 Mo.",
+      "uploadFailed": "Le téléchargement a échoué",
+      "uploadFailedDesc": "Une erreur inattendue s'est produite lors du téléchargement.",
+      "genericFailed": "Échec du téléchargement de l'image"
+    },
+    "success": {
+      "title": "Succès",
+      "desc": "{count} image(s) téléchargée(s) avec succès."
+    }
+  },
+  "common": {
+    "currency": "MAD",
+    "whatsapp": "WhatsApp",
+    "admin": "Administration",
+    "loading": "Chargement...",
+    "errorTitle": "Erreur",
+    "notFound": "Introuvable",
+    "days": {
+      "short": {
+        "mon": "Lun",
+        "tue": "Mar",
+        "wed": "Mer",
+        "thu": "Jeu",
+        "fri": "Ven",
+        "sat": "Sam",
+        "sun": "Dim"
+      }
+    }
+  },
+  "metadata": {
+    "defaultTitle": "Caftan Latifa | Maison de Couture",
+    "description": "L'héritage de l'artisanat marocain sublimé par une élégance contemporaine. Caftans et Takchitas d'exception faits main.",
+    "ogDescription": "Découvrez notre collection de Caftans et Takchitas d'exception, alliant tradition marocaine et modernité.",
+    "twitterDescription": "L'héritage de l'artisanat marocain sublimé par une élégance contemporaine.",
+    "productNotFound": "Création Introuvable"
+  }
+}

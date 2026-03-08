@@ -8,8 +8,9 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useRouter, useParams } from "next/navigation";
+import { useEffect, useMemo } from "react";
+import { useTranslation } from "@/i18n/provider";
 
 const registerSchema = z.object({
     username: z.string().min(3, "Username must be at least 3 characters").max(50),
@@ -20,12 +21,13 @@ const registerSchema = z.object({
 export default function AdminRegister() {
     const { register, user, isLoading } = useAuth();
     const router = useRouter();
+    const { t, locale } = useTranslation();
 
     useEffect(() => {
         if (user && !isLoading) {
-            router.push("/admin");
+            router.push(`/${locale}/admin`);
         }
-    }, [user, isLoading, router]);
+    }, [user, isLoading, router, locale]);
 
     const form = useForm<z.infer<typeof registerSchema>>({
         resolver: zodResolver(registerSchema),
@@ -40,20 +42,25 @@ export default function AdminRegister() {
         try {
             await register(values);
         } catch {
-            // Error is already handled by the mutation's onError toast
+            // Error handling is managed by useAuth and toasts
         }
     }
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-muted/40 p-4">
+        <div className="min-h-screen flex items-center justify-center bg-muted/40 p-4 font-sans text-start">
             <Card className="w-full max-w-sm">
                 <CardHeader className="space-y-1">
-                    <CardTitle className="text-2xl text-center">Admin Registration</CardTitle>
+                    <CardTitle className="text-2xl text-center">{t('admin.register.title')}</CardTitle>
                     <CardDescription className="text-center">
-                        Create an administrator account
+                        {t('admin.register.description')}
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
+                    <div className="mb-4 text-center">
+                        <Link href={`/${locale}/admin/login`} className="text-primary hover:underline">
+                            {t('admin.register.alreadyHaveAccount')}
+                        </Link>
+                    </div>
                     <Form {...form}>
                         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                             <FormField
