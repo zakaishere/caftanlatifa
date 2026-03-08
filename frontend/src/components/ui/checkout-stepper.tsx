@@ -1,17 +1,19 @@
 "use client";
 
 import { Check, ShoppingCart, CreditCard, CheckCircle2 } from "lucide-react";
+import { useTranslation } from "@/i18n/provider";
 import { cn } from "@/lib/utils";
-
+ 
 interface CheckoutStepperProps {
     currentStep: "cart" | "checkout" | "success";
 }
-
+ 
 export function CheckoutStepper({ currentStep }: CheckoutStepperProps) {
+    const { t } = useTranslation();
     const steps = [
-        { id: "cart", label: "CART" },
-        { id: "checkout", label: "SHIPPING" },
-        { id: "success", label: "DONE" },
+        { id: "cart", label: t('checkout.steps.cart') },
+        { id: "checkout", label: t('checkout.steps.shipping') },
+        { id: "success", label: t('checkout.steps.done') },
     ];
 
     const getStepStatus = (stepId: string) => {

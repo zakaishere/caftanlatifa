@@ -22,8 +22,10 @@ import type { ApiProduct } from '@/lib/types';
 import { centsToMad } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { ProductForm } from './ProductForm';
+import { useTranslation } from '@/i18n/provider';
 
 export default function ProductsAdmin() {
+  const { t } = useTranslation();
   const { toast } = useToast();
   const [search, setSearch] = useState('');
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
@@ -45,10 +47,10 @@ export default function ProductsAdmin() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/products'] });
-      toast({ title: 'Product deleted' });
+      toast({ title: t('admin.products.toast.deleted') });
     },
     onError: (err: Error) => {
-      toast({ title: 'Error', description: err.message, variant: 'destructive' });
+      toast({ title: t('admin.products.toast.errorTitle'), description: err.message, variant: 'destructive' });
     },
   });
 
@@ -58,30 +60,30 @@ export default function ProductsAdmin() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/products'] });
-      toast({ title: 'Availability updated' });
+      toast({ title: t('admin.products.toast.availabilityUpdated') });
     },
     onError: (err: Error) => {
-      toast({ title: 'Error', description: err.message, variant: 'destructive' });
+      toast({ title: t('admin.products.toast.errorTitle'), description: err.message, variant: 'destructive' });
     },
   });
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 text-start">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Products</h1>
-          <p className="text-muted-foreground">Manage your product catalog.</p>
+          <h1 className="text-3xl font-bold tracking-tight">{t('admin.products.title')}</h1>
+          <p className="text-muted-foreground">{t('admin.products.subtitle')}</p>
         </div>
         <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
           <DialogTrigger asChild>
             <Button className="gap-2">
-              <Plus className="h-4 w-4" /> Add Product
+              <Plus className="h-4 w-4" /> {t('admin.products.addProduct')}
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>Add New Product</DialogTitle>
-              <DialogDescription>Create a new product with multiple images.</DialogDescription>
+          <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto text-start">
+            <DialogHeader className="text-start">
+              <DialogTitle className="text-start">{t('admin.products.addNew')}</DialogTitle>
+              <DialogDescription className="text-start">{t('admin.products.addNewDesc')}</DialogDescription>
             </DialogHeader>
             <div className="py-2">
               <ProductForm onSuccess={() => setIsAddDialogOpen(false)} />
@@ -90,10 +92,10 @@ export default function ProductsAdmin() {
         </Dialog>
 
         <Dialog open={!!editingProduct} onOpenChange={(open) => !open && setEditingProduct(null)}>
-          <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>Edit Product</DialogTitle>
-              <DialogDescription>Update the product details, images, and pricing.</DialogDescription>
+          <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto text-start">
+            <DialogHeader className="text-start">
+              <DialogTitle className="text-start">{t('admin.products.editProduct')}</DialogTitle>
+              <DialogDescription className="text-start">{t('admin.products.editProductDesc')}</DialogDescription>
             </DialogHeader>
             <div className="py-2">
               {editingProduct && (
@@ -109,13 +111,13 @@ export default function ProductsAdmin() {
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-          <CardTitle className="text-base font-medium">All Products ({products.length})</CardTitle>
+          <CardTitle className="text-base font-medium">{t('admin.products.allProducts')} ({products.length})</CardTitle>
           <div className="relative w-64">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute start-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
               type="search"
-              placeholder="Search products..."
-              className="pl-9 h-9"
+              placeholder={t('admin.products.searchPlaceholder')}
+              className="ps-9 h-9"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
@@ -127,17 +129,17 @@ export default function ProductsAdmin() {
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
           ) : products.length === 0 ? (
-            <p className="text-center text-muted-foreground py-12">No products found.</p>
+            <p className="text-center text-muted-foreground py-12">{t('admin.products.noProducts')}</p>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-[80px]">Image</TableHead>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Category</TableHead>
-                  <TableHead>Price</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  <TableHead className="w-[80px]">{t('admin.products.table.image')}</TableHead>
+                  <TableHead>{t('admin.products.table.name')}</TableHead>
+                  <TableHead>{t('admin.products.table.category')}</TableHead>
+                  <TableHead>{t('admin.products.table.price')}</TableHead>
+                  <TableHead>{t('admin.products.table.status')}</TableHead>
+                  <TableHead className="text-end">{t('admin.products.table.actions')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -154,7 +156,7 @@ export default function ProductsAdmin() {
                     </TableCell>
                     <TableCell className="font-medium">{product.name}</TableCell>
                     <TableCell>{product.category?.name}</TableCell>
-                    <TableCell>{centsToMad(product.price)} MAD</TableCell>
+                    <TableCell dir="ltr">{centsToMad(product.price)} {t('common.currency')}</TableCell>
                     <TableCell>
                       <button
                         onClick={() => toggleStock.mutate({ id: product.id, inStock: product.inStock })}
@@ -165,30 +167,30 @@ export default function ProductsAdmin() {
                           variant={product.inStock ? "outline" : "destructive"}
                           className={product.inStock ? "text-emerald-600 bg-emerald-50 border-emerald-200 cursor-pointer" : "cursor-pointer"}
                         >
-                          {toggleStock.isPending && <Loader2 className="mr-1 h-3 w-3 animate-spin" />}
-                          {product.inStock ? 'In Stock' : 'Out of Stock'}
+                          {toggleStock.isPending && <Loader2 className="rtl:ml-1 ltr:mr-1 h-3 w-3 animate-spin" />}
+                          {product.inStock ? t('admin.products.inStock') : t('admin.products.outOfStock')}
                         </Badge>
                       </button>
                     </TableCell>
-                    <TableCell className="text-right">
+                    <TableCell className="text-end">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button variant="ghost" className="h-8 w-8 p-0">
-                            <span className="sr-only">Open menu</span>
+                            <span className="sr-only">{t('admin.products.openMenu')}</span>
                             <MoreHorizontal className="h-4 w-4" />
                           </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                        <DropdownMenuContent align="end" className="text-start">
+                          <DropdownMenuLabel>{t('admin.products.actionsMenu.title')}</DropdownMenuLabel>
                           <DropdownMenuItem onClick={() => setEditingProduct(product)}>
-                            <Edit className="mr-2 h-4 w-4" /> Edit
+                            <Edit className="rtl:ml-2 ltr:mr-2 h-4 w-4" /> {t('admin.products.actionsMenu.edit')}
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem
                             className="text-destructive"
                             onClick={() => deleteProduct.mutate(product.id)}
                           >
-                            <Trash2 className="mr-2 h-4 w-4" /> Delete
+                            <Trash2 className="rtl:ml-2 ltr:mr-2 h-4 w-4" /> {t('admin.products.actionsMenu.delete')}
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>

@@ -12,8 +12,11 @@ import { useQuery } from '@tanstack/react-query';
 import type { ApiInitData } from '@/lib/types';
 import { MobileBottomNav } from '@/components/layout/MobileBottomNav';
 import { MobileDrawer } from '@/components/layout/MobileDrawer';
+import { LanguageSwitcher } from '@/components/ui/language-switcher';
+import { useTranslation } from '@/i18n/provider';
 
 export default function StoreLayout({ children }: { children: React.ReactNode }) {
+  const { t } = useTranslation();
   const pathname = usePathname();
   const router = useRouter();
   const { itemCount } = useCart();
@@ -30,13 +33,21 @@ export default function StoreLayout({ children }: { children: React.ReactNode })
   });
   const settings = data?.settings;
 
-  const isActive = (path: string) => pathname === path;
+  const isActive = (path: string) => {
+    const currentLocale = pathname.split('/')[1];
+    const pathWithoutLocale = pathname.replace(`/${currentLocale}`, '') || '/';
+    
+    if (path === '/') return pathWithoutLocale === '/';
+    return pathWithoutLocale.startsWith(path);
+  };
 
   const handleHeaderSearch = (e: React.FormEvent) => {
     e.preventDefault();
     const q = headerSearch.trim();
     if (q) {
-      router.push(`/products?search=${encodeURIComponent(q)}`);
+      // Need to keep the locale prefix
+      const currentLocale = pathname.split('/')[1];
+      router.push(`/${currentLocale}/products?search=${encodeURIComponent(q)}`);
       setHeaderSearch('');
     }
   };
@@ -46,10 +57,11 @@ export default function StoreLayout({ children }: { children: React.ReactNode })
       {/* Top Bar - Elevated Boutique Feel */}
       <div className="bg-[#0B0B0B] text-primary-foreground text-[10px] uppercase tracking-[0.2em] py-2 px-4 md:px-8 border-b border-primary/20">
         <div className="max-w-7xl mx-auto flex justify-between items-center opacity-90">
-          <span className="font-light">L'élégance du Caftan Marocain</span>
-          <div className="flex gap-6">
-            <span className="hidden sm:inline font-light border-r border-white/10 pr-6">Service Client: {settings?.whatsappNumber ?? '+212 600 000 000'}</span>
-            <span className="font-medium text-primary">Livraison Gratuite +{((settings?.freeShippingThreshold ?? 50000) / 100)} MAD</span>
+          <span className="font-light hidden sm:inline-block">{t('layout.topbar.tagline')}</span>
+          <div className="flex gap-4 sm:gap-6 items-center w-full justify-between sm:w-auto">
+            <LanguageSwitcher />
+            <span className="hidden sm:inline font-light border-x border-white/10 px-4 sm:px-6">{t('layout.topbar.customerService')} {settings?.whatsappNumber ?? '+212 600 000 000'}</span>
+            <span className="font-medium text-primary rtl:text-end rtl:ms-auto sm:rtl:ms-0">{t('layout.topbar.freeShipping', { amount: (settings?.freeShippingThreshold ?? 50000) / 100 })}</span>
           </div>
         </div>
       </div>
@@ -64,7 +76,7 @@ export default function StoreLayout({ children }: { children: React.ReactNode })
               size="icon"
               className="md:hidden hover:bg-primary/5"
               data-testid="button-menu"
-              aria-label="Ouvrir le menu"
+              aria-label={t('layout.header.menuOpen')}
               aria-expanded={isDrawerOpen}
               aria-controls="mobile-nav-drawer"
               onClick={() => setIsDrawerOpen(true)}
@@ -86,7 +98,7 @@ export default function StoreLayout({ children }: { children: React.ReactNode })
                   src="/logo.png"
                   alt={settings?.storeName ?? 'Caftan Latifa'}
                   fill
-                  className="object-contain object-left md:object-center"
+                  className="object-contain object-left md:object-center rtl:object-right"
                   priority
                 />
               </div>
@@ -100,22 +112,22 @@ export default function StoreLayout({ children }: { children: React.ReactNode })
                 {settings?.storeName ?? 'Caftan Latifa'}
               </span>
               <span className="hidden sm:inline-block text-[8px] md:text-[9px] uppercase tracking-[0.4em] text-primary -mt-1 opacity-80 group-hover:opacity-100 line-clamp-1 font-serif italic">
-                Maison de Couture
+                {t('layout.header.subtitle')}
               </span>
             </Link>
 
             {/* Desktop Navigation */}
-            <nav className="hidden lg:flex items-center gap-8 ml-8 flex-shrink-0">
+            <nav className="hidden lg:flex items-center gap-8 ms-8 flex-shrink-0">
               {[
-                { href: '/', label: 'Accueil' },
-                { href: '/products', label: 'Collection' },
-                { href: '/contact', label: 'Contact' },
-                { href: '/orders', label: 'Mes Commandes' },
+                { href: '/', label: t('layout.nav.home') },
+                { href: '/products', label: t('layout.nav.collection') },
+                { href: '/contact', label: t('layout.nav.contact') },
+                { href: '/orders', label: t('layout.nav.orders') },
               ].map(({ href, label }) => (
                 <Link
                   key={href}
                   href={href}
-                  className={`text-[13px] uppercase tracking-widest transition-all duration-300 relative py-2 after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-full after:h-[1px] after:bg-primary after:transform after:scale-x-0 group-hover:after:scale-x-100 after:transition-transform ${isActive(href) ? 'text-primary font-medium after:scale-x-100' : 'text-muted-foreground font-light hover:text-primary'}`}
+                  className={`text-[13px] uppercase tracking-widest transition-all duration-300 relative py-2 after:content-[''] after:absolute after:bottom-0 after:left-0 rtl:after:right-0 rtl:after:left-auto after:w-full after:h-[1px] after:bg-primary after:transform after:scale-x-0 group-hover:after:scale-x-100 after:transition-transform ${isActive(href) ? 'text-primary font-medium after:scale-x-100' : 'text-muted-foreground font-light hover:text-primary'}`}
                 >
                   {label}
                 </Link>
@@ -125,13 +137,13 @@ export default function StoreLayout({ children }: { children: React.ReactNode })
 
           {/* Search Bar - Desktop */}
           <form onSubmit={handleHeaderSearch} className="hidden md:flex flex-1 max-w-xs mx-4 relative group flex-shrink-0">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground group-focus-within:text-primary transition-colors" />
+            <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground group-focus-within:text-primary transition-colors rtl:-scale-x-100" />
             <Input
               type="search"
-              placeholder="Rechercher..."
+              placeholder={t('layout.header.searchPlaceholder')}
               value={headerSearch}
               onChange={(e) => setHeaderSearch(e.target.value)}
-              className="pl-10 h-10 w-full bg-transparent border-border/60 rounded-none focus:border-primary/40 focus:ring-0 transition-all font-light text-sm italic"
+              className="ps-10 h-10 w-full bg-transparent border-border/60 rounded-none focus:border-primary/40 focus:ring-0 transition-all font-light text-sm italic"
             />
           </form>
 
@@ -144,14 +156,14 @@ export default function StoreLayout({ children }: { children: React.ReactNode })
               onClick={() => router.push('/products?search=')}
               data-testid="button-mobile-search"
             >
-              <Search className="h-5 w-5" />
+              <Search className="h-5 w-5 rtl:-scale-x-100" />
             </Button>
 
             <Link href="/cart">
               <div className="relative group p-2 rounded-full hover:bg-primary/5 transition-colors cursor-pointer" data-testid="button-cart">
-                <ShoppingCart className="h-5 w-5 text-foreground group-hover:text-primary transition-colors" />
+                <ShoppingCart className="h-5 w-5 text-foreground group-hover:text-primary transition-colors rtl:-scale-x-100" />
                 {isMounted && itemCount > 0 && (
-                  <Badge variant="default" className="absolute top-0 right-0 h-4 w-4 p-0 flex items-center justify-center rounded-full text-[9px] bg-primary text-primary-foreground font-bold border-2 border-background">
+                  <Badge variant="default" className="absolute top-0 end-0 h-4 w-4 p-0 flex items-center justify-center rounded-full text-[9px] bg-primary text-primary-foreground font-bold border-2 border-background">
                     {itemCount}
                   </Badge>
                 )}
@@ -175,45 +187,45 @@ export default function StoreLayout({ children }: { children: React.ReactNode })
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-24">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-16 md:gap-12">
-            <div className="space-y-6">
+            <div className="space-y-6 flex flex-col items-start text-start">
               <div className="flex flex-col items-start gap-1">
                 <span className="font-serif text-3xl tracking-tighter text-primary">{settings?.storeName ?? 'Caftan Latifa'}</span>
-                <span className="text-[10px] uppercase tracking-[0.4em] text-white/60">Maison de Couture</span>
+                <span className="text-[10px] uppercase tracking-[0.4em] text-white/60 text-start">{t('layout.header.subtitle')}</span>
               </div>
-              <p className="text-sm text-white/50 leading-loose font-light italic">
-                L'héritage de l'artisanat marocain sublimé par une élégance contemporaine. Chaque pièce raconte une histoire de passion et de tradition.
+              <p className="text-sm text-white/50 leading-loose font-light italic text-start">
+                {t('layout.footer.description')}
               </p>
             </div>
 
-            <div className="md:pl-8">
-              <h3 className="font-serif text-lg text-primary mb-8 tracking-wide">Collections</h3>
-              <ul className="space-y-4 text-[14px] text-white/60 font-light">
-                <li><Link href="/products" className="hover:text-primary transition-all duration-300 flex items-center gap-2">Tout les modèles</Link></li>
-                <li><Link href="/products?category=takchita" className="hover:text-primary transition-all duration-300">Takchitas d'exception</Link></li>
-                <li><Link href="/products?category=caftan" className="hover:text-primary transition-all duration-300">Caftans Haute Couture</Link></li>
-                <li><Link href="/products?category=accessories" className="hover:text-primary transition-all duration-300">Accessoires & Parures</Link></li>
+            <div className="md:ps-8 flex flex-col items-start text-start w-full">
+              <h3 className="font-serif text-lg text-primary mb-8 tracking-wide text-start">{t('layout.footer.collections.title')}</h3>
+              <ul className="space-y-4 text-[14px] text-white/60 font-light text-start w-full">
+                <li className="text-start"><Link href="/products" className="hover:text-primary transition-all duration-300 flex items-center gap-2">{t('layout.footer.collections.all')}</Link></li>
+                <li className="text-start"><Link href="/products?category=takchita" className="hover:text-primary transition-all duration-300">{t('layout.footer.collections.takchita')}</Link></li>
+                <li className="text-start"><Link href="/products?category=caftan" className="hover:text-primary transition-all duration-300">{t('layout.footer.collections.caftan')}</Link></li>
+                <li className="text-start"><Link href="/products?category=accessories" className="hover:text-primary transition-all duration-300">{t('layout.footer.collections.accessories')}</Link></li>
               </ul>
             </div>
 
-            <div>
-              <h3 className="font-serif text-lg text-primary mb-8 tracking-wide">La Maison</h3>
-              <ul className="space-y-4 text-[14px] text-white/60 font-light">
-                <li><Link href="/contact" className="hover:text-primary transition-all duration-300">Notre Atelier</Link></li>
-                <li><Link href="/contact" className="hover:text-primary transition-all duration-300">Guide des Tailles</Link></li>
-                <li><Link href="/contact" className="hover:text-primary transition-all duration-300">Livraison & Retours</Link></li>
-                <li><Link href="/contact" className="hover:text-primary transition-all duration-300">FAQ</Link></li>
+            <div className="flex flex-col items-start text-start w-full">
+              <h3 className="font-serif text-lg text-primary mb-8 tracking-wide text-start">{t('layout.footer.house.title')}</h3>
+              <ul className="space-y-4 text-[14px] text-white/60 font-light text-start w-full">
+                <li className="text-start"><Link href="/contact" className="hover:text-primary transition-all duration-300">{t('layout.footer.house.atelier')}</Link></li>
+                <li className="text-start"><Link href="/contact" className="hover:text-primary transition-all duration-300">{t('layout.footer.house.sizes')}</Link></li>
+                <li className="text-start"><Link href="/contact" className="hover:text-primary transition-all duration-300">{t('layout.footer.house.shipping')}</Link></li>
+                <li className="text-start"><Link href="/contact" className="hover:text-primary transition-all duration-300">{t('layout.footer.house.faq')}</Link></li>
               </ul>
             </div>
 
-            <div className="bg-white/5 p-8 border border-white/10 relative">
-              <div className="absolute top-0 right-0 w-12 h-12 border-t border-r border-primary/30"></div>
-              <h3 className="font-serif text-lg text-primary mb-6 tracking-wide">Contact</h3>
+            <div className="bg-white/5 p-8 border border-white/10 relative text-start flex flex-col items-start">
+              <div className="absolute top-0 end-0 w-12 h-12 border-t border-e border-primary/30"></div>
+              <h3 className="font-serif text-lg text-primary mb-6 tracking-wide text-start">{t('layout.footer.contact.title')}</h3>
               <ul className="space-y-6 text-sm">
                 <li className="group cursor-pointer">
-                  <span className="text-[10px] uppercase tracking-widest text-white/40 block mb-1">WhatsApp Support</span>
+                  <span className="text-[10px] uppercase tracking-widest text-white/40 block mb-1 text-start">{t('layout.footer.contact.whatsapp')}</span>
                   <div className="flex items-center gap-3">
                     <div className="h-9 w-9 rounded-full bg-primary/20 flex items-center justify-center group-hover:bg-primary transition-colors duration-500">
-                      <Phone className="h-4 w-4 text-primary group-hover:text-black transition-colors" />
+                      <Phone className="h-4 w-4 text-primary group-hover:text-black transition-colors rtl:-scale-x-100" />
                     </div>
                     <span className="text-white font-medium text-lg tracking-tight">{settings?.whatsappNumber ?? '+212 600 000 000'}</span>
                   </div>
@@ -223,10 +235,10 @@ export default function StoreLayout({ children }: { children: React.ReactNode })
           </div>
 
           <div className="border-t border-white/5 mt-20 pt-10 flex flex-col md:flex-row justify-between items-center gap-6 text-[10px] uppercase tracking-[0.2em] text-white/30 font-light">
-            <p>&copy; {new Date().getFullYear()} {settings?.storeName ?? 'Caftan Latifa'}. Tous droits réservés.</p>
+            <p>&copy; {new Date().getFullYear()} {settings?.storeName ?? 'Caftan Latifa'}. {t('layout.footer.copyright')}</p>
             <div className="flex gap-8">
-              <span>L'Art de Vivre à la Marocaine</span>
-              <span className="text-primary/60">Imaginé au Maroc 🇲🇦</span>
+              <span>{t('layout.footer.artOfLiving')}</span>
+              <span className="text-primary/60">{t('layout.footer.madeIn')}</span>
             </div>
           </div>
         </div>

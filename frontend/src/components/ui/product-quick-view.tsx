@@ -23,6 +23,7 @@ import { ApiProduct, ApiInitData, centsToMad, ProductSize } from '@/lib/types';
 import { useCart } from '@/features/public/cart/cartContext';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
+import { useTranslation } from '@/i18n/provider';
 
 // ─── Simple media query hook ──────────────────────────────────────────────────
 function useIsMobile(breakpoint = 768) {
@@ -44,6 +45,7 @@ interface ProductQuickViewProps {
 }
 
 export function ProductQuickView({ product, open, onClose }: ProductQuickViewProps) {
+    const { t } = useTranslation();
     const { addToCart } = useCart();
     const [quantity, setQuantity] = useState(1);
     const [addedToCart, setAddedToCart] = useState(false);
@@ -102,6 +104,7 @@ export function ProductQuickView({ product, open, onClose }: ProductQuickViewPro
                             sizeError={sizeError}
                             onSizeSelect={handleSizeSelect}
                             onClose={handleOpenChange.bind(null, false)}
+                            t={t}
                         />
                     </div>
                     {/* Sticky bottom CTA */}
@@ -113,7 +116,7 @@ export function ProductQuickView({ product, open, onClose }: ProductQuickViewPro
                                     className="h-11 w-11 flex items-center justify-center text-[#1A1A1A]/40 hover:text-[#1A1A1A] transition-colors disabled:opacity-25"
                                     onClick={() => setQuantity(q => Math.max(1, q - 1))}
                                     disabled={quantity <= 1 || !product.inStock}
-                                    aria-label="Diminuer"
+                                    aria-label={t('product.decrease')}
                                 >
                                     <Minus className="h-3 w-3" />
                                 </button>
@@ -122,18 +125,18 @@ export function ProductQuickView({ product, open, onClose }: ProductQuickViewPro
                                     className="h-11 w-11 flex items-center justify-center text-[#1A1A1A]/40 hover:text-[#1A1A1A] transition-colors disabled:opacity-25"
                                     onClick={() => setQuantity(q => q + 1)}
                                     disabled={!product.inStock}
-                                    aria-label="Augmenter"
+                                    aria-label={t('product.increase')}
                                 >
                                     <Plus className="h-3 w-3" />
                                 </button>
                             </div>
                             {/* Price */}
                             <div className="flex flex-col">
-                                <span className="text-[8px] uppercase tracking-[0.3em] text-[#1A1A1A]/30 leading-none mb-0.5">
-                                    {quantity > 1 ? `×${quantity}` : 'Prix'}
+                                <span className="text-[8px] uppercase tracking-[0.3em] text-[#1A1A1A]/30 leading-none mb-0.5" dir="ltr">
+                                    {quantity > 1 ? `×${quantity}` : t('product.price')}
                                 </span>
-                                <span className="font-serif text-[#C9A227] text-base leading-none">
-                                    {subtotal.toFixed(0)} MAD
+                                <span className="font-serif text-[#C9A227] text-base leading-none" dir="ltr">
+                                    {subtotal.toFixed(0)} {t('common.currency')}
                                 </span>
                             </div>
                             {/* CTA */}
@@ -148,9 +151,9 @@ export function ProductQuickView({ product, open, onClose }: ProductQuickViewPro
                                 disabled={!product.inStock}
                             >
                                 {addedToCart ? (
-                                    <><Check className="h-3.5 w-3.5" /> Ajouté !</>
+                                    <><Check className="h-3.5 w-3.5" /> {t('product.addedToCart')}</>
                                 ) : (
-                                    <><ShoppingCart className="h-3.5 w-3.5" /> Ajouter</>
+                                    <><ShoppingCart className="h-3.5 w-3.5 rtl:-scale-x-100" /> {t('product.addToCart')}</>
                                 )}
                             </Button>
                         </div>
@@ -168,7 +171,7 @@ export function ProductQuickView({ product, open, onClose }: ProductQuickViewPro
                 <button
                     onClick={onClose}
                     className="absolute top-4 right-4 z-50 h-9 w-9 rounded-full bg-white/90 backdrop-blur flex items-center justify-center border border-[#1A1A1A]/10 shadow-sm hover:bg-white transition-colors"
-                    aria-label="Fermer"
+                    aria-label={t('product.close')}
                 >
                     <X className="h-4 w-4" />
                 </button>
@@ -176,7 +179,7 @@ export function ProductQuickView({ product, open, onClose }: ProductQuickViewPro
                     {/* Gallery side */}
                     <DesktopGallery images={images} productName={product.name} />
                     {/* Details side */}
-                    <div className="flex flex-col overflow-y-auto max-h-[82vh] bg-white">
+                    <div className="flex flex-col overflow-y-auto max-h-[82vh] bg-white text-start">
                         <MobileDetails
                             product={product}
                             initData={initData}
@@ -184,11 +187,12 @@ export function ProductQuickView({ product, open, onClose }: ProductQuickViewPro
                             sizeError={sizeError}
                             onSizeSelect={handleSizeSelect}
                             onClose={handleOpenChange.bind(null, false)}
+                            t={t}
                         />
                         {/* Desktop quantity + CTA */}
                         <div className="mt-auto border-t border-[#1A1A1A]/5 p-8 space-y-5 bg-white">
                             <div className="flex items-center gap-6">
-                                <span className="text-[10px] uppercase tracking-[0.3em] text-[#1A1A1A]/35 font-medium w-20 shrink-0">Quantité</span>
+                                <span className="text-[10px] uppercase tracking-[0.3em] text-[#1A1A1A]/35 font-medium w-20 shrink-0">{t('product.quantity')}</span>
                                 <div className="flex items-center border border-[#1A1A1A]/10 bg-[#FAF7F2]">
                                     <button className="h-10 w-10 flex items-center justify-center text-[#1A1A1A]/40 hover:text-[#1A1A1A] transition-colors disabled:opacity-25"
                                         onClick={() => setQuantity(q => Math.max(1, q - 1))} disabled={quantity <= 1 || !product.inStock}><Minus className="h-3 w-3" /></button>
@@ -209,9 +213,9 @@ export function ProductQuickView({ product, open, onClose }: ProductQuickViewPro
                                 disabled={!product.inStock}
                             >
                                 {addedToCart ? (
-                                    <><Check className="h-4 w-4" /> Ajouté au Panier</>
+                                    <><Check className="h-4 w-4" /> {t('product.addedToCartLong')}</>
                                 ) : (
-                                    <><ShoppingCart className="h-4 w-4" /> Ajouter au Panier</>
+                                    <><ShoppingCart className="h-4 w-4 rtl:-scale-x-100" /> {t('product.addToCartLong')}</>
                                 )}
                             </Button>
                         </div>
@@ -226,7 +230,11 @@ export function ProductQuickView({ product, open, onClose }: ProductQuickViewPro
    Mobile Embla Gallery — full-width, tall, touch-swipeable
    ──────────────────────────────────────────────────────────────────────────── */
 function MobileGallery({ images, productName }: { images: string[]; productName: string }) {
-    const [viewportRef, emblaApi] = useEmblaCarousel({ loop: images.length > 1 });
+    const { t, locale } = useTranslation();
+    const [viewportRef, emblaApi] = useEmblaCarousel({ 
+        loop: images.length > 1,
+        direction: locale === 'ar' ? 'rtl' : 'ltr'
+    });
     const [selectedIndex, setSelectedIndex] = useState(0);
 
     const onSelect = useCallback(() => {
@@ -300,6 +308,7 @@ function MobileGallery({ images, productName }: { images: string[]; productName:
    Desktop Gallery — static with arrow nav + thumbnails
    ──────────────────────────────────────────────────────────────────────────── */
 function DesktopGallery({ images, productName }: { images: string[]; productName: string }) {
+    const { t } = useTranslation();
     const [active, setActive] = useState(0);
     const prev = () => setActive(i => (i === 0 ? images.length - 1 : i - 1));
     const next = () => setActive(i => (i === images.length - 1 ? 0 : i + 1));
@@ -326,11 +335,11 @@ function DesktopGallery({ images, productName }: { images: string[]; productName
                 />
                 {images.length > 1 && (
                     <>
-                        <button onClick={prev} aria-label="Image précédente"
+                        <button onClick={prev} aria-label={t('product.imagePrev')}
                             className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 bg-white/80 hover:bg-white flex items-center justify-center shadow-sm opacity-0 group-hover:opacity-100 transition-all">
                             <ChevronLeft className="h-4 w-4" />
                         </button>
-                        <button onClick={next} aria-label="Image suivante"
+                        <button onClick={next} aria-label={t('product.imageNext')}
                             className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 bg-white/80 hover:bg-white flex items-center justify-center shadow-sm opacity-0 group-hover:opacity-100 transition-all">
                             <ChevronRight className="h-4 w-4" />
                         </button>
@@ -362,9 +371,10 @@ interface MobileDetailsProps {
     sizeError: boolean;
     onSizeSelect: (size: ProductSize) => void;
     onClose: () => void;
+    t: any;
 }
 
-function MobileDetails({ product, initData, selectedSize, sizeError, onSizeSelect, onClose }: MobileDetailsProps) {
+function MobileDetails({ product, initData, selectedSize, sizeError, onSizeSelect, onClose, t }: MobileDetailsProps) {
     const specsEntries = product.specs ? Object.entries(product.specs) : [];
 
     return (
@@ -376,11 +386,11 @@ function MobileDetails({ product, initData, selectedSize, sizeError, onSizeSelec
                 </span>
                 {product.inStock ? (
                     <span className="text-[9px] uppercase tracking-[0.3em] font-medium text-emerald-600 border border-emerald-200 px-3 py-1 bg-emerald-50">
-                        En stock
+                        {t('product.inStock')}
                     </span>
                 ) : (
                     <span className="text-[9px] uppercase tracking-[0.3em] font-medium text-red-500 border border-red-200 px-3 py-1 bg-red-50">
-                        Épuisé
+                        {t('product.soldOut')}
                     </span>
                 )}
             </div>
@@ -392,12 +402,12 @@ function MobileDetails({ product, initData, selectedSize, sizeError, onSizeSelec
 
             {/* Price */}
             <div className="flex items-baseline gap-3">
-                <span className="font-serif text-xl text-[#C9A227]">
-                    {centsToMad(product.price)} MAD
+                <span className="font-serif text-xl text-[#C9A227]" dir="ltr">
+                    {centsToMad(product.price)} {t('common.currency')}
                 </span>
                 {initData?.settings?.standardDeliveryFee ? (
                     <span className="text-[10px] uppercase tracking-widest text-[#1A1A1A]/30 font-light">
-                        + {centsToMad(initData.settings.standardDeliveryFee)} livraison
+                        {t('product.deliveryFee', { amount: centsToMad(initData.settings.standardDeliveryFee) })}
                     </span>
                 ) : null}
             </div>
@@ -409,11 +419,11 @@ function MobileDetails({ product, initData, selectedSize, sizeError, onSizeSelec
                 <div>
                     <div className="flex items-center gap-4 mb-2">
                         <span className="text-[10px] uppercase tracking-[0.3em] font-medium text-[#1A1A1A]/35 w-20 shrink-0">
-                            Taille
+                            {t('product.size')}
                         </span>
                         {sizeError && !selectedSize && (
                             <span className="text-[9px] uppercase tracking-[0.2em] text-red-500 font-bold animate-pulse">
-                                Veuillez sélectionner une taille
+                                {t('product.selectSizePrompt')}
                             </span>
                         )}
                     </div>
@@ -438,10 +448,10 @@ function MobileDetails({ product, initData, selectedSize, sizeError, onSizeSelec
             ) : (
                 <div className="flex items-center gap-4">
                     <span className="text-[10px] uppercase tracking-[0.3em] font-medium text-[#1A1A1A]/35 w-20 shrink-0">
-                        Taille
+                        {t('product.size')}
                     </span>
                     <span className="text-[10px] uppercase tracking-[0.2em] text-[#1A1A1A]/50 border border-[#1A1A1A]/10 px-3 py-1">
-                        Taille unique
+                        {t('product.oneSize')}
                     </span>
                 </div>
             )}
@@ -454,12 +464,12 @@ function MobileDetails({ product, initData, selectedSize, sizeError, onSizeSelec
             {/* Specs */}
             {specsEntries.length > 0 && (
                 <div className="space-y-2 pt-1">
-                    <p className="text-[9px] uppercase tracking-[0.3em] text-[#1A1A1A]/30 font-medium">Caractéristiques</p>
+                    <p className="text-[9px] uppercase tracking-[0.3em] text-[#1A1A1A]/30 font-medium">{t('product.features')}</p>
                     <div className="space-y-2">
                         {specsEntries.map(([key, val]) => (
                             <div key={key} className="flex justify-between text-[12px] border-b border-[#1A1A1A]/5 pb-2 last:border-0">
                                 <span className="text-[#1A1A1A]/40 font-light">{key}</span>
-                                <span className="font-medium text-[#1A1A1A]">{val}</span>
+                                <span className="font-medium text-[#1A1A1A]">{val as string}</span>
                             </div>
                         ))}
                     </div>
@@ -469,10 +479,10 @@ function MobileDetails({ product, initData, selectedSize, sizeError, onSizeSelec
             {/* Selling points */}
             <div className="grid grid-cols-2 gap-3 pt-1">
                 {[
-                    { Icon: ShoppingCart, label: "Paiement à la livraison" },
-                    { Icon: Truck, label: "Livraison au Maroc" },
-                    { Icon: ShieldCheck, label: "Qualité artisanale" },
-                    { Icon: RotateCcw, label: "Retour sous 7 jours" },
+                    { Icon: ShoppingCart, label: t('product.points.cod') },
+                    { Icon: Truck, label: t('product.points.shipping') },
+                    { Icon: ShieldCheck, label: t('product.points.quality') },
+                    { Icon: RotateCcw, label: t('product.points.return') },
                 ].map(({ Icon, label }) => (
                     <div key={label} className="flex items-center gap-2">
                         <div className="w-6 h-6 flex items-center justify-center border border-[#C9A227]/20 rounded-full shrink-0">
@@ -490,7 +500,7 @@ function MobileDetails({ product, initData, selectedSize, sizeError, onSizeSelec
                     onClick={onClose}
                     className="text-[10px] uppercase tracking-[0.2em] font-medium text-[#C9A227] hover:text-[#b8911f] border-b border-[#C9A227]/30 hover:border-[#C9A227] transition-colors pb-0.5"
                 >
-                    Voir plus de détails
+                    {t('product.viewDetails')}
                 </Link>
             </div>
         </div>
