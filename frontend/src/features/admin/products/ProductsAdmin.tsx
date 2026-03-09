@@ -4,17 +4,9 @@ import { useQuery, useMutation } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Plus, Search } from 'lucide-react';
 import {
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow
-} from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
-import { Plus, Search, MoreHorizontal, Edit, Trash2, Loader2, Image as ImageIcon } from 'lucide-react';
-import {
-  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
-  DropdownMenuSeparator, DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
-  Dialog, DialogContent, DialogDescription, DialogFooter,
+  Dialog, DialogContent, DialogDescription,
   DialogHeader, DialogTitle, DialogTrigger,
 } from "@/components/ui/dialog";
 import { apiRequest, queryClient } from '@/lib/queryClient';
@@ -22,6 +14,8 @@ import type { ApiProduct } from '@/lib/types';
 import { centsToMad } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { ProductForm } from './ProductForm';
+import { ProductTable } from './ProductTable';
+import { getColumns } from './ProductColumns';
 
 export default function ProductsAdmin() {
   const { toast } = useToast();
@@ -63,6 +57,12 @@ export default function ProductsAdmin() {
     onError: (err: Error) => {
       toast({ title: 'Error', description: err.message, variant: 'destructive' });
     },
+  });
+
+  const columns = getColumns({
+    onEdit: setEditingProduct,
+    deleteMutation: deleteProduct,
+    toggleStockMutation: toggleStock,
   });
 
   return (
@@ -121,83 +121,12 @@ export default function ProductsAdmin() {
             />
           </div>
         </CardHeader>
-        <CardContent>
-          {isLoading ? (
-            <div className="flex justify-center py-12">
-              <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            </div>
-          ) : products.length === 0 ? (
-            <p className="text-center text-muted-foreground py-12">No products found.</p>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-[80px]">Image</TableHead>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Category</TableHead>
-                  <TableHead>Price</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {products.map((product) => (
-                  <TableRow key={product.id}>
-                    <TableCell>
-                      <div className="h-10 w-10 rounded bg-muted overflow-hidden flex items-center justify-center">
-                        {product.images && product.images.length > 0 ? (
-                          <img src={product.images[0]} alt="" className="h-full w-full object-cover" />
-                        ) : (
-                          <ImageIcon className="h-5 w-5 text-muted-foreground/50" />
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell className="font-medium">{product.name}</TableCell>
-                    <TableCell>{product.category?.name}</TableCell>
-                    <TableCell>{centsToMad(product.price)} MAD</TableCell>
-                    <TableCell>
-                      <button
-                        onClick={() => toggleStock.mutate({ id: product.id, inStock: product.inStock })}
-                        className="hover:opacity-80 transition-opacity"
-                        disabled={toggleStock.isPending}
-                      >
-                        <Badge
-                          variant={product.inStock ? "outline" : "destructive"}
-                          className={product.inStock ? "text-emerald-600 bg-emerald-50 border-emerald-200 cursor-pointer" : "cursor-pointer"}
-                        >
-                          {toggleStock.isPending && <Loader2 className="mr-1 h-3 w-3 animate-spin" />}
-                          {product.inStock ? 'In Stock' : 'Out of Stock'}
-                        </Badge>
-                      </button>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" className="h-8 w-8 p-0">
-                            <span className="sr-only">Open menu</span>
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                          <DropdownMenuItem onClick={() => setEditingProduct(product)}>
-                            <Edit className="mr-2 h-4 w-4" /> Edit
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem
-                            className="text-destructive"
-                            onClick={() => deleteProduct.mutate(product.id)}
-                          >
-                            <Trash2 className="mr-2 h-4 w-4" /> Delete
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
+        <CardContent className="p-0 sm:p-6">
+          <ProductTable 
+            columns={columns} 
+            data={products} 
+            isLoading={isLoading} 
+          />
         </CardContent>
       </Card>
     </div>

@@ -18,6 +18,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { AdminSearch } from '@/app/admin/_components/AdminSearch';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -100,8 +101,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       </div>
 
       {/* Main Content Area */}
-      <main className="flex-1 md:ml-64 pt-16 md:pt-0 min-h-screen">
-        <div className="h-full p-4 md:p-8 max-w-7xl mx-auto">
+      <main className="flex-1 md:ml-64 pt-16 md:pt-0 min-h-screen flex flex-col">
+        {/* Desktop Header */}
+        <header className="hidden md:flex h-16 items-center justify-between px-8 border-b border-neutral-200 bg-white sticky top-0 z-40">
+           <div className="flex-1 flex items-center">
+             <AdminSearch />
+           </div>
+        </header>
+        
+        <div className="flex-1 p-4 md:p-8 max-w-7xl mx-auto w-full">
           {children}
         </div>
       </main>
