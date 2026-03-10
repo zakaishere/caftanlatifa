@@ -93,7 +93,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   };
 
   return (
-    <div className="min-h-screen flex bg-background" suppressHydrationWarning>
+    <div className="min-h-screen flex bg-background overflow-x-hidden" suppressHydrationWarning>
       {/* Desktop Sidebar */}
       <aside className="hidden md:block w-64 fixed inset-y-0 start-0 z-50 border-e border-sidebar-border">
         <SidebarContent />

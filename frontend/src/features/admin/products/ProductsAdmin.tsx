@@ -26,6 +26,12 @@ import { DataTableToolbar } from '@/features/admin/shared/table/DataTableToolbar
 import { PaginationControls } from '@/features/admin/shared/table/PaginationControls';
 import { getProductColumns } from './columns';
 import { useProductTableState, buildProductQueryParams } from './hooks/useProductTableState';
+import dynamic from 'next/dynamic';
+
+const MobileProductsView = dynamic(
+  () => import('@/features/admin/mobile/MobileProductsView').then((m) => ({ default: m.MobileProductsView })),
+  { ssr: false }
+);
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface ProductsPage {
@@ -142,9 +148,19 @@ export default function ProductsAdmin() {
   const isFiltered = tableState.globalFilter.trim().length > 0;
 
   return (
-    <div className="space-y-5">
-      {/* ── Page header ─────────────────────────────────────────────────── */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+    <>
+      {/* ── Mobile view (hidden on md+) ────────────────────────────── */}
+      <div className="block md:hidden">
+        <MobileProductsView 
+          onOpenAddProduct={() => setIsAddDialogOpen(true)}
+          onEditProduct={(product) => setEditingProduct(product)}
+        />
+      </div>
+
+      {/* ── Desktop view (hidden on mobile) ───────────────────────── */}
+      <div className="hidden md:block space-y-5">
+        {/* ── Page header ─────────────────────────────────────────────────── */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-xl font-semibold tracking-tight text-foreground">
             {t('admin.products.title')}
@@ -299,6 +315,7 @@ export default function ProductsAdmin() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+      </div>
+    </>
   );
 }

@@ -9,9 +9,9 @@ import { centsToMad } from '@/lib/types';
 import { cn } from '@/lib/utils';
 
 // ── Constants ─────────────────────────────────────────────────────────────────
-const SWIPE_THRESHOLD = 60;     // px before action triggers
-const SWIPE_MAX = 90;           // max drag extent
-const RESISTANCE = 0.35;        // drag friction multiplier
+const SWIPE_THRESHOLD = 50;     // px before action triggers
+const SWIPE_MAX = 80;           // max drag extent
+const RESISTANCE = 0.2;         // heavily damped drag friction multiplier
 
 // ── Status config ─────────────────────────────────────────────────────────────
 const STATUS_CONFIG: Record<OrderStatus, {
@@ -112,7 +112,7 @@ export function MobileOrderCard({
   const cardOpacity = useTransform(x, [-SWIPE_MAX * 2, -SWIPE_MAX, 0, SWIPE_MAX, SWIPE_MAX * 2], [0.6, 1, 1, 1, 0.6]);
 
   function snapBack() {
-    animate(x, 0, { type: 'spring', stiffness: 400, damping: 30 });
+    animate(x, 0, { type: 'spring', stiffness: 600, damping: 40 });
     setSwipeDir(null);
     setSwipeProgress(0);
     hasTriggeredRef.current = false;
@@ -120,7 +120,7 @@ export function MobileOrderCard({
   }
 
   return (
-    <div className="relative overflow-hidden rounded-xl select-none touch-pan-y">
+    <div className="relative overflow-hidden rounded-xl select-none touch-pan-y mb-2.5">
       {/* Background action layers */}
       {canAct && (
         <SwipeHintLayer direction={swipeDir} progress={swipeProgress} />
@@ -177,7 +177,7 @@ export function MobileOrderCard({
           style={{ boxShadow: '0 1px 4px 0 rgb(0 0 0 / 0.06), 0 0 0 1px rgb(0 0 0 / 0.03)' }}
         >
           {/* ── Top row: ID + Status + Time ── */}
-          <div className="flex items-center justify-between px-3.5 pt-3 pb-2 border-b border-border/40">
+          <div className="flex items-center justify-between px-3 pt-2.5 pb-2 border-b border-border/40 bg-muted/10">
             <div className="flex items-center gap-2">
               <span className="font-mono text-[11px] text-muted-foreground/70 tracking-wider" dir="ltr">
                 #{order.id.slice(-6).toUpperCase()}
@@ -200,22 +200,22 @@ export function MobileOrderCard({
           </div>
 
           {/* ── Main body ── */}
-          <div className="px-3.5 py-2.5 flex items-start justify-between gap-3">
+          <div className="px-3 py-2 flex items-start justify-between gap-2.5">
             {/* Left: Customer info */}
             <div className="flex-1 min-w-0 space-y-1">
-              <p className="text-[14px] font-semibold text-foreground truncate leading-tight">
+              <p className="text-[13px] font-bold text-foreground truncate leading-none mt-0.5">
                 {order.customerName}
               </p>
 
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2.5">
                 {order.city && (
-                  <span className="flex items-center gap-1 text-[11px] text-muted-foreground/80">
+                  <span className="flex items-center gap-1 text-[10px] text-muted-foreground/80 font-medium">
                     <MapPin className="h-2.5 w-2.5 shrink-0" />
                     {order.city}
                   </span>
                 )}
-                <span className="flex items-center gap-1 text-[11px] text-muted-foreground/60" dir="ltr">
-                  <Phone className="h-2.5 w-2.5 shrink-0" />
+                <span className="flex items-center gap-1 text-[10px] text-muted-foreground/70 font-mono" dir="ltr">
+                  <Phone className="h-2 w-2 shrink-0" />
                   {order.phone}
                 </span>
               </div>
@@ -233,17 +233,17 @@ export function MobileOrderCard({
 
             {/* Right: Price + chevron */}
             <div className="flex flex-col items-end gap-1 shrink-0">
-              <span className="text-[18px] font-bold text-foreground tabular-nums leading-none" dir="ltr">
+              <span className="text-[16px] font-extrabold text-foreground tabular-nums leading-none" dir="ltr">
                 {centsToMad(order.total)}
-                <span className="text-[11px] text-muted-foreground/60 font-normal ml-0.5">MAD</span>
+                <span className="text-[10px] text-muted-foreground/60 font-bold ml-0.5 uppercase">MAD</span>
               </span>
-              <ChevronRight className="h-4 w-4 text-muted-foreground/30 mt-0.5" />
+              <ChevronRight className="h-4 w-4 text-muted-foreground/30 mt-1" />
             </div>
           </div>
 
           {/* ── Swipe hint strip (only for actionable orders) ── */}
           {canAct && (
-            <div className="px-3.5 pb-2.5 flex items-center gap-1.5">
+            <div className="px-3 pb-2 flex items-center justify-between border-t border-border/30 pt-1.5 bg-muted/5 mt-1">
               <span className="text-[10px] text-muted-foreground/40 font-medium tracking-wider uppercase">
                 ← flag · confirm →
               </span>
