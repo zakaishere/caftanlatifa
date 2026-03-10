@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion } from 'framer-motion';
 import {
-  LayoutDashboard, ShoppingBag, QrCode, Bell,
+  LayoutDashboard, ShoppingBag, Plus, Tags,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { i18n } from '@/i18n/config';
@@ -43,17 +43,16 @@ export function MobileBottomNav({ unreadNotifications = 0 }: MobileBottomNavProp
       href: `/${currentLocale}/admin/orders`,
     },
     {
-      id: 'scan',
-      icon: QrCode,
-      label: 'Scan',
-      href: `/${currentLocale}/admin/scan`,
+      id: 'add-product',
+      icon: Plus,
+      label: 'Add',
+      href: `/${currentLocale}/admin/products?new=true`,
     },
     {
-      id: 'notifications',
-      icon: Bell,
-      label: 'Alerts',
-      href: `/${currentLocale}/admin/notifications`,
-      badge: unreadNotifications,
+      id: 'categories',
+      icon: Tags,
+      label: 'Categories',
+      href: `/${currentLocale}/admin/categories`,
     },
   ];
 
@@ -72,7 +71,7 @@ export function MobileBottomNav({ unreadNotifications = 0 }: MobileBottomNavProp
             item.href === `/${currentLocale}/admin`
               ? pathname === item.href
               : pathname.startsWith(item.href);
-          const isScan = item.id === 'scan';
+          const isScan = item.id === 'add-product';
 
           return (
             <Link
@@ -96,7 +95,7 @@ export function MobileBottomNav({ unreadNotifications = 0 }: MobileBottomNavProp
                       'border-2 border-sidebar',
                     )}
                   >
-                    <Icon className="h-5 w-5" strokeWidth={2} />
+                    <Icon className="h-6 w-6" strokeWidth={2.5} />
                   </div>
                 </div>
               ) : (

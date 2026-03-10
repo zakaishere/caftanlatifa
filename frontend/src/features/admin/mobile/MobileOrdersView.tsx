@@ -112,14 +112,14 @@ export function MobileOrdersView() {
   const pendingCount = orders.filter((o) => o.status === 'PENDING').length;
 
   return (
-    <div className="min-h-full pb-24">
+    <div className="min-h-full pb-20">
       {/* ── Page header ── */}
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between mb-3 mt-1">
         <div>
-          <h1 className="text-[20px] font-semibold tracking-tight text-foreground">
+          <h1 className="text-lg font-semibold tracking-tight text-foreground">
             Orders
           </h1>
-          <p className="text-[13px] text-muted-foreground mt-0.5">
+          <p className="text-xs text-muted-foreground mt-0.5">
             {orders.length} total
             {pendingCount > 0 && (
               <span className="ml-1.5 text-amber-600 font-medium">· {pendingCount} pending</span>
@@ -142,9 +142,9 @@ export function MobileOrdersView() {
 
       {/* ── Flagged banner ── */}
       {flaggedIds.size > 0 && (
-        <div className="flex items-center gap-2 px-3 py-2 mb-3 bg-rose-50 border border-rose-200 rounded-xl">
-          <Flag className="h-3.5 w-3.5 text-rose-500 shrink-0" />
-          <p className="text-[12px] text-rose-700 font-medium">
+        <div className="flex items-center gap-2 px-2.5 py-1.5 mb-2.5 bg-rose-50 border border-rose-200 rounded-lg">
+          <Flag className="h-3 w-3 text-rose-500 shrink-0" />
+          <p className="text-[11px] text-rose-700 font-medium tracking-tight">
             {flaggedIds.size} order{flaggedIds.size > 1 ? 's' : ''} flagged for review
           </p>
           <button
@@ -157,7 +157,7 @@ export function MobileOrdersView() {
       )}
 
       {/* ── Filter tabs (horizontal scroll) ── */}
-      <div className="flex gap-2 overflow-x-auto pb-1 mb-4 -mx-4 px-4 scrollbar-none">
+      <div className="flex gap-2.5 overflow-x-auto pb-1 mb-3 -mx-4 px-4 scrollbar-none">
         {STATUS_TABS.map(({ key, label }) => {
           const count = key
             ? orders.filter((o) => o.status === key).length
@@ -169,15 +169,15 @@ export function MobileOrdersView() {
               key={String(key)}
               onClick={() => setActiveFilter(key)}
               className={cn(
-                'shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px] font-medium transition-all',
+                'shrink-0 flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium transition-all',
                 isActive
-                  ? 'bg-foreground text-background'
+                  ? 'bg-foreground text-background shadow-sm'
                   : 'bg-muted/60 text-muted-foreground hover:bg-muted',
               )}
             >
               {label}
               <span className={cn(
-                'text-[10px] font-bold px-1 py-0.5 rounded-full',
+                'text-[9px] font-bold px-1.5 py-[1px] rounded-full',
                 isActive ? 'bg-background/20 text-background' : 'bg-background/80 text-muted-foreground',
               )}>
                 {count}
