@@ -21,6 +21,8 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { AdminSearch } from '@/app/admin/_components/AdminSearch';
+import { LanguageSwitcher } from '@/components/ui/language-switcher';
+import { i18n } from '@/i18n/config';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
