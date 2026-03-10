@@ -20,10 +20,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { LanguageSwitcher } from '@/components/ui/language-switcher';
-import { i18n } from '@/i18n/config';
-
-
+import { AdminSearch } from '@/app/admin/_components/AdminSearch';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -120,19 +117,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       </div>
 
       {/* Main Content Area */}
-      <main className="flex-1 md:ms-64 pt-14 md:pt-0 min-h-screen flex flex-col">
-        {/* Desktop top header with Command+K search */}
-        <header className="hidden md:flex items-center justify-between h-14 px-6 border-b border-border/50 bg-background sticky top-0 z-40 shrink-0">
-          <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground/50 select-none">
-            Admin Console
-          </span>
-          <div className="flex items-center gap-3">
-            <AdminSearchLoader />
-            <LanguageSwitcher className="h-8 text-xs border-border/60" />
-          </div>
+      <main className="flex-1 md:ml-64 pt-16 md:pt-0 min-h-screen flex flex-col">
+        {/* Desktop Header */}
+        <header className="hidden md:flex h-16 items-center justify-between px-8 border-b border-neutral-200 bg-white sticky top-0 z-40">
+           <div className="flex-1 flex items-center">
+             <AdminSearch />
+           </div>
         </header>
-
-        <div className="flex-1 p-4 md:p-8 max-w-7xl mx-auto w-full pb-20 md:pb-8">
+        
+        <div className="flex-1 p-4 md:p-8 max-w-7xl mx-auto w-full">
           {children}
         </div>
       </main>
