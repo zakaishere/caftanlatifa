@@ -1,52 +1,90 @@
-"use client";
-import { useState } from 'react';
+'use client';
+
+import { useState, useCallback, useMemo } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow
-} from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
-import { Plus, Search, MoreHorizontal, Edit, Trash2, Loader2, Image as ImageIcon } from 'lucide-react';
-import {
-  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
-  DropdownMenuSeparator, DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
-  Dialog, DialogContent, DialogDescription, DialogFooter,
+  Dialog, DialogContent, DialogDescription,
   DialogHeader, DialogTitle, DialogTrigger,
-} from "@/components/ui/dialog";
+} from '@/components/ui/dialog';
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { Plus, Search, Trash2, Package } from 'lucide-react';
 import { apiRequest, queryClient } from '@/lib/queryClient';
 import type { ApiProduct } from '@/lib/types';
-import { centsToMad } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { ProductForm } from './ProductForm';
 import { useTranslation } from '@/i18n/provider';
+import { DataTable } from '@/features/admin/shared/table/DataTable';
+import { DataTableSkeleton } from '@/features/admin/shared/table/DataTableSkeleton';
+import { DataTableEmpty } from '@/features/admin/shared/table/DataTableEmpty';
+import { DataTableToolbar } from '@/features/admin/shared/table/DataTableToolbar';
+import { PaginationControls } from '@/features/admin/shared/table/PaginationControls';
+import { getProductColumns } from './columns';
+import { useProductTableState, buildProductQueryParams } from './hooks/useProductTableState';
 
+// ─── Types ────────────────────────────────────────────────────────────────────
+interface ProductsPage {
+  data: ApiProduct[];
+  total: number;
+  pageCount: number;
+}
+
+// ─── Main Component ───────────────────────────────────────────────────────────
 export default function ProductsAdmin() {
   const { t } = useTranslation();
   const { toast } = useToast();
-  const [search, setSearch] = useState('');
+
+  // Dialog state
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<ApiProduct | null>(null);
+  const [deletingProduct, setDeletingProduct] = useState<ApiProduct | null>(null);
 
-  const { data: products = [], isLoading } = useQuery<ApiProduct[]>({
-    queryKey: ['/api/admin/products', search],
+  // All table state lives in this hook
+  const tableState = useProductTableState(25);
+
+  // Build query params from table state
+  const queryParams = useMemo(
+    () => buildProductQueryParams(tableState),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [tableState.globalFilter, tableState.pagination, tableState.sorting]
+  );
+
+  // ─── Server data fetch ────────────────────────────────────────────────────
+  const queryKey = ['/api/admin/products', queryParams.toString()];
+
+  const { data, isLoading, isFetching } = useQuery<ProductsPage>({
+    queryKey,
     queryFn: async () => {
-      const url = search ? `/api/admin/products?search=${encodeURIComponent(search)}` : '/api/admin/products';
+      const url = `/api/admin/products?${queryParams.toString()}`;
       const res = await fetch(url, { credentials: 'include' });
       if (!res.ok) throw new Error('Failed to fetch products');
-      return res.json();
+      const json = await res.json();
+      // Support both paginated { data, total, pageCount } and legacy array response
+      if (Array.isArray(json)) {
+        return { data: json, total: json.length, pageCount: 1 };
+      }
+      return json as ProductsPage;
     },
   });
 
+  const products = data?.data ?? [];
+  const total = data?.total ?? 0;
+  const pageCount = data?.pageCount ?? 1;
+
+  // ─── Mutations ────────────────────────────────────────────────────────────
   const deleteProduct = useMutation({
     mutationFn: async (id: string) => {
       await apiRequest('DELETE', `/api/admin/products/${id}`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/products'] });
+      setDeletingProduct(null);
+      tableState.clearSelection();
       toast({ title: t('admin.products.toast.deleted') });
     },
     onError: (err: Error) => {
@@ -54,30 +92,74 @@ export default function ProductsAdmin() {
     },
   });
 
-  const toggleStock = useMutation({
-    mutationFn: async ({ id, inStock }: { id: string, inStock: boolean }) => {
-      await apiRequest('PATCH', `/api/admin/products/${id}`, { inStock: !inStock });
+  const bulkDelete = useMutation({
+    mutationFn: async (products: ApiProduct[]) => {
+      await Promise.all(products.map((p) => apiRequest('DELETE', `/api/admin/products/${p.id}`)));
     },
-    onSuccess: () => {
+    onSuccess: (_, deletedProducts) => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/products'] });
-      toast({ title: t('admin.products.toast.availabilityUpdated') });
+      tableState.clearSelection();
+      toast({ title: `${deletedProducts.length} products deleted` });
     },
     onError: (err: Error) => {
-      toast({ title: t('admin.products.toast.errorTitle'), description: err.message, variant: 'destructive' });
+      toast({ title: 'Bulk delete failed', description: err.message, variant: 'destructive' });
     },
   });
 
+  // ─── Optimistic status mutate callback ───────────────────────────────────
+  // Called by the column's status cell after a successful PATCH —
+  // updates cache directly without a full refetch
+  const handleStatusMutate = useCallback(
+    (id: string, patch: Partial<ApiProduct>) => {
+      queryClient.setQueryData<ProductsPage>(queryKey, (old) => {
+        if (!old) return old;
+        return {
+          ...old,
+          data: old.data.map((p) => (p.id === id ? { ...p, ...patch } : p)),
+        };
+      });
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [queryKey.toString()]
+  );
+
+  // ─── Selected rows ────────────────────────────────────────────────────────
+  const selectedProductIds = Object.keys(tableState.rowSelection);
+  const selectedProducts = products.filter((p) => selectedProductIds.includes(p.id));
+
+  // ─── Columns (memoized — only re-create when callbacks change) ────────────
+  const columns = useMemo(
+    () =>
+      getProductColumns({
+        onEdit: setEditingProduct,
+        onDelete: setDeletingProduct,
+        onStatusMutate: handleStatusMutate,
+        currency: t('common.currency'),
+      }),
+    [handleStatusMutate, t]
+  );
+
+  const isFiltered = tableState.globalFilter.trim().length > 0;
+
   return (
-    <div className="space-y-6 text-start">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+    <div className="space-y-5">
+      {/* ── Page header ─────────────────────────────────────────────────── */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">{t('admin.products.title')}</h1>
-          <p className="text-muted-foreground">{t('admin.products.subtitle')}</p>
+          <h1 className="text-xl font-semibold tracking-tight text-foreground">
+            {t('admin.products.title')}
+          </h1>
+          <p className="text-sm text-muted-foreground mt-0.5">
+            {total > 0 ? `${total.toLocaleString()} products` : t('admin.products.subtitle')}
+          </p>
         </div>
+
+        {/* Add product dialog trigger */}
         <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
           <DialogTrigger asChild>
-            <Button className="gap-2">
-              <Plus className="h-4 w-4" /> {t('admin.products.addProduct')}
+            <Button size="sm" className="gap-1.5 h-8 text-sm shrink-0">
+              <Plus className="h-3.5 w-3.5" />
+              {t('admin.products.addProduct')}
             </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto text-start">
@@ -91,6 +173,7 @@ export default function ProductsAdmin() {
           </DialogContent>
         </Dialog>
 
+        {/* Edit dialog (no trigger — opened programmatically) */}
         <Dialog open={!!editingProduct} onOpenChange={(open) => !open && setEditingProduct(null)}>
           <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto text-start">
             <DialogHeader className="text-start">
@@ -99,109 +182,123 @@ export default function ProductsAdmin() {
             </DialogHeader>
             <div className="py-2">
               {editingProduct && (
-                <ProductForm
-                  initialData={editingProduct}
-                  onSuccess={() => setEditingProduct(null)}
-                />
+                <ProductForm initialData={editingProduct} onSuccess={() => setEditingProduct(null)} />
               )}
             </div>
           </DialogContent>
         </Dialog>
       </div>
 
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-          <CardTitle className="text-base font-medium">{t('admin.products.allProducts')} ({products.length})</CardTitle>
-          <div className="relative w-64">
-            <Search className="absolute start-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+      {/* ── Table card ──────────────────────────────────────────────────── */}
+      <Card className="overflow-hidden border-border/50 gap-0 py-0 shadow-none">
+        {/* Card header: search + column count */}
+        <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-border/50">
+          <div className="flex items-center gap-2">
+            <Package className="h-4 w-4 text-muted-foreground/60" />
+            <span className="text-sm font-medium text-foreground">
+              {t('admin.products.allProducts')}
+            </span>
+            {!isLoading && (
+              <span className="text-xs text-muted-foreground bg-muted px-1.5 py-0.5 rounded-full">
+                {total}
+              </span>
+            )}
+            {isFetching && !isLoading && (
+              <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
+            )}
+          </div>
+
+          {/* Search */}
+          <div className="relative w-56 sm:w-72">
+            <Search className="absolute start-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground/60 pointer-events-none" />
             <Input
               type="search"
               placeholder={t('admin.products.searchPlaceholder')}
-              className="ps-9 h-9"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              className="ps-8 h-8 text-sm border-border/60 focus-visible:ring-1 bg-muted/30"
+              value={tableState.globalFilter}
+              onChange={(e) => tableState.setGlobalFilter(e.target.value)}
             />
           </div>
-        </CardHeader>
-        <CardContent>
-          {isLoading ? (
-            <div className="flex justify-center py-12">
-              <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            </div>
-          ) : products.length === 0 ? (
-            <p className="text-center text-muted-foreground py-12">{t('admin.products.noProducts')}</p>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-[80px]">{t('admin.products.table.image')}</TableHead>
-                  <TableHead>{t('admin.products.table.name')}</TableHead>
-                  <TableHead>{t('admin.products.table.category')}</TableHead>
-                  <TableHead>{t('admin.products.table.price')}</TableHead>
-                  <TableHead>{t('admin.products.table.status')}</TableHead>
-                  <TableHead className="text-end">{t('admin.products.table.actions')}</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {products.map((product) => (
-                  <TableRow key={product.id}>
-                    <TableCell>
-                      <div className="h-10 w-10 rounded bg-muted overflow-hidden flex items-center justify-center">
-                        {product.images && product.images.length > 0 ? (
-                          <img src={product.images[0]} alt="" className="h-full w-full object-cover" />
-                        ) : (
-                          <ImageIcon className="h-5 w-5 text-muted-foreground/50" />
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell className="font-medium">{product.name}</TableCell>
-                    <TableCell>{product.category?.name}</TableCell>
-                    <TableCell dir="ltr">{centsToMad(product.price)} {t('common.currency')}</TableCell>
-                    <TableCell>
-                      <button
-                        onClick={() => toggleStock.mutate({ id: product.id, inStock: product.inStock })}
-                        className="hover:opacity-80 transition-opacity"
-                        disabled={toggleStock.isPending}
-                      >
-                        <Badge
-                          variant={product.inStock ? "outline" : "destructive"}
-                          className={product.inStock ? "text-emerald-600 bg-emerald-50 border-emerald-200 cursor-pointer" : "cursor-pointer"}
-                        >
-                          {toggleStock.isPending && <Loader2 className="rtl:ml-1 ltr:mr-1 h-3 w-3 animate-spin" />}
-                          {product.inStock ? t('admin.products.inStock') : t('admin.products.outOfStock')}
-                        </Badge>
-                      </button>
-                    </TableCell>
-                    <TableCell className="text-end">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" className="h-8 w-8 p-0">
-                            <span className="sr-only">{t('admin.products.openMenu')}</span>
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="text-start">
-                          <DropdownMenuLabel>{t('admin.products.actionsMenu.title')}</DropdownMenuLabel>
-                          <DropdownMenuItem onClick={() => setEditingProduct(product)}>
-                            <Edit className="rtl:ml-2 ltr:mr-2 h-4 w-4" /> {t('admin.products.actionsMenu.edit')}
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem
-                            className="text-destructive"
-                            onClick={() => deleteProduct.mutate(product.id)}
-                          >
-                            <Trash2 className="rtl:ml-2 ltr:mr-2 h-4 w-4" /> {t('admin.products.actionsMenu.delete')}
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
-        </CardContent>
+        </div>
+
+        {/* Bulk action toolbar (slides in when rows selected) */}
+        <DataTableToolbar
+          selectedRows={selectedProducts}
+          onClearSelection={tableState.clearSelection}
+          bulkActions={[
+            {
+              label: `Delete (${selectedProducts.length})`,
+              icon: <Trash2 className="h-3.5 w-3.5" />,
+              variant: 'destructive',
+              onClick: (rows) => bulkDelete.mutate(rows),
+            },
+          ]}
+        />
+
+        {/* Main table */}
+        <DataTable
+          columns={columns}
+          data={products}
+          isLoading={isLoading}
+          sorting={tableState.sorting}
+          onSortingChange={tableState.setSorting}
+          rowSelection={tableState.rowSelection}
+          onRowSelectionChange={tableState.setRowSelection}
+          pagination={tableState.pagination}
+          onPaginationChange={tableState.setPagination}
+          pageCount={pageCount}
+          getRowId={(row) => row.id}
+          loadingSlot={<DataTableSkeleton columns={5} rows={8} hasCheckbox />}
+          emptySlot={
+            <DataTableEmpty
+              isFiltered={isFiltered}
+              onClearFilters={isFiltered ? tableState.resetFilters : undefined}
+              noun="products"
+              createLabel={t('admin.products.addProduct')}
+              onCreateClick={() => setIsAddDialogOpen(true)}
+            />
+          }
+        />
+
+        {/* Pagination */}
+        {!isLoading && total > 0 && (
+          <PaginationControls
+            page={tableState.pagination.pageIndex}
+            pageSize={tableState.pagination.pageSize}
+            pageCount={pageCount}
+            total={total}
+            selectedCount={selectedProducts.length}
+            onPageChange={(p) =>
+              tableState.setPagination((prev) => ({ ...prev, pageIndex: p }))
+            }
+            onPageSizeChange={(size) =>
+              tableState.setPagination({ pageIndex: 0, pageSize: size })
+            }
+          />
+        )}
       </Card>
+
+      {/* ── Delete confirmation dialog ────────────────────────────────── */}
+      <AlertDialog open={!!deletingProduct} onOpenChange={(open) => !open && setDeletingProduct(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete product?</AlertDialogTitle>
+            <AlertDialogDescription>
+              <strong>{deletingProduct?.name}</strong> will be permanently deleted. This cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => deletingProduct && deleteProduct.mutate(deletingProduct.id)}
+              disabled={deleteProduct.isPending}
+            >
+              {deleteProduct.isPending ? 'Deleting…' : 'Delete'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

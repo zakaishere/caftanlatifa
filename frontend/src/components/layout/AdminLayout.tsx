@@ -2,6 +2,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/features/admin/auth/authContext';
+import dynamic from 'next/dynamic';
 import {
   LayoutDashboard,
   Package,
@@ -21,6 +22,8 @@ import {
 } from "@/components/ui/sheet";
 import { LanguageSwitcher } from '@/components/ui/language-switcher';
 import { i18n } from '@/i18n/config';
+
+
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -97,8 +100,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <SidebarContent />
       </aside>
 
-      {/* Mobile Sidebar */}
-      <div className="md:hidden fixed top-0 start-0 end-0 h-16 bg-sidebar text-sidebar-foreground z-50 flex items-center px-4 justify-between border-b border-sidebar-border">
+      {/* Mobile top bar */}
+      <div className="md:hidden fixed top-0 start-0 end-0 h-14 bg-sidebar text-sidebar-foreground z-50 flex items-center px-4 justify-between border-b border-sidebar-border">
         <div className="flex items-center gap-3">
           <span className="font-bold">{t('common.admin')}</span>
           <LanguageSwitcher className="border-sidebar-border text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground" />
@@ -117,11 +120,36 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       </div>
 
       {/* Main Content Area */}
-      <main className="flex-1 md:ms-64 pt-16 md:pt-0 min-h-screen">
-        <div className="h-full p-4 md:p-8 max-w-7xl mx-auto">
+      <main className="flex-1 md:ms-64 pt-14 md:pt-0 min-h-screen flex flex-col">
+        {/* Desktop top header with Command+K search */}
+        <header className="hidden md:flex items-center justify-between h-14 px-6 border-b border-border/50 bg-background sticky top-0 z-40 shrink-0">
+          <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground/50 select-none">
+            Admin Console
+          </span>
+          <div className="flex items-center gap-3">
+            <AdminSearchLoader />
+            <LanguageSwitcher className="h-8 text-xs border-border/60" />
+          </div>
+        </header>
+
+        <div className="flex-1 p-4 md:p-8 max-w-7xl mx-auto w-full pb-20 md:pb-8">
           {children}
         </div>
       </main>
+
+      {/* Mobile Bottom Navigation */}
+      <MobileBottomNavLoader />
     </div>
   );
 }
+
+// ── Lazy wrappers for client components ───────────────────────────────────────
+const AdminSearchLoader = dynamic(
+  () => import('@/features/admin/shared/search/AdminSearch').then((m) => ({ default: m.AdminSearch })),
+  { ssr: false, loading: () => <div className="h-8 w-32 rounded-md bg-muted animate-pulse" /> }
+);
+
+const MobileBottomNavLoader = dynamic(
+  () => import('@/features/admin/mobile/MobileBottomNav').then((m) => ({ default: m.MobileBottomNav })),
+  { ssr: false }
+);
