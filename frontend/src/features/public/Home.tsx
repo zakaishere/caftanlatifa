@@ -6,10 +6,13 @@ import { Button } from '@/components/ui/button';
 import { ArrowRight, Truck, CreditCard, Star, Loader2, CheckCircle, Sparkles } from 'lucide-react';
 import { ProductCard } from '@/components/ui/product-card';
 import type { ApiInitData } from '@/lib/types';
+import { useTranslation } from '@/i18n/provider';
 
 const PLACEHOLDER_HERO = "https://images.unsplash.com/photo-1583391733956-6c78276477e2?q=80&w=1974&auto=format&fit=crop";
 
 export default function Home() {
+  const { t } = useTranslation();
+  
   const { data, isLoading } = useQuery<ApiInitData>({
     queryKey: ['/api/public/init'],
   });
@@ -37,7 +40,7 @@ export default function Home() {
         />
 
         {/* Gradient overlay — stronger on mobile, fades right */}
-        <div className="absolute inset-0 bg-gradient-to-r from-[#0A0806]/95 via-[#0A0806]/80 to-transparent md:from-[#0A0806]/85 md:via-[#0A0806]/60 md:to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-r rtl:bg-gradient-to-l from-[#0A0806]/95 via-[#0A0806]/80 to-transparent md:from-[#0A0806]/85 md:via-[#0A0806]/60 md:to-transparent" />
 
         {/* Content — left column only */}
         <div className="relative z-10 w-full">
@@ -48,20 +51,20 @@ export default function Home() {
               <div className="flex items-center gap-3">
                 <span className="h-px w-8 bg-[#C9A227]" />
                 <span className="text-[10px] font-medium uppercase tracking-[0.45em] text-[#C9A227]">
-                  Ramadan Collection · 2026
+                  {t('home.hero.eyebrow')}
                 </span>
               </div>
 
               {/* Headline */}
               <h1 className="font-serif text-[1.9rem] sm:text-5xl lg:text-[3.4rem] text-white leading-[1.1] tracking-[-0.01em] sm:leading-[1.08] sm:tracking-tight">
-                L'Élégance du{' '}
-                <span className="italic text-[#C9A227]">Caftan</span>
-                <br />Marocain
+                {t('home.hero.titlePart1')}
+                <span className="italic text-[#C9A227]">{t('home.hero.titleHighlight')}</span>
+                <br />{t('home.hero.titlePart2')}
               </h1>
 
               {/* Sub */}
               <p className="text-[13px] sm:text-[14px] text-white/65 leading-relaxed max-w-[22ch] sm:max-w-xs font-light tracking-[0.01em]">
-                Des créations artisanales façonnées avec soin, alliant héritage berbère et couture contemporaine.
+                {t('home.hero.subtitle')}
               </p>
 
               {/* CTA */}
@@ -71,8 +74,8 @@ export default function Home() {
                     size="lg"
                     className="w-full sm:w-auto h-11 sm:h-12 px-8 sm:px-10 flex items-center justify-center bg-[#C9A227] hover:bg-[#C9A227]/90 text-black rounded-none text-[11px] uppercase tracking-[0.2em] transition-all duration-300 font-semibold shadow-xl shadow-[#C9A227]/25"
                   >
-                    Explorer la Collection
-                    <ArrowRight className="ml-2.5 h-3.5 w-3.5" />
+                    {t('home.hero.cta')}
+                    <ArrowRight className="ms-2.5 h-3.5 w-3.5 rtl:-scale-x-100" />
                   </Button>
                 </Link>
               </div>
@@ -81,15 +84,15 @@ export default function Home() {
               <div className="flex flex-wrap gap-5 pt-1 text-[10px] uppercase tracking-[0.25em] text-white/45">
                 <span className="flex items-center gap-2">
                   <CreditCard className="h-3.5 w-3.5 text-[#C9A227]/80" strokeWidth={1.5} />
-                  Paiement à la livraison
+                  {t('home.hero.trust1')}
                 </span>
                 <span className="flex items-center gap-2">
                   <Truck className="h-3.5 w-3.5 text-[#C9A227]/80" strokeWidth={1.5} />
-                  Livraison partout au Maroc
+                  {t('home.hero.trust2')}
                 </span>
                 <span className="flex items-center gap-2">
                   <Star className="h-3.5 w-3.5 text-[#C9A227]" strokeWidth={1.5} />
-                  Finitions premium
+                  {t('home.hero.trust3')}
                 </span>
               </div>
 
@@ -105,14 +108,14 @@ export default function Home() {
         {/* Section header */}
         <div className="flex items-end justify-between mb-12">
           <div>
-            <p className="text-[10px] uppercase tracking-[0.4em] text-[#C9A227] mb-2">Nos Univers</p>
+            <p className="text-[10px] uppercase tracking-[0.4em] text-[#C9A227] mb-2">{t('home.collections.eyebrow')}</p>
             <h2 className="font-serif text-3xl md:text-4xl text-[#1A1A1A] tracking-tight">
-              Par Collection
+              {t('home.collections.title')}
             </h2>
           </div>
           <Link href="/products">
             <span className="text-[10px] uppercase tracking-[0.35em] text-[#9B9B9B] hover:text-[#C9A227] transition-colors hidden sm:flex items-center gap-2">
-              Voir tout <ArrowRight className="h-3 w-3" />
+              {t('home.collections.viewAll')} <ArrowRight className="h-3 w-3 rtl:-scale-x-100" />
             </span>
           </Link>
         </div>
@@ -128,15 +131,15 @@ export default function Home() {
               <Link key={cat.id} href={`/products?category=${cat.slug}`} className="shrink-0 w-36 md:w-auto">
                 <div className="group relative bg-white border border-[#E8E2D9] hover:border-[#C9A227]/40 transition-all duration-500 p-5 md:p-8 flex flex-col items-center justify-center text-center gap-3 md:gap-4 h-36 md:h-auto md:py-12 cursor-pointer hover:shadow-md hover:shadow-[#C9A227]/5">
                   {/* Decorative corner */}
-                  <div className="absolute top-0 left-0 w-4 h-4 border-t border-l border-[#C9A227]/30 group-hover:border-[#C9A227] transition-colors duration-500" />
-                  <div className="absolute bottom-0 right-0 w-4 h-4 border-b border-r border-[#C9A227]/30 group-hover:border-[#C9A227] transition-colors duration-500" />
+                  <div className="absolute top-0 start-0 w-4 h-4 border-t border-s border-[#C9A227]/30 group-hover:border-[#C9A227] transition-colors duration-500" />
+                  <div className="absolute bottom-0 end-0 w-4 h-4 border-b border-e border-[#C9A227]/30 group-hover:border-[#C9A227] transition-colors duration-500" />
 
                   <div className="h-10 w-10 border border-[#C9A227]/20 group-hover:bg-[#C9A227]/10 flex items-center justify-center transition-colors duration-500">
                     <span className="font-serif text-[#C9A227] text-xl">{cat.name.charAt(0)}</span>
                   </div>
                   <div className="w-full">
                     <h3 className="font-serif text-[#1A1A1A] text-base md:text-lg leading-tight truncate">{cat.name}</h3>
-                    <p className="text-[10px] uppercase tracking-[0.3em] text-[#9B9B9B] mt-1.5">{cat._count?.products ?? 0} pièces</p>
+                    <p className="text-[10px] uppercase tracking-[0.3em] text-[#9B9B9B] mt-1.5">{t('home.collections.itemsCount', { count: cat._count?.products ?? 0 })}</p>
                   </div>
                 </div>
               </Link>
@@ -153,9 +156,9 @@ export default function Home() {
           {/* Header */}
           <div className="flex items-end justify-between mb-12">
             <div>
-              <p className="text-[10px] uppercase tracking-[0.4em] text-[#C9A227] mb-2">Sélection</p>
+              <p className="text-[10px] uppercase tracking-[0.4em] text-[#C9A227] mb-2">{t('home.newArrivals.eyebrow')}</p>
               <h2 className="font-serif text-3xl md:text-4xl text-[#1A1A1A] tracking-tight">
-                Nouvelles Arrivées
+                {t('home.newArrivals.title')}
               </h2>
             </div>
             <Link href="/products">
@@ -163,7 +166,7 @@ export default function Home() {
                 variant="ghost"
                 className="text-[10px] uppercase tracking-[0.35em] text-[#9B9B9B] hover:text-[#C9A227] hover:bg-transparent px-0 gap-2 hidden sm:flex"
               >
-                Voir tout <ArrowRight className="h-3 w-3" />
+                {t('home.newArrivals.viewAll')} <ArrowRight className="h-3 w-3 rtl:-scale-x-100" />
               </Button>
             </Link>
           </div>
@@ -184,7 +187,7 @@ export default function Home() {
           <div className="mt-12 sm:hidden">
             <Link href="/products" className="block w-full">
               <Button variant="outline" className="w-full h-11 flex items-center justify-center rounded-none border-[#C9A227]/30 text-[11px] uppercase tracking-[0.2em] px-8 text-[#1A1A1A] hover:bg-[#C9A227]/5 hover:border-[#C9A227]">
-                Voir toute la collection
+                {t('home.newArrivals.viewAllMobile')}
               </Button>
             </Link>
           </div>
@@ -196,9 +199,9 @@ export default function Home() {
       ═══════════════════════════════════════════════════════ */}
       <section className="max-w-7xl mx-auto w-full px-6 md:px-12 lg:px-16 py-20 md:py-24">
         <div className="text-center mb-14">
-          <p className="text-[10px] uppercase tracking-[0.4em] text-[#C9A227] mb-3">L'Atelier Latifa</p>
+          <p className="text-[10px] uppercase tracking-[0.4em] text-[#C9A227] mb-3">{t('home.whyUs.eyebrow')}</p>
           <h2 className="font-serif text-3xl md:text-4xl text-[#1A1A1A] tracking-tight">
-            Pourquoi nous choisir ?
+            {t('home.whyUs.title')}
           </h2>
         </div>
 
@@ -206,21 +209,21 @@ export default function Home() {
           {[
             {
               icon: CheckCircle,
-              title: "Artisanat Authentique",
-              body: "Chaque pièce est confectionnée par des artisans marocains experts, avec des broderies faites à la main.",
+              title: t('home.whyUs.reasons.1.title'),
+              body: t('home.whyUs.reasons.1.body'),
             },
             {
               icon: Truck,
-              title: "Livraison Rapide",
-              body: "Livraison sous 24–48h dans toutes les grandes villes, paiement en espèces à la réception.",
+              title: t('home.whyUs.reasons.2.title'),
+              body: t('home.whyUs.reasons.2.body'),
             },
             {
               icon: Sparkles,
-              title: "Qualité Premium",
-              body: "Des tissus nobles sélectionnés pour leur douceur et leur tenue : georgette, velours, soie artisanale.",
+              title: t('home.whyUs.reasons.3.title'),
+              body: t('home.whyUs.reasons.3.body'),
             },
-          ].map(({ icon: Icon, title, body }) => (
-            <div key={title} className="flex flex-col items-center text-center gap-5 p-8 border border-[#E8E2D9] bg-white">
+          ].map(({ icon: Icon, title, body }, index) => (
+            <div key={index} className="flex flex-col items-center text-center gap-5 p-8 border border-[#E8E2D9] bg-white">
               <div className="h-11 w-11 border border-[#C9A227]/30 flex items-center justify-center">
                 <Icon className="h-5 w-5 text-[#C9A227]" strokeWidth={1.5} />
               </div>
@@ -238,27 +241,27 @@ export default function Home() {
       ═══════════════════════════════════════════════════════ */}
       <section className="bg-[#1A1A1A] text-white py-16 md:py-20 text-center border-t border-[#C9A227]/20">
         <div className="max-w-2xl mx-auto px-6 space-y-6">
-          <p className="text-[10px] uppercase tracking-[0.5em] text-[#C9A227]/70">Service Client</p>
+          <p className="text-[10px] uppercase tracking-[0.5em] text-[#C9A227]/70">{t('home.footerCta.eyebrow')}</p>
           <h3 className="font-serif text-3xl md:text-4xl tracking-tight leading-tight">
-            Une question sur votre commande ?
+            {t('home.footerCta.title')}
           </h3>
           <p className="text-[#FFFFFF60] text-sm font-light leading-relaxed max-w-sm mx-auto">
-            Nos experts vous répondent sur WhatsApp, du lundi au samedi, de 9h à 21h.
+            {t('home.footerCta.body')}
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
             <a
-              href={`https://wa.me/${(settings?.whatsappNumber ?? '+212600000000').replace(/[^0-9]/g, '')}?text=${encodeURIComponent("Bonjour, j'aimerais avoir plus d'informations sur vos caftans.")}`}
+              href={`https://wa.me/${(settings?.whatsappNumber ?? '+212600000000').replace(/[^0-9]/g, '')}?text=${encodeURIComponent(t('home.footerCta.whatsappMessage'))}`}
               target="_blank"
               rel="noopener noreferrer"
               className="w-full sm:w-auto"
             >
               <Button className="w-full sm:w-auto h-11 sm:h-12 px-10 flex items-center justify-center bg-[#C9A227] hover:bg-[#C9A227]/90 text-black rounded-none text-[11px] uppercase tracking-[0.2em] font-semibold shadow-lg shadow-[#C9A227]/20 transition-all duration-300">
-                Contacter sur WhatsApp
+                {t('home.footerCta.whatsappBtn')}
               </Button>
             </a>
             <Link href="/contact" className="w-full sm:w-auto">
               <Button variant="outline" className="w-full sm:w-auto h-11 sm:h-12 px-10 flex items-center justify-center border-white/10 bg-transparent hover:bg-white/5 text-white rounded-none text-[11px] uppercase tracking-[0.2em] transition-all duration-300">
-                Voir le contact
+                {t('home.footerCta.contactBtn')}
               </Button>
             </Link>
           </div>

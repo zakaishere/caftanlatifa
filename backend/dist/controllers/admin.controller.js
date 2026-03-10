@@ -8,7 +8,7 @@ const COOKIE_MAX_AGE = 24 * 60 * 60 * 1000; // 1 day in ms
 const COOKIE_OPTIONS = {
     httpOnly: true,
     secure: env.NODE_ENV === 'production',
-    sameSite: 'strict',
+    sameSite: 'lax',
     maxAge: COOKIE_MAX_AGE,
 };
 export class AdminController {
@@ -26,7 +26,11 @@ export class AdminController {
         res.status(201).json({ message: 'Admin registered successfully' });
     });
     static logout = asyncHandler(async (_req, res) => {
-        res.clearCookie(COOKIE_NAME, { httpOnly: true, sameSite: 'strict' });
+        res.clearCookie(COOKIE_NAME, {
+            httpOnly: true,
+            secure: env.NODE_ENV === 'production',
+            sameSite: 'lax',
+        });
         res.json({ message: 'Logged out successfully' });
     });
     static me = asyncHandler(async (req, res) => {

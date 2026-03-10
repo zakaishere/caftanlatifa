@@ -15,9 +15,11 @@ import {
 import { apiRequest, queryClient } from '@/lib/queryClient';
 import type { ApiCategory } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
+import { useTranslation } from '@/i18n/provider';
 
 export default function CategoriesAdmin() {
   const { toast } = useToast();
+  const { t } = useTranslation();
   const [name, setName] = useState('');
   const [slug, setSlug] = useState('');
   const [open, setOpen] = useState(false);
@@ -33,11 +35,11 @@ export default function CategoriesAdmin() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/categories'] });
-      toast({ title: 'Category created' });
+      toast({ title: t('admin.categories.toast.created') });
       setName(''); setSlug(''); setOpen(false);
     },
     onError: (err: Error) => {
-      toast({ title: 'Error', description: err.message, variant: 'destructive' });
+      toast({ title: t('admin.categories.toast.errorTitle'), description: err.message, variant: 'destructive' });
     },
   });
 
@@ -47,39 +49,39 @@ export default function CategoriesAdmin() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/categories'] });
-      toast({ title: 'Category deleted' });
+      toast({ title: t('admin.categories.toast.deleted') });
     },
     onError: (err: Error) => {
-      toast({ title: 'Error', description: err.message, variant: 'destructive' });
+      toast({ title: t('admin.categories.toast.errorTitle'), description: err.message, variant: 'destructive' });
     },
   });
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 text-start">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Categories</h1>
-          <p className="text-muted-foreground">Manage product categories.</p>
+          <h1 className="text-3xl font-bold tracking-tight">{t('admin.categories.title')}</h1>
+          <p className="text-muted-foreground">{t('admin.categories.subtitle')}</p>
         </div>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
             <Button className="gap-2">
-              <Plus className="h-4 w-4" /> Add Category
+              <Plus className="h-4 w-4" /> {t('admin.categories.addCategory')}
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-[425px]">
-            <DialogHeader>
-              <DialogTitle>Add New Category</DialogTitle>
-              <DialogDescription>Create a new category for your products.</DialogDescription>
+          <DialogContent className="sm:max-w-[425px] text-start">
+            <DialogHeader className="text-start">
+              <DialogTitle className="text-start">{t('admin.categories.addNew')}</DialogTitle>
+              <DialogDescription className="text-start">{t('admin.categories.addNewDesc')}</DialogDescription>
             </DialogHeader>
             <div className="grid gap-4 py-4">
               <div className="grid gap-2">
-                <label htmlFor="name" className="text-sm font-medium">Name</label>
-                <Input id="name" placeholder="Category name" value={name} onChange={e => setName(e.target.value)} />
+                <label htmlFor="name" className="text-sm font-medium">{t('admin.categories.name')}</label>
+                <Input id="name" placeholder={t('admin.categories.namePlaceholder')} value={name} onChange={e => setName(e.target.value)} />
               </div>
               <div className="grid gap-2">
-                <label htmlFor="slug" className="text-sm font-medium">Slug</label>
-                <Input id="slug" placeholder="category-slug" value={slug} onChange={e => setSlug(e.target.value)} />
+                <label htmlFor="slug" className="text-sm font-medium">{t('admin.categories.slug')}</label>
+                <Input id="slug" placeholder={t('admin.categories.slugPlaceholder')} value={slug} onChange={e => setSlug(e.target.value)} />
               </div>
             </div>
             <DialogFooter>
@@ -88,7 +90,7 @@ export default function CategoriesAdmin() {
                 disabled={createCategory.isPending || !name || !slug}
                 onClick={() => createCategory.mutate()}
               >
-                {createCategory.isPending ? 'Saving...' : 'Save Category'}
+                {createCategory.isPending ? t('admin.categories.saving') : t('admin.categories.save')}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -97,7 +99,7 @@ export default function CategoriesAdmin() {
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-          <CardTitle className="text-base font-medium">All Categories ({categories.length})</CardTitle>
+          <CardTitle className="text-base font-medium">{t('admin.categories.allCategories')} ({categories.length})</CardTitle>
         </CardHeader>
         <CardContent>
           {isLoading ? (
@@ -108,10 +110,10 @@ export default function CategoriesAdmin() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Slug</TableHead>
-                  <TableHead>Products Count</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  <TableHead>{t('admin.categories.table.name')}</TableHead>
+                  <TableHead>{t('admin.categories.table.slug')}</TableHead>
+                  <TableHead>{t('admin.categories.table.productsCount')}</TableHead>
+                  <TableHead className="text-end">{t('admin.categories.table.actions')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -120,7 +122,7 @@ export default function CategoriesAdmin() {
                     <TableCell className="font-medium">{cat.name}</TableCell>
                     <TableCell className="text-muted-foreground">{cat.slug}</TableCell>
                     <TableCell>{cat._count?.products ?? 0}</TableCell>
-                    <TableCell className="text-right">
+                    <TableCell className="text-end">
                       <div className="flex justify-end gap-2">
                         <Button
                           variant="ghost"

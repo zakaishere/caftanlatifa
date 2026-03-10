@@ -4,6 +4,7 @@ import { Clock, ChevronDown, ChevronUp, AlertCircle, Info } from 'lucide-react';
 import { BusinessHoursConfig } from '@/lib/types';
 import { getStoreStatus, StoreStatus } from '@/lib/businessHours';
 import { cn } from '@/lib/utils';
+import { useTranslation } from '@/i18n/provider';
 
 interface Props {
     config?: BusinessHoursConfig | null;
@@ -11,6 +12,7 @@ interface Props {
 }
 
 export function SmartBusinessHoursWidget({ config, isLoading }: Props) {
+    const { t } = useTranslation();
     const [status, setStatus] = useState<StoreStatus | null>(null);
     const [expanded, setExpanded] = useState(false);
 
@@ -20,7 +22,7 @@ export function SmartBusinessHoursWidget({ config, isLoading }: Props) {
             const interval = setInterval(() => setStatus(getStoreStatus(config)), 60000);
             return () => clearInterval(interval);
         } else if (config === null) {
-            setStatus({ isOpenNow: false, statusText: "Horaires indisponibles" });
+            setStatus({ isOpenNow: false, statusTextKey: "businessHours.unavailable" });
         }
     }, [config]);
 
@@ -45,30 +47,30 @@ export function SmartBusinessHoursWidget({ config, isLoading }: Props) {
     // If still no config after loading, show a soft fallback instead of hiding completely
     if (!config) {
         return (
-            <div className="bg-white border border-primary/10 p-10 md:p-12 shadow-2xl shadow-primary/5">
+            <div className="bg-white border border-primary/10 p-10 md:p-12 shadow-2xl shadow-primary/5 text-start">
                 <div className="flex items-center gap-6 mb-8">
                     <div className="h-14 w-14 rounded-none bg-primary/5 flex items-center justify-center text-primary/40 border border-primary/10">
                         <Clock className="h-6 w-6 stroke-1" />
                     </div>
-                    <h2 className="font-serif text-2xl text-foreground/40 tracking-tight">Horaires</h2>
+                    <h2 className="font-serif text-2xl text-foreground/40 tracking-tight">{t('businessHours.title')}</h2>
                 </div>
                 <div className="flex items-center gap-3 text-muted-foreground/60 italic text-sm">
                     <Info className="w-4 h-4" />
-                    <p>Horaires d'ouverture non configurés.</p>
+                    <p>{t('businessHours.unconfigured')}</p>
                 </div>
             </div>
         );
     }
 
     return (
-        <div className="bg-white border border-primary/10 p-10 md:p-12 shadow-2xl shadow-primary/5 transition-all duration-500 hover:shadow-primary/10 group">
+        <div className="bg-white border border-primary/10 p-10 md:p-12 shadow-2xl shadow-primary/5 transition-all duration-500 hover:shadow-primary/10 group text-start">
             <div className="flex items-center gap-6 mb-10">
                 <div className="h-14 w-14 rounded-none bg-primary/5 flex items-center justify-center text-primary border border-primary/10 transition-colors group-hover:bg-primary group-hover:text-white duration-500">
                     <Clock className="h-6 w-6 stroke-1" />
                 </div>
                 <div>
-                    <h2 className="font-serif text-2xl text-foreground tracking-tight">Horaires</h2>
-                    <span className="text-[9px] uppercase tracking-[0.3em] text-primary/60 font-medium">Atelier & Showroom</span>
+                    <h2 className="font-serif text-2xl text-foreground tracking-tight">{t('businessHours.title')}</h2>
+                    <span className="text-[9px] uppercase tracking-[0.3em] text-primary/60 font-medium">{t('businessHours.subtitle')}</span>
                 </div>
             </div>
 
@@ -85,17 +87,17 @@ export function SmartBusinessHoursWidget({ config, isLoading }: Props) {
                             "w-1.5 h-1.5 rounded-full animate-pulse",
                             status.isOpenNow ? "bg-emerald-500" : "bg-rose-500"
                         )} />
-                        {status.statusText}
+                        {t(status.statusTextKey as any)}
                     </div>
 
                     <div className="space-y-1">
                         <p className="text-xl font-medium tracking-tight text-foreground">
                             {status.isOpenNow && status.closeTime ? (
-                                <>Aujourd'hui jusqu'à <span className="text-primary font-serif italic ml-1">{status.closeTime}</span></>
+                                <>{t('businessHours.todayUntil')} <span className="text-primary font-serif italic mx-1" dir="ltr">{status.closeTime}</span></>
                             ) : status.nextOpenTime ? (
-                                <>Ouvre <span className="text-primary font-serif italic mx-1">{status.nextOpenTime.day}</span> à {status.nextOpenTime.time}</>
+                                <>{t('businessHours.opens')} <span className="text-primary font-serif italic mx-1">{t(status.nextOpenTime.dayKey as any)}</span> {t('businessHours.at')} <span dir="ltr">{status.nextOpenTime.time}</span></>
                             ) : (
-                                "Actuellement fermé"
+                                t('businessHours.closedCurrently')
                             )}
                         </p>
 
@@ -113,7 +115,7 @@ export function SmartBusinessHoursWidget({ config, isLoading }: Props) {
                 onClick={() => setExpanded(!expanded)}
                 className="flex items-center justify-between w-full pt-6 border-t border-primary/5 text-[10px] uppercase tracking-[0.3em] font-bold text-muted-foreground/60 hover:text-primary transition-all group/btn"
             >
-                <span className="group-hover/btn:translate-x-1 transition-transform">Voir le détail de la semaine</span>
+                <span className="group-hover/btn:rtl:-translate-x-1 group-hover/btn:translate-x-1 transition-transform">{t('businessHours.viewWeekDetails')}</span>
                 <div className={cn(
                     "h-6 w-6 rounded-full border border-primary/10 flex items-center justify-center transition-all",
                     expanded ? "bg-primary text-white" : "group-hover/btn:border-primary group-hover/btn:text-primary"
@@ -126,26 +128,30 @@ export function SmartBusinessHoursWidget({ config, isLoading }: Props) {
                 <div className="space-y-5 mt-8 animate-in slide-in-from-top-2 fade-in duration-500">
                     {currentDayNames.map((day, idx) => {
                         const dayData = config.regularHours[day];
-                        const isToday = status?.statusText.toLowerCase() !== "horaires indisponibles" &&
-                            new Date().toLocaleDateString('fr-FR', { weekday: 'long' }).toLowerCase() === day;
+                        const isToday = status?.statusTextKey !== "businessHours.unavailable" &&
+                            new Date().toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase() === day; // Actually, relying on system locale is risky. It's safer to compare day index.
+
+                        // A highly safer way to check if `day` is today:
+                        const dayNames: (keyof BusinessHoursConfig['regularHours'])[] = ['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi'];
+                        const actuallyIsToday = dayNames[new Date().getDay()] === day;
 
                         return (
                             <div key={day} className={cn(
                                 "flex justify-between items-baseline py-1 transition-colors",
-                                isToday ? "text-primary scale-[1.02]" : "text-foreground"
+                                actuallyIsToday ? "text-primary scale-[1.02]" : "text-foreground"
                             )}>
                                 <div className="flex items-center gap-3">
                                     <span className={cn(
                                         "text-[11px] uppercase tracking-[0.2em] font-medium min-w-[80px]",
-                                        isToday ? "text-primary" : "text-muted-foreground/70"
+                                        actuallyIsToday ? "text-primary" : "text-muted-foreground/70"
                                     )}>
-                                        {day}
+                                        {t(`days.${day}` as any)}
                                     </span>
-                                    {isToday && <span className="h-1 w-1 rounded-full bg-primary" />}
+                                    {actuallyIsToday && <span className="h-1 w-1 rounded-full bg-primary" />}
                                 </div>
 
                                 {!dayData.isOpen ? (
-                                    <span className="text-[9px] uppercase tracking-[0.2em] font-bold text-muted-foreground/40 italic">Fermé</span>
+                                    <span className="text-[9px] uppercase tracking-[0.2em] font-bold text-muted-foreground/40 italic">{t('businessHours.closed')}</span>
                                 ) : (
                                     <div className="text-[12px] font-medium tabular-nums text-right">
                                         {dayData.slots.map((slot, sIdx) => (

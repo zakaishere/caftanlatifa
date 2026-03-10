@@ -14,10 +14,12 @@ import { ProductGallery } from '@/components/ui/product-gallery';
 import { ProductCard } from '@/components/ui/product-card';
 import type { ApiProduct, ApiInitData, ProductSize } from '@/lib/types';
 import { centsToMad } from '@/lib/types';
+import { useTranslation } from '@/i18n/provider';
 
 import { use } from 'react';
 
 export default function ProductDetails({ params }: { params: Promise<{ id: string }> | { id: string } }) {
+  const { t } = useTranslation();
   const resolvedParams = params instanceof Promise ? use(params) : params;
   const { addToCart } = useCart();
   const [quantity, setQuantity] = useState(1);
@@ -74,13 +76,13 @@ export default function ProductDetails({ params }: { params: Promise<{ id: strin
   if (isError || !product) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-[#FAF7F2] px-6 text-center">
-        <h1 className="font-serif text-3xl mb-4 text-[#1A1A1A]">Création Introuvable</h1>
+        <h1 className="font-serif text-3xl mb-4 text-[#1A1A1A]">{t('productDetails.notFoundTitle')}</h1>
         <p className="text-[#1A1A1A]/50 font-light text-sm mb-8">
-          Désolé, cette pièce n'est plus disponible dans notre collection.
+          {t('productDetails.notFoundDesc')}
         </p>
         <Link href="/products">
           <Button variant="outline" className="rounded-none border-[#C9A227]/30 uppercase tracking-[0.2em] text-[10px] px-8 h-12">
-            Retour à la Collection
+            {t('productDetails.backCol')}
           </Button>
         </Link>
       </div>
@@ -93,23 +95,23 @@ export default function ProductDetails({ params }: { params: Promise<{ id: strin
   return (
     <div className="bg-[#FAF7F2] min-h-screen">
       {/* ── Floating back button (mobile only) ───────────────────── */}
-      <div className="fixed top-4 left-4 z-40 md:hidden">
+      <div className="fixed top-4 start-4 z-40 md:hidden">
         <Link href="/products">
           <button
-            aria-label="Retour à la collection"
+            aria-label={t('productDetails.backCol')}
             className="w-10 h-10 flex items-center justify-center bg-white/80 backdrop-blur-md rounded-full shadow-md text-[#1A1A1A] hover:bg-white transition-colors"
           >
-            <ArrowLeft className="h-4 w-4" />
+            <ArrowLeft className="h-4 w-4 rtl:-scale-x-100" />
           </button>
         </Link>
       </div>
 
       {/* ── Desktop Breadcrumb ────────────────────────────────────── */}
-      <div className="hidden md:block max-w-7xl mx-auto px-12 pt-10 pb-2">
+      <div className="hidden md:block max-w-7xl mx-auto px-12 pt-10 pb-2 text-start">
         <Link href="/products">
           <button className="flex items-center gap-2.5 text-[10px] uppercase tracking-[0.3em] text-[#1A1A1A]/40 hover:text-[#C9A227] transition-colors font-light">
-            <ArrowLeft className="h-3 w-3" />
-            Retour à la Collection
+            <ArrowLeft className="h-3 w-3 rtl:-scale-x-100" />
+            {t('productDetails.backCol')}
           </button>
         </Link>
       </div>
@@ -127,7 +129,7 @@ export default function ProductDetails({ params }: { params: Promise<{ id: strin
           Mobile: Slides up with rounded corners over the gallery (-mt-8) 
           Desktop: Standard column layout
         */}
-        <div className="relative -mt-8 md:mt-0 bg-[#FAF7F2] rounded-t-[32px] md:rounded-none px-6 pt-8 pb-40 md:pb-8 md:px-0">
+        <div className="relative -mt-8 md:mt-0 bg-[#FAF7F2] rounded-t-[32px] md:rounded-none px-6 pt-8 pb-40 md:pb-8 md:px-0 text-start">
 
           {/* ── Category + Stock tags ──────────────────────────── */}
           <div className="flex flex-wrap items-center gap-2 mb-5">
@@ -136,11 +138,11 @@ export default function ProductDetails({ params }: { params: Promise<{ id: strin
             </span>
             {product.inStock ? (
               <span className="text-[9px] uppercase tracking-[0.3em] font-medium text-emerald-600 border border-emerald-200 px-3 py-1 bg-emerald-50">
-                En stock
+                {t('product.inStock')}
               </span>
             ) : (
               <span className="text-[9px] uppercase tracking-[0.3em] font-medium text-red-500 border border-red-200 px-3 py-1 bg-red-50">
-                Épuisé
+                {t('product.soldOut')}
               </span>
             )}
           </div>
@@ -152,12 +154,12 @@ export default function ProductDetails({ params }: { params: Promise<{ id: strin
 
           {/* ── Price ─────────────────────────────────────────── */}
           <div className="flex items-baseline gap-3 mb-6">
-            <span className="font-serif text-2xl text-[#C9A227]">
-              {centsToMad(product.price)} MAD
+            <span className="font-serif text-2xl text-[#C9A227]" dir="ltr">
+              {centsToMad(product.price)} {t('common.currency')}
             </span>
             {initData?.settings?.standardDeliveryFee ? (
-              <span className="text-[10px] uppercase tracking-widest text-[#1A1A1A]/35 font-light">
-                + {centsToMad(initData.settings.standardDeliveryFee)} livraison
+              <span className="text-[10px] uppercase tracking-widest text-[#1A1A1A]/35 font-light" dir="ltr">
+                {t('product.deliveryFee', { amount: centsToMad(initData.settings.standardDeliveryFee) })}
               </span>
             ) : null}
           </div>
@@ -170,11 +172,11 @@ export default function ProductDetails({ params }: { params: Promise<{ id: strin
             <div id="size-selector" className="mb-6 scroll-mt-24">
               <div className="flex items-center gap-4 mb-3">
                 <span className="text-[10px] uppercase tracking-[0.3em] font-medium text-[#1A1A1A]/35 w-20 shrink-0">
-                  Taille
+                  {t('product.size')}
                 </span>
                 {sizeError && !selectedSize && (
                   <span className="text-[9px] uppercase tracking-[0.2em] text-red-500 font-bold animate-pulse">
-                    Veuillez sélectionner une taille
+                    {t('product.selectSizePrompt')}
                   </span>
                 )}
               </div>
@@ -199,10 +201,10 @@ export default function ProductDetails({ params }: { params: Promise<{ id: strin
           ) : (
             <div className="flex items-center gap-4 mb-6">
               <span className="text-[10px] uppercase tracking-[0.3em] font-medium text-[#1A1A1A]/35 w-20 shrink-0">
-                Taille
+                {t('product.size')}
               </span>
               <span className="text-[10px] uppercase tracking-[0.2em] text-[#1A1A1A]/50 border border-[#1A1A1A]/10 px-3 py-1">
-                Taille unique
+                {t('product.oneSize')}
               </span>
             </div>
           )}
@@ -215,14 +217,14 @@ export default function ProductDetails({ params }: { params: Promise<{ id: strin
           {/* ── Quantity Selector ─────────────────────────────── */}
           <div className="flex items-center gap-6 mb-6">
             <span className="text-[10px] uppercase tracking-[0.3em] font-medium text-[#1A1A1A]/35 w-20 shrink-0">
-              Quantité
+              {t('product.quantity')}
             </span>
             <div className="flex items-center border border-[#1A1A1A]/10 bg-white">
               <button
                 className="h-10 w-10 flex items-center justify-center text-[#1A1A1A]/40 hover:text-[#1A1A1A] transition-colors disabled:opacity-25"
                 onClick={() => setQuantity(Math.max(1, quantity - 1))}
                 disabled={quantity <= 1 || !product.inStock}
-                aria-label="Diminuer la quantité"
+                aria-label={t('productDetails.decrease')}
               >
                 <Minus className="h-3 w-3" />
               </button>
@@ -233,7 +235,7 @@ export default function ProductDetails({ params }: { params: Promise<{ id: strin
                 className="h-10 w-10 flex items-center justify-center text-[#1A1A1A]/40 hover:text-[#1A1A1A] transition-colors disabled:opacity-25"
                 onClick={() => setQuantity(quantity + 1)}
                 disabled={!product.inStock}
-                aria-label="Augmenter la quantité"
+                aria-label={t('productDetails.increase')}
               >
                 <Plus className="h-3 w-3" />
               </button>
@@ -249,9 +251,9 @@ export default function ProductDetails({ params }: { params: Promise<{ id: strin
               disabled={!product.inStock}
             >
               {added ? (
-                <><Check className="h-4 w-4" /> Ajouté au Panier</>
+                <><Check className="h-4 w-4" /> {t('product.addedToCartLong')}</>
               ) : (
-                <><ShoppingCart className="h-4 w-4" /> Ajouter au Panier</>
+                <><ShoppingCart className="h-4 w-4 rtl:-scale-x-100" /> {t('product.addToCartLong')}</>
               )}
             </Button>
           </div>
@@ -259,10 +261,10 @@ export default function ProductDetails({ params }: { params: Promise<{ id: strin
           {/* ── Selling points ────────────────────────────────── */}
           <div className="grid grid-cols-2 gap-y-5 gap-x-4 mb-8">
             {[
-              { Icon: Check, label: "Paiement à la livraison" },
-              { Icon: Truck, label: "Livraison partout au Maroc" },
-              { Icon: ShieldCheck, label: "Qualité artisanale" },
-              { Icon: RotateCcw, label: "Retour sous 7 jours" },
+              { Icon: Check, label: t('product.points.cod') },
+              { Icon: Truck, label: t('product.points.shipping') },
+              { Icon: ShieldCheck, label: t('product.points.quality') },
+              { Icon: RotateCcw, label: t('product.points.return') },
             ].map(({ Icon, label }) => (
               <div key={label} className="flex items-center gap-3">
                 <div className="w-7 h-7 flex items-center justify-center border border-[#C9A227]/20 rounded-full shrink-0">
@@ -274,11 +276,11 @@ export default function ProductDetails({ params }: { params: Promise<{ id: strin
           </div>
 
           {/* ── Accordions ────────────────────────────────────── */}
-          <Accordion type="single" collapsible className="w-full border-t border-[#1A1A1A]/5">
+          <Accordion type="single" collapsible className="w-full border-t border-[#1A1A1A]/5 text-start">
             {product.specs && Object.keys(product.specs).length > 0 && (
-              <AccordionItem value="specs" className="border-[#1A1A1A]/5">
-                <AccordionTrigger className="text-[10px] uppercase tracking-[0.25em] font-medium hover:no-underline py-4">
-                  Caractéristiques
+              <AccordionItem value="specs" className="border-[#1A1A1A]/5 ">
+                <AccordionTrigger className="text-[10px] uppercase tracking-[0.25em] font-medium hover:no-underline py-4 text-start">
+                  {t('product.features')}
                 </AccordionTrigger>
                 <AccordionContent>
                   <dl className="space-y-3 pb-2 text-[13px]">
@@ -293,19 +295,19 @@ export default function ProductDetails({ params }: { params: Promise<{ id: strin
               </AccordionItem>
             )}
             <AccordionItem value="delivery" className="border-[#1A1A1A]/5">
-              <AccordionTrigger className="text-[10px] uppercase tracking-[0.25em] font-medium hover:no-underline py-4">
-                Expédition & Livraison
+              <AccordionTrigger className="text-[10px] uppercase tracking-[0.25em] font-medium hover:no-underline py-4 text-start">
+                {t('productDetails.shippingTab')}
               </AccordionTrigger>
               <AccordionContent className="text-[13px] text-[#1A1A1A]/55 font-light leading-relaxed pb-2">
-                Nos pièces sont livrées dans toutes les villes du Maroc. Le délai de livraison est généralement de 24 à 48 heures pour les grandes villes et jusqu'à 72 heures pour les zones plus éloignées. Le paiement s'effectue en espèces à la réception.
+                {t('productDetails.shippingTabContent')}
               </AccordionContent>
             </AccordionItem>
             <AccordionItem value="returns" className="border-none">
-              <AccordionTrigger className="text-[10px] uppercase tracking-[0.25em] font-medium hover:no-underline py-4">
-                Retours & Échanges
+              <AccordionTrigger className="text-[10px] uppercase tracking-[0.25em] font-medium hover:no-underline py-4 text-start">
+                {t('productDetails.returnsTab')}
               </AccordionTrigger>
               <AccordionContent className="text-[13px] text-[#1A1A1A]/55 font-light leading-relaxed pb-2">
-                Chez Caftan Latifa, nous acceptons les retours et les échanges sous 7 jours, à condition que la pièce soit dans son état d'origine. Les frais de retour sont à la charge du client, sauf en cas de défaut de fabrication.
+                {t('productDetails.returnsTabContent')}
               </AccordionContent>
             </AccordionItem>
           </Accordion>
@@ -316,7 +318,7 @@ export default function ProductDetails({ params }: { params: Promise<{ id: strin
       {relatedProducts && relatedProducts.length > 0 && (
         <div className="max-w-7xl mx-auto py-16 border-t border-[#1A1A1A]/5 overflow-hidden">
           <h3 className="font-serif text-2xl md:text-3xl text-center text-[#1A1A1A] mb-8 md:mb-12 px-6">
-            Vous aimerez aussi
+            {t('productDetails.related')}
           </h3>
 
           {/* Mobile: Horizontal scroll, Desktop: Grid */}
@@ -339,7 +341,7 @@ export default function ProductDetails({ params }: { params: Promise<{ id: strin
               {centsToMad(product.price)}
             </span>
             <span className="text-[8px] uppercase tracking-[0.2em] text-[#1A1A1A]/40 font-light mt-1">
-              MAD
+              {t('common.currency')}
             </span>
           </div>
 
@@ -348,16 +350,16 @@ export default function ProductDetails({ params }: { params: Promise<{ id: strin
             {product.availableSizes && product.availableSizes.length > 0 ? (
               selectedSize ? (
                 <>
-                  <span className="text-[8px] uppercase tracking-[0.2em] text-[#1A1A1A]/40 leading-none mb-1">Taille</span>
+                  <span className="text-[8px] uppercase tracking-[0.2em] text-[#1A1A1A]/40 leading-none mb-1">{t('product.size')}</span>
                   <span className="text-[10px] font-bold uppercase tracking-widest text-[#1A1A1A]">{selectedSize}</span>
                 </>
               ) : (
                 <span className={`text-[9px] uppercase tracking-[0.1em] text-center font-medium leading-tight ${sizeError ? 'text-red-500 animate-pulse' : 'text-[#1A1A1A]/50'}`}>
-                  Choisir une taille
+                  {t('productDetails.chooseSize')}
                 </span>
               )
             ) : (
-              <span className="text-[9px] uppercase tracking-[0.15em] text-[#1A1A1A]/50">Taille unique</span>
+              <span className="text-[9px] uppercase tracking-[0.15em] text-[#1A1A1A]/50">{t('product.oneSize')}</span>
             )}
           </div>
 

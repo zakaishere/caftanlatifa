@@ -4,6 +4,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { usePathname, useRouter } from "next/navigation";
 import { apiRequest, queryClient, getQueryFn } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { useTranslation } from "@/i18n/provider";
 
 type AdminUser = {
     id: string;
@@ -25,6 +26,7 @@ export const AuthContext = createContext<AuthContextType | null>(null);
 export function AuthProvider({ children }: { children: ReactNode }) {
     const router = useRouter();
     const { toast } = useToast();
+    const { locale } = useTranslation();
 
     const { data: user, isLoading } = useQuery<AdminUser | null>({
         queryKey: ["/api/admin/me"],
@@ -39,7 +41,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             },
             onSuccess: () => {
                 queryClient.invalidateQueries({ queryKey: ["/api/admin/me"] });
-                router.push("/admin");
+                router.push(`/${locale}/admin`);
             },
             onError: (error: Error) => {
                 toast({
@@ -58,7 +60,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             },
             onSuccess: () => {
                 queryClient.invalidateQueries({ queryKey: ["/api/admin/me"] });
-                router.push("/admin");
+                router.push(`/${locale}/admin`);
             },
             onError: (error: Error) => {
                 toast({
@@ -76,7 +78,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             },
             onSuccess: () => {
                 queryClient.setQueryData(["/api/admin/me"], null);
-                router.push("/admin/login");
+                router.push(`/${locale}/admin/login`);
             },
             onError: (error: Error) => {
                 toast({

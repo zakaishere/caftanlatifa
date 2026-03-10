@@ -11,7 +11,7 @@ export async function generateMetadata(
     parent: ResolvingMetadata
 ): Promise<Metadata> {
     const resolvedParams = await params;
-    const id = resolvedParams.id;
+    const { id, locale } = resolvedParams as any;
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
     try {
@@ -29,8 +29,9 @@ export async function generateMetadata(
             },
         };
     } catch (e) {
+        // Fallback for metadata error (e.g. product not found)
         return {
-            title: 'Création Introuvable | Caftan Latifa',
+            title: locale === 'ar' ? 'التصميم غير موجود | قفطان لطيفة' : 'Création Introuvable | Caftan Latifa',
         };
     }
 }

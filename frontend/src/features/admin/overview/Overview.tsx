@@ -24,6 +24,7 @@ import { ArrowUpRight, ArrowDownRight, MoreHorizontal, ShoppingBag, Loader2 } fr
 import type { ApiStats, OrderStatus } from '@/lib/types';
 import { centsToMad } from '@/lib/types';
 import Link from 'next/link';
+import { useTranslation } from '@/i18n/provider';
 
 const STATUS_COLORS: Record<OrderStatus, string> = {
   PENDING: 'bg-amber-50 text-amber-700 border-amber-200',
@@ -33,6 +34,7 @@ const STATUS_COLORS: Record<OrderStatus, string> = {
 };
 
 export default function AdminOverview() {
+  const { t, locale } = useTranslation();
   const { data: stats, isLoading } = useQuery<ApiStats>({
     queryKey: ['/api/admin/stats'],
   });
@@ -46,10 +48,10 @@ export default function AdminOverview() {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 text-start">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-        <p className="text-muted-foreground">Overview of your store's performance.</p>
+        <h1 className="text-3xl font-bold tracking-tight">{t('admin.dashboard.title')}</h1>
+        <p className="text-muted-foreground">{t('admin.dashboard.subtitle')}</p>
       </div>
 
       {/* KPI Cards */}
@@ -58,7 +60,7 @@ export default function AdminOverview() {
           <Card key={i} className="shadow-sm">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">
-                {stat.label}
+                {t(`admin.dashboard.kpi.${stat.label.toLowerCase().replace(/ /g, '')}`)}
               </CardTitle>
               {stat.trend === 'up' ? (
                 <ArrowUpRight className="h-4 w-4 text-emerald-500" />
@@ -69,11 +71,11 @@ export default function AdminOverview() {
               )}
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stat.value}</div>
+              <div className="text-2xl font-bold">{stat.value.replace(' MAD', ` ${t('common.currency')}`)}</div>
               <p className={`text-xs ${stat.trend === 'up' ? 'text-emerald-500' :
                   stat.trend === 'down' ? 'text-rose-500' : 'text-muted-foreground'
                 }`}>
-                {stat.change} from last month
+                {stat.change} {t('admin.dashboard.fromLastMonth')}
               </p>
             </CardContent>
           </Card>
@@ -84,11 +86,11 @@ export default function AdminOverview() {
         {/* Chart */}
         <Card className="col-span-4 shadow-sm">
           <CardHeader>
-            <CardTitle>Weekly Revenue</CardTitle>
+            <CardTitle>{t('admin.dashboard.weeklyRevenue')}</CardTitle>
           </CardHeader>
-          <CardContent className="pl-2">
+          <CardContent className="ps-2">
             <ResponsiveContainer width="100%" height={350}>
-              <BarChart data={stats?.chartData ?? []}>
+              <BarChart data={(stats?.chartData ?? []).map(d => ({ ...d, name: t(`common.days.short.${d.name.toLowerCase()}`) }))}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
                 <XAxis
                   dataKey="name"
@@ -102,7 +104,7 @@ export default function AdminOverview() {
                   fontSize={12}
                   tickLine={false}
                   axisLine={false}
-                  tickFormatter={(value) => `${value} MAD`}
+                  tickFormatter={(value) => `${value} ${t('common.currency')}`}
                 />
                 <Tooltip
                   cursor={{ fill: 'hsl(var(--muted))' }}
@@ -117,7 +119,7 @@ export default function AdminOverview() {
         {/* Recent Orders */}
         <Card className="col-span-3 shadow-sm">
           <CardHeader>
-            <CardTitle>Recent Orders</CardTitle>
+            <CardTitle>{t('admin.dashboard.recentOrders')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-6">
@@ -126,25 +128,25 @@ export default function AdminOverview() {
                   <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10">
                     <ShoppingBag className="h-4 w-4 text-primary" />
                   </div>
-                  <div className="ml-4 space-y-1 flex-1 min-w-0">
+                  <div className="ms-4 space-y-1 flex-1 min-w-0">
                     <p className="text-sm font-medium leading-none truncate">{order.customerName}</p>
                     <p className="text-xs text-muted-foreground">{order.city}</p>
                   </div>
-                  <div className="ml-4 flex flex-col items-end gap-1">
-                    <span className="font-medium text-sm">+{centsToMad(order.total)} MAD</span>
+                  <div className="ms-4 flex flex-col items-end gap-1">
+                    <span className="font-medium text-sm" dir="ltr">+{centsToMad(order.total)} {t('common.currency')}</span>
                     <Badge variant="outline" className={`text-[10px] ${STATUS_COLORS[order.status]}`}>
-                      {order.status}
+                      {t(`admin.dashboard.status.${order.status}`)}
                     </Badge>
                   </div>
                 </div>
               ))}
               {(stats?.recentOrders?.length ?? 0) === 0 && (
-                <p className="text-sm text-muted-foreground text-center py-4">No orders yet</p>
+                <p className="text-sm text-muted-foreground text-center py-4">{t('admin.dashboard.noOrders')}</p>
               )}
             </div>
-            <Link href="/admin/orders">
+            <Link href={`/${locale}/admin/orders`}>
               <Button variant="outline" className="w-full mt-6">
-                View All Orders
+                {t('admin.dashboard.viewAllOrders')}
               </Button>
             </Link>
           </CardContent>
