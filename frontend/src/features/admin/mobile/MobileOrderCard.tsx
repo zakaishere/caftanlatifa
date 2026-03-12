@@ -2,7 +2,7 @@
 
 import React, { useRef, useState } from 'react';
 import { motion, useMotionValue, useTransform, animate } from 'framer-motion';
-import { CheckCircle, Flag, ChevronRight, MapPin, Phone, Package } from 'lucide-react';
+import { CheckCircle, Flag, MapPin, Package, Truck } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import type { ApiOrder, OrderStatus } from '@/lib/types';
 import { centsToMad } from '@/lib/types';
@@ -120,7 +120,7 @@ export function MobileOrderCard({
   }
 
   return (
-    <div className="relative overflow-hidden rounded-xl select-none touch-pan-y mb-2.5">
+    <div className="relative overflow-hidden rounded-xl select-none touch-pan-y mb-3 w-full max-w-full box-border">
       {/* Background action layers */}
       {canAct && (
         <SwipeHintLayer direction={swipeDir} progress={swipeProgress} />
@@ -154,7 +154,6 @@ export function MobileOrderCard({
           const offset = info.offset.x;
 
           if (offset > SWIPE_THRESHOLD) {
-            // Confirm: only for PENDING orders
             if (order.status === 'PENDING') {
               onConfirm(order);
             }
@@ -164,91 +163,93 @@ export function MobileOrderCard({
           snapBack();
         }}
         whileTap={!isDragging ? { scale: 0.985 } : {}}
-        className="relative"
+        className="relative w-full"
       >
         <div
           onClick={() => !isDragging && onTap(order)}
           className={cn(
-            'relative bg-card border border-border/50 rounded-xl overflow-hidden',
+            'relative bg-card border border-border/50 rounded-xl overflow-hidden w-full max-w-full box-border',
             'transition-shadow duration-200',
             triggered && 'ring-1 ring-primary/20',
             isPending && 'opacity-60 pointer-events-none',
           )}
           style={{ boxShadow: '0 1px 4px 0 rgb(0 0 0 / 0.06), 0 0 0 1px rgb(0 0 0 / 0.03)' }}
         >
-          {/* ── Top row: ID + Status + Time ── */}
-          <div className="flex items-center justify-between px-3 pt-2.5 pb-2 border-b border-border/40 bg-muted/10">
-            <div className="flex items-center gap-2">
-              <span className="font-mono text-[11px] text-muted-foreground/70 tracking-wider" dir="ltr">
+          <div className="p-3 w-full box-border flex flex-col gap-2.5">
+            
+            {/* ROW 1: Customer Name + Status */}
+            <div className="flex items-start justify-between gap-3 w-full">
+              <span className="text-[14px] font-bold text-foreground leading-tight truncate">
+                {order.customerName}
+              </span>
+              <Badge
+                variant="outline"
+                className={cn(
+                  'text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 gap-1.5 border shrink-0',
+                  status.color,
+                )}
+              >
+                <span className={cn('h-1.5 w-1.5 rounded-full', status.dot)} />
+                {status.label}
+              </Badge>
+            </div>
+
+            {/* ROW 2: Order ID + Date */}
+            <div className="flex items-center gap-2.5 w-full">
+              <span className="font-mono text-[11px] text-muted-foreground/80 tracking-wider">
                 #{order.id.slice(-6).toUpperCase()}
               </span>
-              <span className="h-3.5 w-px bg-border/60" />
-              <span className="text-[11px] text-muted-foreground/60 font-medium">
+              <span className="h-3 w-px bg-border/60 shrink-0" />
+              <span className="text-[11px] text-muted-foreground/60 truncate">
                 {timeAgo(order.createdAt)}
               </span>
             </div>
-            <Badge
-              variant="outline"
-              className={cn(
-                'text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 gap-1.5 border',
-                status.color,
-              )}
-            >
-              <span className={cn('h-1.5 w-1.5 rounded-full', status.dot)} />
-              {status.label}
-            </Badge>
-          </div>
 
-          {/* ── Main body ── */}
-          <div className="px-3 py-2 flex items-start justify-between gap-2.5">
-            {/* Left: Customer info */}
-            <div className="flex-1 min-w-0 space-y-1">
-              <p className="text-[13px] font-bold text-foreground truncate leading-none mt-0.5">
-                {order.customerName}
-              </p>
-
-              <div className="flex items-center gap-2.5">
-                {order.city && (
-                  <span className="flex items-center gap-1 text-[10px] text-muted-foreground/80 font-medium">
-                    <MapPin className="h-2.5 w-2.5 shrink-0" />
-                    {order.city}
-                  </span>
-                )}
-                <span className="flex items-center gap-1 text-[10px] text-muted-foreground/70 font-mono" dir="ltr">
-                  <Phone className="h-2 w-2 shrink-0" />
-                  {order.phone}
-                </span>
-              </div>
-
-              <div className="flex items-center gap-1.5 pt-0.5">
-                <Package className="h-2.5 w-2.5 text-muted-foreground/50 shrink-0" />
-                <span className="text-[11px] text-muted-foreground/60">
+            {/* ROW 3: Stats + Total */}
+            <div className="flex justify-between items-center w-full bg-muted/20 border border-border/30 rounded-lg p-2.5 mt-0.5">
+              <div className="flex flex-col gap-1.5">
+                <span className="text-[11px] font-medium text-foreground flex items-center gap-1.5">
+                  <Package className="h-3.5 w-3.5 text-muted-foreground/70" />
                   {itemCount} {itemCount === 1 ? 'item' : 'items'}
-                  {order.deliveryMethod === 'PICKUP' && (
-                    <span className="ml-1.5 text-primary/70 font-medium">· Pickup</span>
-                  )}
                 </span>
+                <span className="text-[10px] text-muted-foreground/80 flex items-center gap-1.5 font-medium">
+                  {order.deliveryMethod === 'PICKUP' ? (
+                    <MapPin className="h-3.5 w-3.5" />
+                  ) : (
+                    <Truck className="h-3.5 w-3.5" />
+                  )}
+                  {order.deliveryMethod === 'PICKUP' ? 'Pickup' : 'Delivery'}
+                </span>
+              </div>
+              <div className="flex flex-col items-end shrink-0">
+                <span className="text-[16px] font-extrabold text-foreground tabular-nums leading-none block" dir="ltr">
+                  {centsToMad(order.total)}
+                </span>
+                <span className="text-[9px] text-muted-foreground/60 font-bold uppercase mt-1 block tracking-wider">MAD</span>
               </div>
             </div>
 
-            {/* Right: Price + chevron */}
-            <div className="flex flex-col items-end gap-1 shrink-0">
-              <span className="text-[16px] font-extrabold text-foreground tabular-nums leading-none" dir="ltr">
-                {centsToMad(order.total)}
-                <span className="text-[10px] text-muted-foreground/60 font-bold ml-0.5 uppercase">MAD</span>
-              </span>
-              <ChevronRight className="h-4 w-4 text-muted-foreground/30 mt-1" />
-            </div>
+            {/* ROW 4: Inline Action Buttons */}
+            {canAct && (
+              <div className="flex items-center gap-2 pt-1 w-full">
+                {order.status === 'PENDING' && (
+                  <button 
+                    onClick={(e) => { e.stopPropagation(); onConfirm(order); }}
+                    className="flex-1 h-8 rounded border border-emerald-600/20 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 flex items-center justify-center gap-1.5 text-[11px] font-bold tracking-wide transition-colors"
+                  >
+                    <CheckCircle className="h-3 w-3" /> CONFIRM
+                  </button>
+                )}
+                <button 
+                  onClick={(e) => { e.stopPropagation(); onFlag(order); }}
+                  className="flex-1 h-8 rounded border border-rose-600/20 bg-rose-50 hover:bg-rose-100 text-rose-700 flex items-center justify-center gap-1.5 text-[11px] font-bold tracking-wide transition-colors"
+                >
+                  <Flag className="h-3 w-3" /> FLAG
+                </button>
+              </div>
+            )}
+            
           </div>
-
-          {/* ── Swipe hint strip (only for actionable orders) ── */}
-          {canAct && (
-            <div className="px-3 pb-2 flex items-center justify-between border-t border-border/30 pt-1.5 bg-muted/5 mt-1">
-              <span className="text-[10px] text-muted-foreground/40 font-medium tracking-wider uppercase">
-                ← flag · confirm →
-              </span>
-            </div>
-          )}
         </div>
       </motion.div>
     </div>

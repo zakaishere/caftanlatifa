@@ -112,7 +112,7 @@ export function MobileOrdersView() {
   const pendingCount = orders.filter((o) => o.status === 'PENDING').length;
 
   return (
-    <div className="min-h-full pb-20">
+    <div className="min-h-full pb-28 w-full max-w-full overflow-x-hidden box-border">
       {/* ── Page header ── */}
       <div className="flex items-center justify-between mb-3 mt-1">
         <div>
@@ -157,7 +157,7 @@ export function MobileOrdersView() {
       )}
 
       {/* ── Filter tabs (horizontal scroll) ── */}
-      <div className="flex gap-2.5 overflow-x-auto pb-1 mb-3 -mx-4 px-4 scrollbar-none">
+      <div className="flex gap-2 overflow-x-auto pb-2 mb-4 scrollbar-none w-full max-w-full">
         {STATUS_TABS.map(({ key, label }) => {
           const count = key
             ? orders.filter((o) => o.status === key).length
@@ -189,7 +189,7 @@ export function MobileOrdersView() {
 
       {/* ── Order card list ── */}
       {isLoading ? (
-        <div className="space-y-3">
+        <div className="space-y-3 w-full">
           {Array.from({ length: 5 }).map((_, i) => (
             <OrderCardSkeleton key={i} />
           ))}
@@ -212,7 +212,7 @@ export function MobileOrdersView() {
           )}
         </div>
       ) : (
-        <motion.div className="space-y-3">
+        <motion.div className="space-y-3 w-full pb-6">
           {sortedOrders.map((order, i) => (
             <motion.div
               key={order.id}
