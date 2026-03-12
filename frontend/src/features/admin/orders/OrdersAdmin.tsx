@@ -1,45 +1,123 @@
 "use client";
 
+import React, { useMemo, useState } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Loader2, Plus, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import {
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow
-} from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
-import { MoreHorizontal, CheckCircle, XCircle, Truck, Loader2 } from 'lucide-react';
-import {
-  Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger,
-} from "@/components/ui/sheet";
-import { cn } from "@/lib/utils";
 import { apiRequest, queryClient } from '@/lib/queryClient';
 import type { ApiOrder, OrderStatus } from '@/lib/types';
-import { centsToMad } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
-import { OrderItemsList } from '@/components/ui/order-items-list';
 import { useTranslation } from '@/i18n/provider';
 import dynamic from 'next/dynamic';
 
-// Lazy-load the mobile view — not needed on desktop
+// Shared Table Infrastructure
+import { DataTable } from '@/features/admin/shared/table/DataTable';
+import { DataTableSkeleton } from '@/features/admin/shared/table/DataTableSkeleton';
+import { PaginationControls } from '@/features/admin/shared/table/PaginationControls';
+
+// Order Feature Components
+import { useOrderTableState } from './hooks/useOrderTableState';
+import { useOrderColumns } from './columns';
+import { OrdersCommandBar } from './OrdersCommandBar';
+
+// Lazy-load the mobile view
 const MobileOrdersView = dynamic(
   () => import('@/features/admin/mobile/MobileOrdersView').then((m) => ({ default: m.MobileOrdersView })),
   { ssr: false }
 );
 
-const STATUS_COLORS: Record<OrderStatus, string> = {
-  PENDING: 'bg-amber-50 text-amber-700 border-amber-200',
-  CONFIRMED: 'bg-blue-50 text-blue-700 border-blue-200',
-  DELIVERED: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-  CANCELLED: 'bg-rose-50 text-rose-700 border-rose-200',
-};
+// Lazy-load the QuickView drawer
+const OrderQuickEditDrawer = dynamic(
+  () => import('@/features/admin/mobile/OrderQuickEditDrawer').then((m) => ({ default: m.OrderQuickEditDrawer })),
+  { ssr: false }
+);
 
 export default function OrdersAdmin() {
   const { toast } = useToast();
-  const { t, locale } = useTranslation();
-  const { data: orders = [], isLoading } = useQuery<ApiOrder[]>({
+  const { t } = useTranslation();
+  
+  // State Manager
+  const tableState = useOrderTableState();
+  const [selectedOrder, setSelectedOrder] = useState<ApiOrder | null>(null);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+
+  // Data Fetching
+  const { data: allOrders = [], isLoading } = useQuery<ApiOrder[]>({
     queryKey: ['/api/admin/orders'],
   });
 
+  // Client-side filtering/sorting for now (can be ported to server-side later)
+  const filteredAndSortedData = useMemo(() => {
+    let result = [...allOrders];
+
+    // Global filtering
+    if (tableState.globalFilter) {
+      const q = tableState.globalFilter.toLowerCase();
+      result = result.filter(o => 
+        o.customerName.toLowerCase().includes(q) ||
+        o.id.toLowerCase().includes(q) ||
+        o.phone.toLowerCase().includes(q)
+      );
+    }
+
+    // Status filtering
+    if (tableState.statusFilter !== 'ALL') {
+      result = result.filter(o => o.status === tableState.statusFilter);
+    }
+
+    // Date filtering
+    if (tableState.datePreset !== 'all') {
+      const now = new Date();
+      const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      
+      result = result.filter(o => {
+        const d = new Date(o.createdAt);
+        if (tableState.datePreset === 'today') return d >= startOfDay;
+        if (tableState.datePreset === 'yesterday') {
+          const yesterday = new Date(startOfDay);
+          yesterday.setDate(yesterday.getDate() - 1);
+          return d >= yesterday && d < startOfDay;
+        }
+        if (tableState.datePreset === '7days') {
+          const weekAgo = new Date(startOfDay);
+          weekAgo.setDate(weekAgo.getDate() - 7);
+          return d >= weekAgo;
+        }
+        if (tableState.datePreset === '30days') {
+          const monthAgo = new Date(startOfDay);
+          monthAgo.setDate(monthAgo.getDate() - 30);
+          return d >= monthAgo;
+        }
+        return true;
+      });
+    }
+
+    // Manual Sorting
+    if (tableState.sorting.length > 0) {
+      const { id, desc } = tableState.sorting[0];
+      result.sort((a, b) => {
+        const valA = (a as any)[id];
+        const valB = (b as any)[id];
+        if (valA < valB) return desc ? 1 : -1;
+        if (valA > valB) return desc ? -1 : 1;
+        return 0;
+      });
+    } else {
+      // Default sort by date desc
+      result.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    }
+
+    return result;
+  }, [allOrders, tableState.globalFilter, tableState.statusFilter, tableState.datePreset, tableState.sorting]);
+
+  // Paginated Data
+  const paginatedData = useMemo(() => {
+    const start = tableState.pagination.pageIndex * tableState.pagination.pageSize;
+    const end = start + tableState.pagination.pageSize;
+    return filteredAndSortedData.slice(start, end);
+  }, [filteredAndSortedData, tableState.pagination]);
+
+  // Status Mutation
   const updateStatus = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: OrderStatus }) => {
       const res = await apiRequest('PATCH', `/api/admin/orders/${id}/status`, { status });
@@ -55,118 +133,83 @@ export default function OrdersAdmin() {
     },
   });
 
+  const handleViewOrder = (order: ApiOrder) => {
+    setSelectedOrder(order);
+    setDrawerOpen(true);
+  };
+
+  const columns = useOrderColumns(handleViewOrder, (id, status) => updateStatus.mutate({ id, status }));
+
   return (
-    <>
-      {/* ── Mobile view (hidden on md+) ────────────────────────────── */}
+    <div className="flex flex-col h-full min-h-screen md:min-h-0">
+      {/* ── Mobile View ────────────────────────────────────────── */}
       <div className="md:hidden">
         <MobileOrdersView />
       </div>
 
-      {/* ── Desktop view (hidden on mobile) ───────────────────────── */}
-      <div className="hidden md:block space-y-6 text-start">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">{t('admin.orders.title')}</h1>
-          <p className="text-muted-foreground">{t('admin.orders.subtitle')}</p>
+      {/* ── Desktop View ───────────────────────────────────────── */}
+      <div className="hidden md:flex flex-col flex-1 space-y-4 pt-2">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-extrabold tracking-tight text-foreground">{t('admin.orders.title')}</h1>
+            <p className="text-sm text-muted-foreground font-medium mt-1">{t('admin.orders.subtitle')}</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" className="h-9 font-bold">
+              <Download className="h-4 w-4 mr-2" /> Export
+            </Button>
+            <Button size="sm" className="h-9 font-bold shadow-sm">
+              <Plus className="h-4 w-4 mr-2" /> New Order
+            </Button>
+          </div>
         </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>{t('admin.orders.allOrders')} ({orders.length})</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {isLoading ? (
-              <div className="flex justify-center py-12">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
-              </div>
-            ) : orders.length === 0 ? (
-              <p className="text-center text-muted-foreground py-12">{t('admin.orders.noOrders')}</p>
-            ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>{t('admin.orders.table.id')}</TableHead>
-                    <TableHead>{t('admin.orders.table.customer')}</TableHead>
-                    <TableHead>{t('admin.orders.table.city')}</TableHead>
-                    <TableHead>{t('admin.orders.table.total')}</TableHead>
-                    <TableHead>{t('admin.orders.table.date')}</TableHead>
-                    <TableHead>{t('admin.orders.table.status')}</TableHead>
-                    <TableHead className="text-end">{t('admin.orders.table.actions')}</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {orders.map((order) => (
-                    <TableRow key={order.id}>
-                      <TableCell className="font-mono text-xs text-start" dir="ltr">{order.id.slice(0, 8)}…</TableCell>
-                      <TableCell className="font-medium">
-                        {order.customerName}
-                        <div className="text-xs text-muted-foreground" dir="ltr">{order.phone}</div>
-                      </TableCell>
-                      <TableCell>{order.city}</TableCell>
-                      <TableCell dir="ltr">{centsToMad(order.total)} {t('common.currency')}</TableCell>
-                      <TableCell className="text-muted-foreground text-sm" dir="ltr">
-                        {new Date(order.createdAt).toLocaleDateString()}
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="outline" className={STATUS_COLORS[order.status]}>
-                          {t(`admin.dashboard.status.${order.status}`)}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-end">
-                        <Sheet>
-                          <SheetTrigger asChild>
-                            <Button variant="ghost" size="sm" className="ltr:ml-auto rtl:mr-auto">{t('admin.orders.view')}</Button>
-                          </SheetTrigger>
-                          <SheetContent className={locale === 'ar' ? 'text-left' : 'text-start'} side={locale === 'ar' ? 'left' : 'right'}>
-                            <div dir={locale === 'ar' ? 'ltr' : undefined} className={locale === 'ar' ? 'text-left h-full' : 'text-start h-full'}>
-                              <SheetHeader className={locale === 'ar' ? 'text-left' : 'text-start'}>
-                                <SheetTitle className={locale === 'ar' ? 'text-left' : 'text-start'}>{t('admin.orders.detailsTitle')}</SheetTitle>
-                                <SheetDescription className={cn("font-mono text-xs", locale === 'ar' ? 'text-left' : 'text-start')}>{order.id}</SheetDescription>
-                              </SheetHeader>
-                              <div className="mt-8 space-y-6">
-                                <div>
-                                  <h3 className="font-semibold mb-2">{t('admin.orders.customerInfo')}</h3>
-                                  <div className="text-sm space-y-1">
-                                    <p><span className="text-muted-foreground">{t('admin.orders.info.name')}</span> {order.customerName}</p>
-                                    <p><span className="text-muted-foreground">{t('admin.orders.info.phone')}</span> <span dir="ltr">{order.phone}</span></p>
-                                    <p><span className="text-muted-foreground">{t('admin.orders.info.city')}</span> {order.city}</p>
-                                    <p><span className="text-muted-foreground">{t('admin.orders.info.address')}</span> {order.address}</p>
-                                    {order.notes && <p><span className="text-muted-foreground">{t('admin.orders.info.notes')}</span> {order.notes}</p>}
-                                  </div>
-                                </div>
-                                <div>
-                                  <h3 className="font-semibold mb-3">{t('admin.orders.items')}</h3>
-                                  <OrderItemsList items={order.items} deliveryFee={order.deliveryFee} total={order.total} enableProductLinks />
-                                </div>
-                                <div className="space-y-2">
-                                  {order.status === 'PENDING' && (
-                                    <Button className="w-full justify-start gap-2 bg-emerald-600 hover:bg-emerald-700" disabled={updateStatus.isPending} onClick={() => updateStatus.mutate({ id: order.id, status: 'CONFIRMED' })}>
-                                      <CheckCircle className="h-4 w-4 mr-2" /> {t('admin.orders.actions.confirm')}
-                                    </Button>
-                                  )}
-                                  {order.status === 'CONFIRMED' && (
-                                    <Button className="w-full justify-start gap-2" variant="outline" disabled={updateStatus.isPending} onClick={() => updateStatus.mutate({ id: order.id, status: 'DELIVERED' })}>
-                                      <Truck className="h-4 w-4 mr-2" /> {t('admin.orders.actions.deliver')}
-                                    </Button>
-                                  )}
-                                  {(order.status === 'PENDING' || order.status === 'CONFIRMED') && (
-                                    <Button className="w-full justify-start gap-2 text-rose-600 hover:text-rose-700 hover:bg-rose-50" variant="ghost" disabled={updateStatus.isPending} onClick={() => updateStatus.mutate({ id: order.id, status: 'CANCELLED' })}>
-                                      <XCircle className="h-4 w-4 mr-2" /> {t('admin.orders.actions.cancel')}
-                                    </Button>
-                                  )}
-                                </div>
-                              </div>
-                            </div>
-                          </SheetContent>
-                        </Sheet>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            )}
-          </CardContent>
-        </Card>
+        {/* Command Bar */}
+        <OrdersCommandBar state={tableState} actions={tableState} />
+
+        {/* Data Table */}
+        <div className="flex-1 min-h-0 bg-card border border-border/40 rounded-xl overflow-hidden shadow-sm flex flex-col">
+          <div className="flex-1 overflow-auto custom-scrollbar">
+            <DataTable
+              columns={columns}
+              data={paginatedData}
+              isLoading={isLoading}
+              sorting={tableState.sorting}
+              onSortingChange={tableState.setSorting}
+              rowSelection={tableState.rowSelection}
+              onRowSelectionChange={tableState.setRowSelection}
+              pagination={tableState.pagination}
+              onPaginationChange={tableState.setPagination}
+              pageCount={Math.ceil(filteredAndSortedData.length / tableState.pagination.pageSize)}
+              loadingSlot={<DataTableSkeleton columns={columns.length} rows={10} />}
+              onRowClick={handleViewOrder}
+            />
+          </div>
+
+          {/* Pagination Footer */}
+          <div className="border-t border-border/40 bg-muted/5">
+            <PaginationControls
+              page={tableState.pagination.pageIndex}
+              pageSize={tableState.pagination.pageSize}
+              pageCount={Math.ceil(filteredAndSortedData.length / tableState.pagination.pageSize)}
+              total={filteredAndSortedData.length}
+              onPageChange={(idx) => tableState.setPagination({ ...tableState.pagination, pageIndex: idx })}
+              onPageSizeChange={(size) => tableState.setPagination({ pageIndex: 0, pageSize: size })}
+              selectedCount={Object.keys(tableState.rowSelection).length}
+            />
+          </div>
+        </div>
       </div>
-    </>
+
+      {/* QuickView Drawer */}
+      <OrderQuickEditDrawer
+        order={selectedOrder}
+        open={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+        onUpdateStatus={(id, status) => updateStatus.mutate({ id, status })}
+        isPending={updateStatus.isPending}
+      />
+    </div>
   );
 }
+

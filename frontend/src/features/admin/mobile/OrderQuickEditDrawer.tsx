@@ -114,20 +114,39 @@ export function OrderQuickEditDrawer({
             onClick={onClose}
           />
 
-          {/* Bottom sheet */}
+          {/* Responsive Sheet (Bottom on mobile, Right on desktop) */}
           <motion.div
             key="sheet"
-            initial={{ y: '100%' }}
-            animate={{ y: 0 }}
-            exit={{ y: '100%' }}
-            transition={{ type: 'spring', stiffness: 400, damping: 38, mass: 0.8 }}
+            initial={{ y: '100%', x: 0 }}
+            animate={{ 
+              y: window.innerWidth >= 768 ? 0 : 0,
+              x: window.innerWidth >= 768 ? 0 : 0
+            }}
+            exit={{ 
+              y: window.innerWidth >= 768 ? 0 : '100%',
+              x: window.innerWidth >= 768 ? '100%' : 0
+            }}
+            // Use specialized desktop variants if needed, but for simplicity we'll use dynamic initial/exit
             className={cn(
-              'fixed inset-x-0 bottom-0 z-50 bg-card',
-              'rounded-t-2xl border-t border-border/40',
-              'flex flex-col max-h-[90svh]',
+              'fixed z-50 bg-card overflow-hidden flex flex-col',
+              'inset-x-0 bottom-0 rounded-t-2xl border-t border-border/40 max-h-[90svh]', // Mobile
+              'md:inset-y-0 md:right-0 md:left-auto md:bottom-auto md:w-[450px] md:h-[100svh] md:max-h-none md:rounded-none md:border-t-0 md:border-l' // Desktop
             )}
-            style={{ boxShadow: '0 -8px 32px -4px rgb(0 0 0 / 0.12), 0 -2px 8px -2px rgb(0 0 0 / 0.08)' }}
+            style={{ 
+              boxShadow: '0 -8px 32px -4px rgb(0 0 0 / 0.12), 0 -2px 8px -2px rgb(0 0 0 / 0.08)',
+              // We'll override the initial animation here to be cleaner
+              transform: window.innerWidth >= 768 ? 'translateX(100%)' : 'translateY(100%)'
+            }}
           >
+            {/* Desktop variant override via motion */}
+            <motion.div
+              className="contents"
+              initial={window.innerWidth >= 768 ? { x: '100%' } : { y: '100%' }}
+              animate={window.innerWidth >= 768 ? { x: 0 } : { y: 0 }}
+              exit={window.innerWidth >= 768 ? { x: '100%' } : { y: '100%' }}
+              transition={{ type: 'spring', stiffness: 400, damping: 38, mass: 0.8 }}
+            >
+
             {/* Drag handle */}
             <div className="flex justify-center pt-3 pb-1 shrink-0">
               <div className="h-1 w-10 rounded-full bg-border/60" />
@@ -281,6 +300,7 @@ export function OrderQuickEditDrawer({
                 </Button>
               </div>
             )}
+            </motion.div>
           </motion.div>
         </>
       )}

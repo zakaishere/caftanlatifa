@@ -43,6 +43,7 @@ interface DataTableProps<TData> {
   loadingSlot?: React.ReactNode;
   emptySlot?: React.ReactNode;
   onTableReady?: (table: Table<TData>) => void;
+  onRowClick?: (row: TData) => void;
 }
 
 function SortIcon({ isSorted }: { isSorted: false | 'asc' | 'desc' }) {
@@ -70,6 +71,7 @@ export function DataTable<TData>({
   loadingSlot,
   emptySlot,
   onTableReady,
+  onRowClick,
 }: DataTableProps<TData>) {
   const table = useReactTable({
     data,
@@ -175,8 +177,10 @@ export function DataTable<TData>({
               className={cn(
                 'border-b border-border/40 transition-colors h-[52px]',
                 'hover:bg-muted/40',
+                onRowClick && 'cursor-pointer',
                 row.getIsSelected() && 'bg-primary/[0.04] hover:bg-primary/[0.06]',
               )}
+              onClick={() => onRowClick?.(row.original)}
             >
               {row.getVisibleCells().map((cell) => (
                 <TableCell key={cell.id} className="px-3 py-0">

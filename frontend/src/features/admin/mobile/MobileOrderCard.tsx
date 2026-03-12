@@ -178,78 +178,78 @@ export function MobileOrderCard({
           isPending && 'opacity-60 pointer-events-none'
         )}
       >
-        <div onClick={() => !isDragging && onTap(order)} className="flex flex-col w-full p-3 gap-2.5">
+        <div onClick={() => !isDragging && onTap(order)} className="flex flex-col w-full p-2.5 gap-2">
           
           {/* ROW 1: Customer Name + Status */}
-          <div className="flex items-start justify-between gap-3 w-full">
+          <div className="flex items-start justify-between gap-2 w-full">
             <div className="flex-1 min-w-0">
-              <span className="text-[14px] font-bold text-foreground leading-tight truncate block">
+              <span className="text-[13px] font-bold text-foreground leading-tight truncate block">
                 {order.customerName}
               </span>
             </div>
             <Badge
               variant="outline"
               className={cn(
-                'text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 gap-1.5 border shrink-0',
+                'text-[9px] font-semibold uppercase tracking-wider px-1.5 py-0 gap-1 border shrink-0 h-4.5',
                 status.color
               )}
             >
-              <span className={cn('h-1.5 w-1.5 rounded-full', status.dot)} />
+              <span className={cn('h-1 w-1 rounded-full', status.dot)} />
               {status.label}
             </Badge>
           </div>
 
           {/* ROW 2: Order ID + Date */}
-          <div className="flex items-center gap-2.5 w-full">
-            <span className="font-mono text-[11px] text-muted-foreground/80 tracking-wider">
+          <div className="flex items-center gap-2 w-full">
+            <span className="font-mono text-[10px] text-muted-foreground/70 tracking-wider">
               #{order.id.slice(-6).toUpperCase()}
             </span>
-            <span className="h-3 w-px bg-border/60 shrink-0" />
-            <span className="text-[11px] text-muted-foreground/60 truncate flex-1 min-w-0">
+            <span className="h-2.5 w-px bg-border/40 shrink-0" />
+            <span className="text-[10px] text-muted-foreground/50 truncate flex-1 min-w-0">
               {timeAgo(order.createdAt)}
             </span>
           </div>
 
           {/* ROW 3: Stats + Total */}
-          <div className="flex justify-between items-center w-full bg-muted/20 border border-border/30 rounded-lg p-2.5 mt-0.5">
-            <div className="flex flex-col gap-1.5 min-w-0">
-              <span className="text-[11px] font-medium text-foreground flex items-center gap-1.5 truncate">
-                <Package className="h-3.5 w-3.5 text-muted-foreground/70 shrink-0" />
+          <div className="flex justify-between items-center w-full bg-muted/10 border border-border/20 rounded-lg p-2 mt-0.5">
+            <div className="flex flex-col gap-1 min-w-0">
+              <span className="text-[10px] font-medium text-foreground flex items-center gap-1.5 truncate">
+                <Package className="h-3 w-3 text-muted-foreground/60 shrink-0" />
                 {itemCount} {itemCount === 1 ? 'item' : 'items'}
               </span>
-              <span className="text-[10px] text-muted-foreground/80 flex items-center gap-1.5 font-medium truncate">
+              <span className="text-[9px] text-muted-foreground/70 flex items-center gap-1.5 font-medium truncate">
                 {order.deliveryMethod === 'PICKUP' ? (
-                  <MapPin className="h-3.5 w-3.5 shrink-0" />
+                  <MapPin className="h-3 w-3 shrink-0" />
                 ) : (
-                  <Truck className="h-3.5 w-3.5 shrink-0" />
+                  <Truck className="h-3 w-3 shrink-0" />
                 )}
                 {order.deliveryMethod === 'PICKUP' ? 'Pickup' : 'Delivery'}
               </span>
             </div>
-            <div className="flex flex-col items-end shrink-0 pl-2">
-              <span className="text-[16px] font-extrabold text-foreground tabular-nums leading-none block" dir="ltr">
+            <div className="flex flex-col items-end shrink-0 pl-1.5">
+              <span className="text-[15px] font-extrabold text-foreground tabular-nums leading-none block" dir="ltr">
                 {centsToMad(order.total)}
               </span>
-              <span className="text-[9px] text-muted-foreground/60 font-bold uppercase mt-1 block tracking-wider">MAD</span>
+              <span className="text-[8px] text-muted-foreground/50 font-bold uppercase mt-0.5 block tracking-tighter">MAD</span>
             </div>
           </div>
 
           {/* ROW 4: Inline Action Buttons */}
           {canAct && (
-            <div className="flex items-center gap-2 pt-1 w-full">
+            <div className="flex items-center gap-2 pt-0.5 w-full">
               {order.status === 'PENDING' && (
                 <button 
                   onClick={(e) => { e.stopPropagation(); onConfirm(order); }}
-                  className="flex-1 h-8 rounded-lg border border-emerald-600/20 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 flex items-center justify-center gap-1.5 text-[11px] font-bold tracking-wide transition-colors shrink-0"
+                  className="flex-1 h-7 rounded-lg border border-emerald-600/10 bg-emerald-50/50 hover:bg-emerald-50 text-emerald-700 flex items-center justify-center gap-1 text-[10px] font-bold tracking-wide transition-colors shrink-0"
                 >
-                  <CheckCircle className="h-3 w-3" /> CONFIRM
+                  <CheckCircle className="h-2.5 w-2.5" /> CONFIRM
                 </button>
               )}
               <button 
                 onClick={(e) => { e.stopPropagation(); onFlag(order); }}
-                className="flex-1 h-8 rounded-lg border border-rose-600/20 bg-rose-50 hover:bg-rose-100 text-rose-700 flex items-center justify-center gap-1.5 text-[11px] font-bold tracking-wide transition-colors shrink-0"
+                className="flex-1 h-7 rounded-lg border border-rose-600/10 bg-rose-50/50 hover:bg-rose-50 text-rose-700 flex items-center justify-center gap-1 text-[10px] font-bold tracking-wide transition-colors shrink-0"
               >
-                <Flag className="h-3 w-3" /> FLAG
+                <Flag className="h-2.5 w-2.5" /> FLAG
               </button>
             </div>
           )}
