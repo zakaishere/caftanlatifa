@@ -120,15 +120,26 @@ export function MobileOrderCard({
   }
 
   return (
-    <div className="relative overflow-hidden rounded-xl select-none touch-pan-y mb-3 w-full max-w-full box-border">
-      {/* Background action layers */}
+    <div className="w-full relative overflow-hidden rounded-xl mb-3 border border-border/40 bg-muted/30">
+      {/* ── Background Action Layer (Hidden behind card) ── */}
       {canAct && (
-        <SwipeHintLayer direction={swipeDir} progress={swipeProgress} />
+        <div className="absolute inset-0 flex items-center justify-between">
+          {/* Left Action (Confirm - revealed when dragging right) */}
+          <div className="h-full bg-emerald-500 w-1/2 flex items-center pl-5 opacity-0 transition-opacity duration-200" style={{ opacity: swipeDir === 'right' ? 1 : 0 }}>
+            <CheckCircle className="h-5 w-5 text-white" strokeWidth={2.5} />
+            <span className="ml-2 text-xs font-bold text-white uppercase tracking-wider">Confirm</span>
+          </div>
+          {/* Right Action (Flag - revealed when dragging left) */}
+          <div className="h-full bg-rose-500 w-1/2 flex items-center justify-end pr-5 opacity-0 transition-opacity duration-200" style={{ opacity: swipeDir === 'left' ? 1 : 0 }}>
+            <span className="mr-2 text-xs font-bold text-white uppercase tracking-wider">Flag</span>
+            <Flag className="h-5 w-5 text-white" strokeWidth={2.5} />
+          </div>
+        </div>
       )}
 
-      {/* Draggable card */}
+      {/* ── Foreground Draggable Card ── */}
       <motion.div
-        style={{ x, scale: cardScale, opacity: cardOpacity }}
+        style={{ x, boxShadow: '0 1px 4px 0 rgb(0 0 0 / 0.05), -1px 0 0 0 rgb(0 0 0 / 0.02), 1px 0 0 0 rgb(0 0 0 / 0.02)' }}
         drag={canAct ? 'x' : false}
         dragConstraints={{ left: -SWIPE_MAX, right: SWIPE_MAX }}
         dragElastic={RESISTANCE}
@@ -143,7 +154,6 @@ export function MobileOrderCard({
           setSwipeDir(dir);
           setSwipeProgress(progress);
 
-          // Haptic-like: trigger early visual feedback at threshold
           if (Math.abs(raw) >= SWIPE_THRESHOLD && !hasTriggeredRef.current) {
             hasTriggeredRef.current = true;
             setTriggered(true);
@@ -153,103 +163,97 @@ export function MobileOrderCard({
           setIsDragging(false);
           const offset = info.offset.x;
 
-          if (offset > SWIPE_THRESHOLD) {
-            if (order.status === 'PENDING') {
-              onConfirm(order);
-            }
+          if (offset > SWIPE_THRESHOLD && order.status === 'PENDING') {
+            onConfirm(order);
           } else if (offset < -SWIPE_THRESHOLD) {
             onFlag(order);
           }
           snapBack();
         }}
-        whileTap={!isDragging ? { scale: 0.985 } : {}}
-        className="relative w-full"
+        whileTap={!isDragging ? { scale: 0.99 } : {}}
+        className={cn(
+          'relative z-10 w-full bg-card rounded-xl flex flex-col',
+          'transition-shadow duration-200 will-change-transform',
+          triggered && 'ring-1 ring-primary/20 bg-card/95 backdrop-blur-sm',
+          isPending && 'opacity-60 pointer-events-none'
+        )}
       >
-        <div
-          onClick={() => !isDragging && onTap(order)}
-          className={cn(
-            'relative bg-card border border-border/50 rounded-xl overflow-hidden w-full max-w-full box-border',
-            'transition-shadow duration-200',
-            triggered && 'ring-1 ring-primary/20',
-            isPending && 'opacity-60 pointer-events-none',
-          )}
-          style={{ boxShadow: '0 1px 4px 0 rgb(0 0 0 / 0.06), 0 0 0 1px rgb(0 0 0 / 0.03)' }}
-        >
-          <div className="p-3 w-full box-border flex flex-col gap-2.5">
-            
-            {/* ROW 1: Customer Name + Status */}
-            <div className="flex items-start justify-between gap-3 w-full">
-              <span className="text-[14px] font-bold text-foreground leading-tight truncate">
+        <div onClick={() => !isDragging && onTap(order)} className="flex flex-col w-full p-3 gap-2.5">
+          
+          {/* ROW 1: Customer Name + Status */}
+          <div className="flex items-start justify-between gap-3 w-full">
+            <div className="flex-1 min-w-0">
+              <span className="text-[14px] font-bold text-foreground leading-tight truncate block">
                 {order.customerName}
               </span>
-              <Badge
-                variant="outline"
-                className={cn(
-                  'text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 gap-1.5 border shrink-0',
-                  status.color,
-                )}
-              >
-                <span className={cn('h-1.5 w-1.5 rounded-full', status.dot)} />
-                {status.label}
-              </Badge>
             </div>
-
-            {/* ROW 2: Order ID + Date */}
-            <div className="flex items-center gap-2.5 w-full">
-              <span className="font-mono text-[11px] text-muted-foreground/80 tracking-wider">
-                #{order.id.slice(-6).toUpperCase()}
-              </span>
-              <span className="h-3 w-px bg-border/60 shrink-0" />
-              <span className="text-[11px] text-muted-foreground/60 truncate">
-                {timeAgo(order.createdAt)}
-              </span>
-            </div>
-
-            {/* ROW 3: Stats + Total */}
-            <div className="flex justify-between items-center w-full bg-muted/20 border border-border/30 rounded-lg p-2.5 mt-0.5">
-              <div className="flex flex-col gap-1.5">
-                <span className="text-[11px] font-medium text-foreground flex items-center gap-1.5">
-                  <Package className="h-3.5 w-3.5 text-muted-foreground/70" />
-                  {itemCount} {itemCount === 1 ? 'item' : 'items'}
-                </span>
-                <span className="text-[10px] text-muted-foreground/80 flex items-center gap-1.5 font-medium">
-                  {order.deliveryMethod === 'PICKUP' ? (
-                    <MapPin className="h-3.5 w-3.5" />
-                  ) : (
-                    <Truck className="h-3.5 w-3.5" />
-                  )}
-                  {order.deliveryMethod === 'PICKUP' ? 'Pickup' : 'Delivery'}
-                </span>
-              </div>
-              <div className="flex flex-col items-end shrink-0">
-                <span className="text-[16px] font-extrabold text-foreground tabular-nums leading-none block" dir="ltr">
-                  {centsToMad(order.total)}
-                </span>
-                <span className="text-[9px] text-muted-foreground/60 font-bold uppercase mt-1 block tracking-wider">MAD</span>
-              </div>
-            </div>
-
-            {/* ROW 4: Inline Action Buttons */}
-            {canAct && (
-              <div className="flex items-center gap-2 pt-1 w-full">
-                {order.status === 'PENDING' && (
-                  <button 
-                    onClick={(e) => { e.stopPropagation(); onConfirm(order); }}
-                    className="flex-1 h-8 rounded border border-emerald-600/20 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 flex items-center justify-center gap-1.5 text-[11px] font-bold tracking-wide transition-colors"
-                  >
-                    <CheckCircle className="h-3 w-3" /> CONFIRM
-                  </button>
-                )}
-                <button 
-                  onClick={(e) => { e.stopPropagation(); onFlag(order); }}
-                  className="flex-1 h-8 rounded border border-rose-600/20 bg-rose-50 hover:bg-rose-100 text-rose-700 flex items-center justify-center gap-1.5 text-[11px] font-bold tracking-wide transition-colors"
-                >
-                  <Flag className="h-3 w-3" /> FLAG
-                </button>
-              </div>
-            )}
-            
+            <Badge
+              variant="outline"
+              className={cn(
+                'text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 gap-1.5 border shrink-0',
+                status.color
+              )}
+            >
+              <span className={cn('h-1.5 w-1.5 rounded-full', status.dot)} />
+              {status.label}
+            </Badge>
           </div>
+
+          {/* ROW 2: Order ID + Date */}
+          <div className="flex items-center gap-2.5 w-full">
+            <span className="font-mono text-[11px] text-muted-foreground/80 tracking-wider">
+              #{order.id.slice(-6).toUpperCase()}
+            </span>
+            <span className="h-3 w-px bg-border/60 shrink-0" />
+            <span className="text-[11px] text-muted-foreground/60 truncate flex-1 min-w-0">
+              {timeAgo(order.createdAt)}
+            </span>
+          </div>
+
+          {/* ROW 3: Stats + Total */}
+          <div className="flex justify-between items-center w-full bg-muted/20 border border-border/30 rounded-lg p-2.5 mt-0.5">
+            <div className="flex flex-col gap-1.5 min-w-0">
+              <span className="text-[11px] font-medium text-foreground flex items-center gap-1.5 truncate">
+                <Package className="h-3.5 w-3.5 text-muted-foreground/70 shrink-0" />
+                {itemCount} {itemCount === 1 ? 'item' : 'items'}
+              </span>
+              <span className="text-[10px] text-muted-foreground/80 flex items-center gap-1.5 font-medium truncate">
+                {order.deliveryMethod === 'PICKUP' ? (
+                  <MapPin className="h-3.5 w-3.5 shrink-0" />
+                ) : (
+                  <Truck className="h-3.5 w-3.5 shrink-0" />
+                )}
+                {order.deliveryMethod === 'PICKUP' ? 'Pickup' : 'Delivery'}
+              </span>
+            </div>
+            <div className="flex flex-col items-end shrink-0 pl-2">
+              <span className="text-[16px] font-extrabold text-foreground tabular-nums leading-none block" dir="ltr">
+                {centsToMad(order.total)}
+              </span>
+              <span className="text-[9px] text-muted-foreground/60 font-bold uppercase mt-1 block tracking-wider">MAD</span>
+            </div>
+          </div>
+
+          {/* ROW 4: Inline Action Buttons */}
+          {canAct && (
+            <div className="flex items-center gap-2 pt-1 w-full">
+              {order.status === 'PENDING' && (
+                <button 
+                  onClick={(e) => { e.stopPropagation(); onConfirm(order); }}
+                  className="flex-1 h-8 rounded-lg border border-emerald-600/20 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 flex items-center justify-center gap-1.5 text-[11px] font-bold tracking-wide transition-colors shrink-0"
+                >
+                  <CheckCircle className="h-3 w-3" /> CONFIRM
+                </button>
+              )}
+              <button 
+                onClick={(e) => { e.stopPropagation(); onFlag(order); }}
+                className="flex-1 h-8 rounded-lg border border-rose-600/20 bg-rose-50 hover:bg-rose-100 text-rose-700 flex items-center justify-center gap-1.5 text-[11px] font-bold tracking-wide transition-colors shrink-0"
+              >
+                <Flag className="h-3 w-3" /> FLAG
+              </button>
+            </div>
+          )}
+          
         </div>
       </motion.div>
     </div>
