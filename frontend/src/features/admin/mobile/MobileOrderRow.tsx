@@ -1,0 +1,114 @@
+'use client';
+
+import React from 'react';
+import { Package, Truck, MapPin, ChevronRight } from 'lucide-react';
+import type { ApiOrder, OrderStatus } from '@/lib/types';
+import { centsToMad } from '@/lib/types';
+import { cn } from '@/lib/utils';
+
+// ── Status styles ─────────────────────────────────────────────────────────────
+const STATUS_STYLES: Record<OrderStatus, { pill: string; dot: string; label: string }> = {
+  PENDING:   { pill: 'text-amber-700 bg-amber-50 border-amber-200',   dot: 'bg-amber-400',   label: 'Pending'   },
+  CONFIRMED: { pill: 'text-blue-700 bg-blue-50 border-blue-200',      dot: 'bg-blue-400',   label: 'Confirmed' },
+  DELIVERED: { pill: 'text-emerald-700 bg-emerald-50 border-emerald-200', dot: 'bg-emerald-400', label: 'Delivered' },
+  CANCELLED: { pill: 'text-rose-700 bg-rose-50 border-rose-200',      dot: 'bg-rose-400',   label: 'Cancelled' },
+};
+
+// ── Time-ago helper ───────────────────────────────────────────────────────────
+function timeAgo(dateStr: string): string {
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return 'just now';
+  if (mins < 60) return `${mins}m`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h`;
+  const days = Math.floor(hrs / 24);
+  return `${days}d`;
+}
+
+// ── Props ─────────────────────────────────────────────────────────────────────
+export interface MobileOrderRowProps {
+  order: ApiOrder;
+  onTap: (order: ApiOrder) => void;
+  isPending?: boolean;
+}
+
+/**
+ * MobileOrderRow — compact, single-row order entry for the mobile list.
+ *
+ * Design goals:
+ * - 100% viewport width, no clipping, no overflow
+ * - No swipe. No inline actions. Tap to open details.
+ * - 3-line layout: compact enough to show 8+ orders per screen.
+ * - Status badge always visible without interaction.
+ */
+export function MobileOrderRow({ order, onTap, isPending = false }: MobileOrderRowProps) {
+  const style = STATUS_STYLES[order.status];
+  const itemCount = order.items?.length ?? 0;
+
+  return (
+    <button
+      type="button"
+      onClick={() => onTap(order)}
+      disabled={isPending}
+      className={cn(
+        'w-full flex items-center gap-3 px-4 py-3',
+        'bg-card border-b border-border/40 text-start',
+        'active:bg-muted/40 transition-colors duration-100',
+        isPending && 'opacity-50 pointer-events-none',
+      )}
+    >
+      {/* Left: Status dot strip */}
+      <div className={cn('w-1 self-stretch rounded-full shrink-0', style.dot)} />
+
+      {/* Center: Main content */}
+      <div className="flex-1 min-w-0">
+        {/* Row 1: Name + Time */}
+        <div className="flex items-baseline justify-between gap-2">
+          <span className="text-[13.5px] font-semibold text-foreground truncate leading-snug">
+            {order.customerName}
+          </span>
+          <span className="text-[10px] text-muted-foreground/60 shrink-0 tabular-nums">
+            {timeAgo(order.createdAt)}
+          </span>
+        </div>
+
+        {/* Row 2: Order ID + Delivery + Items */}
+        <div className="flex items-center gap-2 mt-0.5">
+          <span className="font-mono text-[10px] text-muted-foreground/60 tracking-wide">
+            #{order.id.slice(-6).toUpperCase()}
+          </span>
+          <span className="text-muted-foreground/30">·</span>
+          <span className="text-[10px] text-muted-foreground/60 flex items-center gap-1">
+            {order.deliveryMethod === 'PICKUP'
+              ? <MapPin className="h-2.5 w-2.5 shrink-0" />
+              : <Truck className="h-2.5 w-2.5 shrink-0" />}
+            {order.deliveryMethod === 'PICKUP' ? 'Pickup' : 'Delivery'}
+          </span>
+          <span className="text-muted-foreground/30">·</span>
+          <span className="text-[10px] text-muted-foreground/60 flex items-center gap-1">
+            <Package className="h-2.5 w-2.5 shrink-0" />
+            {itemCount}
+          </span>
+        </div>
+
+        {/* Row 3: Status pill + Total */}
+        <div className="flex items-center justify-between mt-1.5 gap-2">
+          <span className={cn(
+            'inline-flex items-center gap-1 text-[9.5px] font-bold uppercase tracking-wider',
+            'border rounded-full px-1.5 py-0.5',
+            style.pill,
+          )}>
+            {style.label}
+          </span>
+          <span className="text-[13px] font-bold text-foreground tabular-nums" dir="ltr">
+            {centsToMad(order.total)}<span className="text-[9px] font-medium text-muted-foreground ml-0.5">MAD</span>
+          </span>
+        </div>
+      </div>
+
+      {/* Right: Chevron */}
+      <ChevronRight className="h-4 w-4 text-muted-foreground/30 shrink-0" />
+    </button>
+  );
+}

@@ -26,11 +26,12 @@ const MobileOrdersView = dynamic(
   { ssr: false }
 );
 
-// Lazy-load the QuickView drawer
-const OrderQuickEditDrawer = dynamic(
-  () => import('@/features/admin/mobile/OrderQuickEditDrawer').then((m) => ({ default: m.OrderQuickEditDrawer })),
+// Lazy-load the order detail sheet (used on desktop too for quick preview)
+const OrderDetailSheet = dynamic(
+  () => import('@/features/admin/mobile/OrderDetailSheet').then((m) => ({ default: m.OrderDetailSheet })),
   { ssr: false }
 );
+
 
 export default function OrdersAdmin() {
   const { toast } = useToast();
@@ -201,12 +202,12 @@ export default function OrdersAdmin() {
         </div>
       </div>
 
-      {/* QuickView Drawer */}
-      <OrderQuickEditDrawer
+      {/* QuickView Drawer (also used as mobile bottom sheet from desktop) */}
+      <OrderDetailSheet
         order={selectedOrder}
         open={drawerOpen}
         onClose={() => setDrawerOpen(false)}
-        onUpdateStatus={(id, status) => updateStatus.mutate({ id, status })}
+        onUpdateStatus={(id: string, status: OrderStatus) => updateStatus.mutate({ id, status })}
         isPending={updateStatus.isPending}
       />
     </div>

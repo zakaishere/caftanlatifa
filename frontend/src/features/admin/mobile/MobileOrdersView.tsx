@@ -1,48 +1,44 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
-import { motion } from 'framer-motion';
-import { ShoppingBag, Loader2, RefreshCw, Flag } from 'lucide-react';
+import { Search, ShoppingBag, RefreshCw, X } from 'lucide-react';
 import { apiRequest, queryClient } from '@/lib/queryClient';
 import type { ApiOrder, OrderStatus } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from '@/i18n/provider';
-import { MobileOrderCard } from './MobileOrderCard';
-import { OrderQuickEditDrawer } from './OrderQuickEditDrawer';
 import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
+import { MobileOrderRow } from './MobileOrderRow';
+import { OrderDetailSheet } from './OrderDetailSheet';
 
-// ── Status filter tabs ────────────────────────────────────────────────────────
-const STATUS_TABS = [
-  { key: null,        label: 'All' },
-  { key: 'PENDING',   label: 'Pending' },
+// ── Filter config ─────────────────────────────────────────────────────────────
+const STATUS_FILTERS: { key: OrderStatus | null; label: string }[] = [
+  { key: null,        label: 'All'       },
+  { key: 'PENDING',   label: 'Pending'   },
   { key: 'CONFIRMED', label: 'Confirmed' },
   { key: 'DELIVERED', label: 'Delivered' },
   { key: 'CANCELLED', label: 'Cancelled' },
-] as const;
+];
 
-type FilterKey = typeof STATUS_TABS[number]['key'];
+// ── Count badge ───────────────────────────────────────────────────────────────
+const STATUS_COUNTS_STYLE: Record<OrderStatus, string> = {
+  PENDING:   'bg-amber-100 text-amber-700',
+  CONFIRMED: 'bg-blue-100 text-blue-700',
+  DELIVERED: 'bg-emerald-100 text-emerald-700',
+  CANCELLED: 'bg-rose-100 text-rose-700',
+};
 
-// ── Skeleton card ─────────────────────────────────────────────────────────────
-function OrderCardSkeleton() {
+// ── Skeleton ──────────────────────────────────────────────────────────────────
+function RowSkeleton() {
   return (
-    <div className="bg-card border border-border/40 rounded-xl overflow-hidden animate-pulse">
-      <div className="flex items-center justify-between px-4 pt-3.5 pb-2.5 border-b border-border/30">
-        <div className="flex items-center gap-2">
-          <div className="h-3 w-16 rounded bg-muted" />
-          <div className="h-3 w-12 rounded bg-muted/60" />
-        </div>
-        <div className="h-5 w-20 rounded-full bg-muted" />
+    <div className="flex items-center gap-3 px-4 py-3 border-b border-border/30 animate-pulse">
+      <div className="w-1 h-10 rounded-full bg-muted shrink-0" />
+      <div className="flex-1 space-y-1.5">
+        <div className="h-3 w-2/3 rounded bg-muted" />
+        <div className="h-2.5 w-1/2 rounded bg-muted/60" />
+        <div className="h-2.5 w-1/3 rounded bg-muted/40" />
       </div>
-      <div className="px-4 py-3 flex items-start justify-between gap-3">
-        <div className="flex-1 space-y-2">
-          <div className="h-4 w-32 rounded bg-muted" />
-          <div className="h-3 w-24 rounded bg-muted/60" />
-          <div className="h-3 w-16 rounded bg-muted/50" />
-        </div>
-        <div className="h-7 w-20 rounded bg-muted" />
-      </div>
+      <div className="h-3 w-3 rounded bg-muted/40 shrink-0" />
     </div>
   );
 }
@@ -51,15 +47,19 @@ function OrderCardSkeleton() {
 export function MobileOrdersView() {
   const { toast } = useToast();
   const { t } = useTranslation();
+
+  // UI state
   const [selectedOrder, setSelectedOrder] = useState<ApiOrder | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [activeFilter, setActiveFilter] = useState<FilterKey>(null);
-  const [flaggedIds, setFlaggedIds] = useState<Set<string>>(new Set());
+  const [activeFilter, setActiveFilter] = useState<OrderStatus | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
+  // Data
   const { data: orders = [], isLoading, refetch, isFetching } = useQuery<ApiOrder[]>({
     queryKey: ['/api/admin/orders'],
   });
 
+  // Mutation
   const updateStatus = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: OrderStatus }) => {
       const res = await apiRequest('PATCH', `/api/admin/orders/${id}/status`, { status });
@@ -69,10 +69,10 @@ export function MobileOrdersView() {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/orders'] });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/stats'] });
       setDrawerOpen(false);
-      toast({ title: t('admin.orders.toast.statusUpdated') });
+      toast({ title: 'Order status updated' });
     },
     onError: (err: Error) => {
-      toast({ title: t('admin.orders.toast.errorTitle'), description: err.message, variant: 'destructive' });
+      toast({ title: 'Update failed', description: err.message, variant: 'destructive' });
     },
   });
 
@@ -81,164 +81,189 @@ export function MobileOrdersView() {
     setDrawerOpen(true);
   }, []);
 
-  const handleConfirm = useCallback((order: ApiOrder) => {
-    if (order.status === 'PENDING') {
-      updateStatus.mutate({ id: order.id, status: 'CONFIRMED' });
-      toast({ title: `#${order.id.slice(-6).toUpperCase()} confirmed` });
+  const handleUpdateStatus = useCallback((id: string, status: OrderStatus) => {
+    updateStatus.mutate({ id, status });
+  }, [updateStatus]);
+
+  // Filtering + Searching + Sorting (all client-side — data set is small)
+  const displayedOrders = useMemo(() => {
+    let result = [...orders];
+
+    // Search: name, order id, phone
+    if (searchQuery.trim()) {
+      const q = searchQuery.trim().toLowerCase();
+      result = result.filter((o) =>
+        o.customerName.toLowerCase().includes(q) ||
+        o.id.toLowerCase().includes(q) ||
+        (o.phone || '').toLowerCase().includes(q)
+      );
     }
-  }, [updateStatus, toast]);
 
-  const handleFlag = useCallback((order: ApiOrder) => {
-    setFlaggedIds((prev) => {
-      const next = new Set(prev);
-      next.has(order.id) ? next.delete(order.id) : next.add(order.id);
-      return next;
+    // Status chip filter
+    if (activeFilter) {
+      result = result.filter((o) => o.status === activeFilter);
+    }
+
+    // Sort: PENDING first, then newest
+    result.sort((a, b) => {
+      if (a.status === 'PENDING' && b.status !== 'PENDING') return -1;
+      if (b.status === 'PENDING' && a.status !== 'PENDING') return 1;
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
     });
-    toast({ title: `#${order.id.slice(-6).toUpperCase()} flagged for review` });
-  }, [toast]);
 
-  // Filter by tab
-  const filteredOrders = activeFilter
-    ? orders.filter((o) => o.status === activeFilter)
-    : orders;
+    return result;
+  }, [orders, searchQuery, activeFilter]);
 
-  // Sort: PENDING first, then by date desc
-  const sortedOrders = [...filteredOrders].sort((a, b) => {
-    if (a.status === 'PENDING' && b.status !== 'PENDING') return -1;
-    if (b.status === 'PENDING' && a.status !== 'PENDING') return 1;
-    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-  });
+  // Count badges per status
+  const counts = useMemo(() => {
+    const map: Record<string, number> = { all: orders.length };
+    for (const o of orders) {
+      map[o.status] = (map[o.status] || 0) + 1;
+    }
+    return map;
+  }, [orders]);
 
-  const pendingCount = orders.filter((o) => o.status === 'PENDING').length;
+  const pendingCount = counts['PENDING'] ?? 0;
 
   return (
-    <div className="min-h-full pb-28 w-full max-w-full overflow-x-hidden box-border">
-      {/* ── Page header ── */}
-      <div className="flex items-center justify-between mb-3 mt-1">
-        <div>
-          <h1 className="text-lg font-semibold tracking-tight text-foreground">
-            Orders
-          </h1>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            {orders.length} total
-            {pendingCount > 0 && (
-              <span className="ml-1.5 text-amber-600 font-medium">· {pendingCount} pending</span>
-            )}
-          </p>
-        </div>
+    // Strictly no overflow-x. The bottom padding provides space above the mobile bottom nav.
+    <div className="w-full max-w-full overflow-x-hidden min-h-full pb-28">
 
-        <button
-          onClick={() => refetch()}
-          disabled={isFetching}
-          className={cn(
-            'h-9 w-9 rounded-lg flex items-center justify-center',
-            'border border-border/50 bg-card text-muted-foreground',
-            'hover:bg-muted transition-colors',
-          )}
-        >
-          <RefreshCw className={cn('h-4 w-4', isFetching && 'animate-spin')} />
-        </button>
-      </div>
+      {/* ── Sticky command bar ── */}
+      <div className="sticky top-0 z-30 bg-background/95 backdrop-blur-sm border-b border-border/40">
 
-      {/* ── Flagged banner ── */}
-      {flaggedIds.size > 0 && (
-        <div className="flex items-center gap-2 px-2.5 py-1.5 mb-2.5 bg-rose-50 border border-rose-200 rounded-lg">
-          <Flag className="h-3 w-3 text-rose-500 shrink-0" />
-          <p className="text-[11px] text-rose-700 font-medium tracking-tight">
-            {flaggedIds.size} order{flaggedIds.size > 1 ? 's' : ''} flagged for review
-          </p>
-          <button
-            onClick={() => setFlaggedIds(new Set())}
-            className="ml-auto text-[11px] text-rose-500 font-medium"
-          >
-            Clear
-          </button>
-        </div>
-      )}
-
-      {/* ── Filter tabs (horizontal scroll) ── */}
-      <div className="flex gap-2 overflow-x-auto pb-2 mb-4 scrollbar-none w-full max-w-full">
-        {STATUS_TABS.map(({ key, label }) => {
-          const count = key
-            ? orders.filter((o) => o.status === key).length
-            : orders.length;
-          const isActive = activeFilter === key;
-
-          return (
-            <button
-              key={String(key)}
-              onClick={() => setActiveFilter(key)}
-              className={cn(
-                'shrink-0 flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium transition-all',
-                isActive
-                  ? 'bg-foreground text-background shadow-sm'
-                  : 'bg-muted/60 text-muted-foreground hover:bg-muted',
-              )}
-            >
-              {label}
-              <span className={cn(
-                'text-[9px] font-bold px-1.5 py-[1px] rounded-full',
-                isActive ? 'bg-background/20 text-background' : 'bg-background/80 text-muted-foreground',
-              )}>
-                {count}
-              </span>
-            </button>
-          );
-        })}
-      </div>
-
-      {/* ── Order card list ── */}
-      {isLoading ? (
-        <div className="space-y-3 w-full">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <OrderCardSkeleton key={i} />
-          ))}
-        </div>
-      ) : sortedOrders.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 gap-3 text-center">
-          <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center">
-            <ShoppingBag className="h-6 w-6 text-muted-foreground/40" />
-          </div>
+        {/* Page title row */}
+        <div className="flex items-center justify-between px-4 pt-4 pb-2">
           <div>
-            <p className="text-sm font-medium text-foreground">No orders</p>
-            <p className="text-xs text-muted-foreground mt-1">
-              {activeFilter ? 'Try a different filter' : 'Orders will appear here'}
+            <h1 className="text-[17px] font-bold tracking-tight text-foreground">Orders</h1>
+            <p className="text-[11px] text-muted-foreground mt-0.5">
+              {orders.length} total
+              {pendingCount > 0 && (
+                <span className="ml-1.5 text-amber-600 font-semibold">· {pendingCount} pending</span>
+              )}
             </p>
           </div>
-          {activeFilter && (
-            <Button variant="outline" size="sm" onClick={() => setActiveFilter(null)} className="h-8 text-xs mt-1">
-              Show all
-            </Button>
+
+          <button
+            onClick={() => refetch()}
+            disabled={isFetching}
+            aria-label="Refresh orders"
+            className="h-9 w-9 rounded-xl flex items-center justify-center border border-border/50 bg-card active:bg-muted transition-colors"
+          >
+            <RefreshCw className={cn('h-4 w-4 text-muted-foreground', isFetching && 'animate-spin')} />
+          </button>
+        </div>
+
+        {/* Search input */}
+        <div className="px-4 pb-2.5">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground/50" />
+            <input
+              type="search"
+              placeholder="Search name, ID, or phone…"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className={cn(
+                'w-full h-9 rounded-xl pl-9 pr-9 text-[13px]',
+                'bg-muted/40 border border-border/30',
+                'placeholder:text-muted-foreground/40 text-foreground',
+                'focus:outline-none focus:ring-1 focus:ring-ring focus:bg-background',
+                'transition-colors',
+              )}
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground/40 hover:text-muted-foreground"
+                aria-label="Clear search"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Status filter chips */}
+        <div className="flex gap-1.5 px-4 pb-3 overflow-x-auto scrollbar-none">
+          {STATUS_FILTERS.map(({ key, label }) => {
+            const count = key ? (counts[key] ?? 0) : counts.all;
+            const isActive = activeFilter === key;
+            const countStyle = key && !isActive ? STATUS_COUNTS_STYLE[key] : '';
+
+            return (
+              <button
+                key={String(key)}
+                onClick={() => setActiveFilter(key)}
+                className={cn(
+                  'shrink-0 flex items-center gap-1.5 h-7 px-3 rounded-full',
+                  'text-[11px] font-semibold transition-all whitespace-nowrap',
+                  isActive
+                    ? 'bg-foreground text-background shadow-sm'
+                    : 'bg-muted/60 text-muted-foreground hover:bg-muted active:bg-muted',
+                )}
+              >
+                {label}
+                <span className={cn(
+                  'text-[9px] font-bold px-1 py-0.5 rounded-full min-w-[16px] text-center',
+                  isActive ? 'bg-white/20 text-background' : cn('bg-background', countStyle || 'text-muted-foreground'),
+                )}>
+                  {count}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* ── Order list ── */}
+      {isLoading ? (
+        <div>
+          {Array.from({ length: 8 }).map((_, i) => <RowSkeleton key={i} />)}
+        </div>
+      ) : displayedOrders.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-20 gap-3 text-center px-6">
+          <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center">
+            <ShoppingBag className="h-6 w-6 text-muted-foreground/30" />
+          </div>
+          <div>
+            <p className="text-[14px] font-semibold text-foreground">No orders found</p>
+            <p className="text-[12px] text-muted-foreground mt-1">
+              {searchQuery || activeFilter ? 'Try clearing your filters' : 'Orders will appear here'}
+            </p>
+          </div>
+          {(searchQuery || activeFilter) && (
+            <button
+              onClick={() => { setSearchQuery(''); setActiveFilter(null); }}
+              className="text-[12px] font-semibold text-primary underline underline-offset-2 mt-1"
+            >
+              Clear all filters
+            </button>
           )}
         </div>
       ) : (
-        <motion.div className="space-y-3 w-full pb-6">
-          {sortedOrders.map((order, i) => (
-            <motion.div
+        <div className="w-full">
+          {displayedOrders.map((order) => (
+            <MobileOrderRow
               key={order.id}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.03, duration: 0.2 }}
-              className="w-full block"
-            >
-              <MobileOrderCard
-                order={order}
-                onTap={handleTap}
-                onConfirm={handleConfirm}
-                onFlag={handleFlag}
-                isPending={updateStatus.isPending && updateStatus.variables?.id === order.id}
-              />
-            </motion.div>
+              order={order}
+              onTap={handleTap}
+              isPending={updateStatus.isPending && updateStatus.variables?.id === order.id}
+            />
           ))}
-        </motion.div>
+          {displayedOrders.length > 0 && (
+            <p className="text-center text-[10px] text-muted-foreground/40 py-6">
+              {displayedOrders.length} order{displayedOrders.length !== 1 ? 's' : ''}
+            </p>
+          )}
+        </div>
       )}
 
-      {/* ── Quick edit drawer ── */}
-      <OrderQuickEditDrawer
+      {/* ── Detail sheet ── */}
+      <OrderDetailSheet
         order={selectedOrder}
         open={drawerOpen}
         onClose={() => setDrawerOpen(false)}
-        onUpdateStatus={(id, status) => updateStatus.mutate({ id, status })}
+        onUpdateStatus={handleUpdateStatus}
         isPending={updateStatus.isPending}
       />
     </div>
