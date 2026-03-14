@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import type { ApiOrder, ApiOrderItem, OrderStatus } from '@/lib/types';
 import { centsToMad } from '@/lib/types';
 import { cn } from '@/lib/utils';
+import { useMediaQuery } from '@/hooks/use-media-query';
 
 // ── Status config ─────────────────────────────────────────────────────────────
 const STATUS_STYLES: Record<OrderStatus, { label: string; color: string; dot: string }> = {
@@ -101,6 +102,15 @@ export function OrderDetailSheet({
 }: OrderDetailSheetProps) {
   const status = order ? STATUS_STYLES[order.status] : null;
   const canAct = order && (order.status === 'PENDING' || order.status === 'CONFIRMED');
+  const isDesktop = useMediaQuery('(min-width: 1024px)');
+
+  const variants = isDesktop ? {
+    hidden: { x: '100%', y: 0 },
+    visible: { x: 0, y: 0 },
+  } : {
+    hidden: { y: '100%', x: 0 },
+    visible: { y: 0, x: 0 },
+  };
 
   return (
     <AnimatePresence>
@@ -117,26 +127,32 @@ export function OrderDetailSheet({
             onClick={onClose}
           />
 
-          {/* Sheet — mobile: slides from bottom. desktop: slides from right via CSS */}
+          {/* Sheet/Drawer */}
           <motion.div
             key="sheet"
-            initial={{ y: '100%' }}
-            animate={{ y: 0 }}
-            exit={{ y: '100%' }}
-            transition={{ type: 'spring', stiffness: 380, damping: 36, mass: 0.9 }}
+            variants={variants}
+            initial="hidden"
+            animate="visible"
+            exit="hidden"
+            transition={{ duration: 0.3, ease: 'easeOut' }}
             className={cn(
-              // Base — full-screen bottom sheet on mobile
-              'fixed inset-x-0 bottom-0 z-[60] bg-background flex flex-col',
-              'h-[92svh] max-h-[92svh] rounded-t-2xl',
-              // Desktop — right drawer
-              'md:inset-x-auto md:inset-y-0 md:right-0 md:left-auto',
-              'md:h-svh md:max-h-svh md:w-[420px] md:rounded-none md:translate-y-0',
-              'md:border-l md:border-border/40',
+              // Common
+              'fixed z-[60] bg-background flex flex-col',
+              'shadow-2xl overflow-hidden',
+              
+              // Mobile (<1024px): Bottom sheet
+              'max-lg:inset-x-0 max-lg:bottom-0',
+              'max-lg:h-[85svh] max-lg:max-h-[85svh] max-lg:w-full',
+              'max-lg:rounded-t-[20px]',
+              
+              // Desktop (>=1024px): Right drawer
+              'lg:inset-y-0 lg:right-0',
+              'lg:h-svh lg:max-h-svh lg:w-[440px]',
+              'lg:border-l lg:border-border/40',
             )}
-            style={{ boxShadow: '0 -12px 40px -8px rgb(0 0 0 / 0.15)' }}
           >
             {/* Drag handle (mobile only) */}
-            <div className="flex justify-center pt-3 pb-0 shrink-0 md:hidden">
+            <div className="flex justify-center pt-3 pb-0 shrink-0 lg:hidden">
               <div className="h-1 w-10 rounded-full bg-muted-foreground/20" />
             </div>
 
@@ -146,7 +162,7 @@ export function OrderDetailSheet({
                 onClick={onClose}
                 className="h-8 w-8 rounded-full flex items-center justify-center bg-muted hover:bg-muted/80 transition-colors shrink-0"
               >
-                <ArrowLeft className="h-4 w-4 text-foreground" />
+                <X className="h-4 w-4 text-foreground" />
               </button>
 
               <div className="flex-1 min-w-0">
