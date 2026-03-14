@@ -26,9 +26,9 @@ const MobileOrdersView = dynamic(
   { ssr: false }
 );
 
-// Lazy-load the order detail sheet (used on desktop too for quick preview)
-const OrderDetailSheet = dynamic(
-  () => import('@/features/admin/mobile/OrderDetailSheet').then((m) => ({ default: m.OrderDetailSheet })),
+// Lazy-load the order detail drawer (used on desktop for quick preview)
+const DesktopOrderDrawer = dynamic(
+  () => import('@/features/admin/mobile/DesktopOrderDrawer').then((m) => ({ default: m.DesktopOrderDrawer })),
   { ssr: false }
 );
 
@@ -201,8 +201,8 @@ export default function OrdersAdmin() {
         </div>
       </div>
 
-      {/* QuickView Drawer (also used as mobile bottom sheet from desktop) */}
-      <OrderDetailSheet
+      {/* QuickView Drawer (Desktop right-side panel) */}
+      <DesktopOrderDrawer
         order={selectedOrder}
         open={drawerOpen}
         onClose={() => setDrawerOpen(false)}

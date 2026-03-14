@@ -8,7 +8,7 @@ import type { ApiOrder, OrderStatus } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { MobileOrderRow } from './MobileOrderRow';
-import { OrderDetailSheet } from './OrderDetailSheet';
+import { MobileOrderSheet } from './MobileOrderSheet';
 
 // ── Filter config ─────────────────────────────────────────────────────────────
 const STATUS_FILTERS: { key: OrderStatus | null; label: string }[] = [
@@ -263,7 +263,7 @@ export function MobileOrdersView() {
       )}
 
       {/* ── Detail sheet ── */}
-      <OrderDetailSheet
+      <MobileOrderSheet
         order={selectedOrder}
         open={drawerOpen}
         onClose={() => setDrawerOpen(false)}
