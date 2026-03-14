@@ -1,15 +1,11 @@
 'use client';
 
-import { useState, useCallback, useMemo } from 'react';
-import { useQuery, useMutation } from '@tanstack/react-query';
+import { useState, useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Search, ShoppingBag, RefreshCw, X } from 'lucide-react';
-import { apiRequest, queryClient } from '@/lib/queryClient';
 import type { ApiOrder, OrderStatus } from '@/lib/types';
-import { useToast } from '@/hooks/use-toast';
-import { useTranslation } from '@/i18n/provider';
 import { cn } from '@/lib/utils';
 import { MobileOrderRow } from './MobileOrderRow';
-import { OrderDetailSheet } from './OrderDetailSheet';
 
 // ── Filter config ─────────────────────────────────────────────────────────────
 const STATUS_FILTERS: { key: OrderStatus | null; label: string }[] = [
@@ -45,12 +41,7 @@ function RowSkeleton() {
 
 // ── Component ─────────────────────────────────────────────────────────────────
 export function MobileOrdersView() {
-  const { toast } = useToast();
-  const { t } = useTranslation();
-
-  // UI state
-  const [selectedOrder, setSelectedOrder] = useState<ApiOrder | null>(null);
-  const [drawerOpen, setDrawerOpen] = useState(false);
+  // UI state — drawer and mutation have moved to the detail page
   const [activeFilter, setActiveFilter] = useState<OrderStatus | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -58,32 +49,6 @@ export function MobileOrdersView() {
   const { data: orders = [], isLoading, refetch, isFetching } = useQuery<ApiOrder[]>({
     queryKey: ['/api/admin/orders'],
   });
-
-  // Mutation
-  const updateStatus = useMutation({
-    mutationFn: async ({ id, status }: { id: string; status: OrderStatus }) => {
-      const res = await apiRequest('PATCH', `/api/admin/orders/${id}/status`, { status });
-      return res.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/orders'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/stats'] });
-      setDrawerOpen(false);
-      toast({ title: 'Order status updated' });
-    },
-    onError: (err: Error) => {
-      toast({ title: 'Update failed', description: err.message, variant: 'destructive' });
-    },
-  });
-
-  const handleTap = useCallback((order: ApiOrder) => {
-    setSelectedOrder(order);
-    setDrawerOpen(true);
-  }, []);
-
-  const handleUpdateStatus = useCallback((id: string, status: OrderStatus) => {
-    updateStatus.mutate({ id, status });
-  }, [updateStatus]);
 
   // Filtering + Searching + Sorting (all client-side — data set is small)
   const displayedOrders = useMemo(() => {
@@ -252,8 +217,6 @@ export function MobileOrdersView() {
             <MobileOrderRow
               key={order.id}
               order={order}
-              onTap={handleTap}
-              isPending={updateStatus.isPending && updateStatus.variables?.id === order.id}
             />
           ))}
           {displayedOrders.length > 0 && (
@@ -263,15 +226,6 @@ export function MobileOrdersView() {
           )}
         </div>
       )}
-
-      {/* ── Detail sheet ── */}
-      <OrderDetailSheet
-        order={selectedOrder}
-        open={drawerOpen}
-        onClose={() => setDrawerOpen(false)}
-        onUpdateStatus={handleUpdateStatus}
-        isPending={updateStatus.isPending}
-      />
     </div>
   );
 }
