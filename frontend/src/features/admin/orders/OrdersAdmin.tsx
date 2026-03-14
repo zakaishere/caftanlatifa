@@ -26,11 +26,8 @@ const MobileOrdersView = dynamic(
   { ssr: false }
 );
 
-// Lazy-load the order detail drawer (used on desktop for quick preview)
-const DesktopOrderDrawer = dynamic(
-  () => import('@/features/admin/mobile/DesktopOrderDrawer').then((m) => ({ default: m.DesktopOrderDrawer })),
-  { ssr: false }
-);
+// Import the unified order detail drawer (used on desktop & mobile)
+import { OrderDetailsDrawer } from './OrderDetailsDrawer';
 
 export default function OrdersAdmin() {
   const { toast } = useToast();
@@ -144,7 +141,10 @@ export default function OrdersAdmin() {
     <div className="flex flex-col h-full min-h-screen md:min-h-0">
       {/* ── Mobile View ────────────────────────────────────────── */}
       <div className="md:hidden">
-        <MobileOrdersView />
+        <MobileOrdersView 
+          onViewOrder={handleViewOrder} 
+          isPendingId={updateStatus.isPending ? updateStatus.variables?.id : null}
+        />
       </div>
 
       {/* ── Desktop View ───────────────────────────────────────── */}
@@ -201,8 +201,8 @@ export default function OrdersAdmin() {
         </div>
       </div>
 
-      {/* QuickView Drawer (Desktop right-side panel) */}
-      <DesktopOrderDrawer
+      {/* Unified QuickView Drawer (Desktop right-side panel, Mobile bottom sheet) */}
+      <OrderDetailsDrawer
         order={selectedOrder}
         open={drawerOpen}
         onClose={() => setDrawerOpen(false)}
