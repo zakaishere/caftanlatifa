@@ -1,13 +1,10 @@
 'use client';
 
 import React from 'react';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
 import { Package, Truck, MapPin, ChevronRight } from 'lucide-react';
 import type { ApiOrder, OrderStatus } from '@/lib/types';
 import { centsToMad } from '@/lib/types';
 import { cn } from '@/lib/utils';
-import { i18n } from '@/i18n/config';
 
 // ── Status styles ─────────────────────────────────────────────────────────────
 const STATUS_STYLES: Record<OrderStatus, { pill: string; dot: string; label: string }> = {
@@ -31,8 +28,7 @@ function timeAgo(dateStr: string): string {
 // ── Props ─────────────────────────────────────────────────────────────────────
 export interface MobileOrderRowProps {
   order: ApiOrder;
-  /** @deprecated use Link navigation — this prop is kept for backward compat but ignored */
-  onTap?: (order: ApiOrder) => void;
+  onTap: (order: ApiOrder) => void;
   isPending?: boolean;
 }
 
@@ -42,26 +38,20 @@ export interface MobileOrderRowProps {
  * Navigation: uses Next.js <Link> for instant client-side route push.  
  * No swipe, no drawer, no onClick state. Tapping gives the full detail page.
  */
-export function MobileOrderRow({ order, isPending = false }: MobileOrderRowProps) {
-  const pathname = usePathname();
-  const locale = i18n.locales.find(
-    (l) => pathname.startsWith(`/${l}/`) || pathname === `/${l}`
-  ) ?? i18n.defaultLocale;
-
-  const href = `/${locale}/admin/orders/${order.id}`;
+export function MobileOrderRow({ order, onTap, isPending = false }: MobileOrderRowProps) {
   const style = STATUS_STYLES[order.status];
   const itemCount = order.items?.length ?? 0;
 
   return (
-    <Link
-      href={href}
-      prefetch={false}
+    <button
+      type="button"
+      onClick={() => onTap(order)}
+      disabled={isPending}
       className={cn(
         // w-full + box-border = never wider than parent
         'w-full flex items-center gap-3 px-4 py-3 box-border',
-        'bg-card border-b border-border/40',
+        'bg-card border-b border-border/40 text-start',
         'active:bg-muted/40 transition-colors duration-100',
-        'no-underline',
         isPending && 'opacity-50 pointer-events-none',
       )}
     >
@@ -116,6 +106,6 @@ export function MobileOrderRow({ order, isPending = false }: MobileOrderRowProps
 
       {/* Right: Chevron */}
       <ChevronRight className="h-4 w-4 text-muted-foreground/30 shrink-0" />
-    </Link>
+    </button>
   );
 }

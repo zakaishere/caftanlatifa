@@ -1,15 +1,13 @@
 "use client";
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
-import { useRouter, usePathname } from 'next/navigation';
-import { Plus, Download } from 'lucide-react';
+import { Loader2, Plus, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { apiRequest, queryClient } from '@/lib/queryClient';
 import type { ApiOrder, OrderStatus } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from '@/i18n/provider';
-import { i18n } from '@/i18n/config';
 import dynamic from 'next/dynamic';
 
 // Shared Table Infrastructure
@@ -28,20 +26,20 @@ const MobileOrdersView = dynamic(
   { ssr: false }
 );
 
+// Lazy-load the order detail sheet (used on desktop too for quick preview)
+const OrderDetailSheet = dynamic(
+  () => import('@/features/admin/mobile/OrderDetailSheet').then((m) => ({ default: m.OrderDetailSheet })),
+  { ssr: false }
+);
 
 export default function OrdersAdmin() {
   const { toast } = useToast();
   const { t } = useTranslation();
-  const router = useRouter();
-  const pathname = usePathname();
-
-  // Derive locale
-  const locale = i18n.locales.find(
-    (l) => pathname.startsWith(`/${l}/`) || pathname === `/${l}`
-  ) ?? i18n.defaultLocale;
-
+  
   // State Manager
   const tableState = useOrderTableState();
+  const [selectedOrder, setSelectedOrder] = useState<ApiOrder | null>(null);
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   // Data Fetching
   const { data: allOrders = [], isLoading } = useQuery<ApiOrder[]>({
@@ -135,9 +133,9 @@ export default function OrdersAdmin() {
     },
   });
 
-  // Navigate to the order detail page — instant client-side navigation via Next.js router
   const handleViewOrder = (order: ApiOrder) => {
-    router.push(`/${locale}/admin/orders/${order.id}`);
+    setSelectedOrder(order);
+    setDrawerOpen(true);
   };
 
   const columns = useOrderColumns(handleViewOrder, (id, status) => updateStatus.mutate({ id, status }));
@@ -203,6 +201,14 @@ export default function OrdersAdmin() {
         </div>
       </div>
 
+      {/* QuickView Drawer (also used as mobile bottom sheet from desktop) */}
+      <OrderDetailSheet
+        order={selectedOrder}
+        open={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+        onUpdateStatus={(id: string, status: OrderStatus) => updateStatus.mutate({ id, status })}
+        isPending={updateStatus.isPending}
+      />
     </div>
   );
 }
