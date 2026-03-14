@@ -52,7 +52,8 @@ export function MobileOrderRow({ order, onTap, isPending = false }: MobileOrderR
       onClick={() => onTap(order)}
       disabled={isPending}
       className={cn(
-        'w-full flex items-center gap-3 px-4 py-3',
+        // w-full + box-border = never wider than parent, padding included in width
+        'w-full flex items-center gap-3 px-4 py-3 box-border',
         'bg-card border-b border-border/40 text-start',
         'active:bg-muted/40 transition-colors duration-100',
         isPending && 'opacity-50 pointer-events-none',
@@ -61,47 +62,47 @@ export function MobileOrderRow({ order, onTap, isPending = false }: MobileOrderR
       {/* Left: Status dot strip */}
       <div className={cn('w-1 self-stretch rounded-full shrink-0', style.dot)} />
 
-      {/* Center: Main content */}
-      <div className="flex-1 min-w-0">
+      {/* Center: Main content — min-w-0 is REQUIRED to prevent flex child from overflowing */}
+      <div className="flex-1 min-w-0 overflow-hidden">
         {/* Row 1: Name + Time */}
-        <div className="flex items-baseline justify-between gap-2">
-          <span className="text-[13.5px] font-semibold text-foreground truncate leading-snug">
+        <div className="flex items-baseline justify-between gap-2 w-full min-w-0">
+          <span className="text-[13.5px] font-semibold text-foreground truncate leading-snug min-w-0 flex-1">
             {order.customerName}
           </span>
-          <span className="text-[10px] text-muted-foreground/60 shrink-0 tabular-nums">
+          <span className="text-[10px] text-muted-foreground/60 shrink-0 tabular-nums whitespace-nowrap">
             {timeAgo(order.createdAt)}
           </span>
         </div>
 
         {/* Row 2: Order ID + Delivery + Items */}
-        <div className="flex items-center gap-2 mt-0.5">
-          <span className="font-mono text-[10px] text-muted-foreground/60 tracking-wide">
+        <div className="flex items-center gap-1.5 mt-0.5 min-w-0 overflow-hidden">
+          <span className="font-mono text-[10px] text-muted-foreground/60 tracking-wide shrink-0">
             #{order.id.slice(-6).toUpperCase()}
           </span>
-          <span className="text-muted-foreground/30">·</span>
-          <span className="text-[10px] text-muted-foreground/60 flex items-center gap-1">
+          <span className="text-muted-foreground/30 shrink-0">·</span>
+          <span className="text-[10px] text-muted-foreground/60 flex items-center gap-0.5 shrink-0">
             {order.deliveryMethod === 'PICKUP'
               ? <MapPin className="h-2.5 w-2.5 shrink-0" />
               : <Truck className="h-2.5 w-2.5 shrink-0" />}
             {order.deliveryMethod === 'PICKUP' ? 'Pickup' : 'Delivery'}
           </span>
-          <span className="text-muted-foreground/30">·</span>
-          <span className="text-[10px] text-muted-foreground/60 flex items-center gap-1">
+          <span className="text-muted-foreground/30 shrink-0">·</span>
+          <span className="text-[10px] text-muted-foreground/60 flex items-center gap-0.5 shrink-0">
             <Package className="h-2.5 w-2.5 shrink-0" />
             {itemCount}
           </span>
         </div>
 
         {/* Row 3: Status pill + Total */}
-        <div className="flex items-center justify-between mt-1.5 gap-2">
+        <div className="flex items-center justify-between mt-1.5 gap-2 min-w-0">
           <span className={cn(
-            'inline-flex items-center gap-1 text-[9.5px] font-bold uppercase tracking-wider',
+            'inline-flex items-center gap-1 text-[9.5px] font-bold uppercase tracking-wider shrink-0',
             'border rounded-full px-1.5 py-0.5',
             style.pill,
           )}>
             {style.label}
           </span>
-          <span className="text-[13px] font-bold text-foreground tabular-nums" dir="ltr">
+          <span className="text-[13px] font-bold text-foreground tabular-nums shrink-0" dir="ltr">
             {centsToMad(order.total)}<span className="text-[9px] font-medium text-muted-foreground ml-0.5">MAD</span>
           </span>
         </div>

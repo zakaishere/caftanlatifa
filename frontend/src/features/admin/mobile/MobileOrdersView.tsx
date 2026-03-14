@@ -126,17 +126,23 @@ export function MobileOrdersView() {
   const pendingCount = counts['PENDING'] ?? 0;
 
   return (
-    // Strictly no overflow-x. The bottom padding provides space above the mobile bottom nav.
-    <div className="w-full max-w-full overflow-x-hidden min-h-full pb-28">
+    // Root wrapper: must NEVER be wider than the viewport.
+    // overflow-x-hidden clips any accidental overflow at this level.
+    // pb-28 gives space above the sticky mobile bottom nav.
+    <div
+      className="w-full max-w-full overflow-x-hidden min-h-svh pb-28 box-border"
+      style={{ contain: 'layout' }}
+    >
 
       {/* ── Sticky command bar ── */}
-      <div className="sticky top-0 z-30 bg-background/95 backdrop-blur-sm border-b border-border/40">
+      {/* overflow-x-hidden + w-full here prevents the backdrop-blur from expanding layout */}
+      <div className="sticky top-0 z-30 w-full overflow-x-hidden bg-background/95 backdrop-blur-sm border-b border-border/40 box-border">
 
         {/* Page title row */}
-        <div className="flex items-center justify-between px-4 pt-4 pb-2">
-          <div>
+        <div className="flex items-center justify-between px-4 pt-4 pb-2 w-full min-w-0">
+          <div className="min-w-0 flex-1 mr-3">
             <h1 className="text-[17px] font-bold tracking-tight text-foreground">Orders</h1>
-            <p className="text-[11px] text-muted-foreground mt-0.5">
+            <p className="text-[11px] text-muted-foreground mt-0.5 truncate">
               {orders.length} total
               {pendingCount > 0 && (
                 <span className="ml-1.5 text-amber-600 font-semibold">· {pendingCount} pending</span>
@@ -148,23 +154,23 @@ export function MobileOrdersView() {
             onClick={() => refetch()}
             disabled={isFetching}
             aria-label="Refresh orders"
-            className="h-9 w-9 rounded-xl flex items-center justify-center border border-border/50 bg-card active:bg-muted transition-colors"
+            className="h-9 w-9 shrink-0 rounded-xl flex items-center justify-center border border-border/50 bg-card active:bg-muted transition-colors"
           >
             <RefreshCw className={cn('h-4 w-4 text-muted-foreground', isFetching && 'animate-spin')} />
           </button>
         </div>
 
         {/* Search input */}
-        <div className="px-4 pb-2.5">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground/50" />
+        <div className="px-4 pb-2.5 w-full box-border">
+          <div className="relative w-full">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground/50 pointer-events-none" />
             <input
               type="search"
               placeholder="Search name, ID, or phone…"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className={cn(
-                'w-full h-9 rounded-xl pl-9 pr-9 text-[13px]',
+                'w-full h-9 rounded-xl pl-9 pr-9 text-[13px] box-border',
                 'bg-muted/40 border border-border/30',
                 'placeholder:text-muted-foreground/40 text-foreground',
                 'focus:outline-none focus:ring-1 focus:ring-ring focus:bg-background',
@@ -183,8 +189,8 @@ export function MobileOrdersView() {
           </div>
         </div>
 
-        {/* Status filter chips */}
-        <div className="flex gap-1.5 px-4 pb-3 overflow-x-auto scrollbar-none">
+        {/* Status filter chips — scrollable horizontally but clips at container edge */}
+        <div className="flex gap-1.5 px-4 pb-3 overflow-x-auto scrollbar-none w-full box-border">
           {STATUS_FILTERS.map(({ key, label }) => {
             const count = key ? (counts[key] ?? 0) : counts.all;
             const isActive = activeFilter === key;

@@ -93,7 +93,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   };
 
   return (
-    <div className="min-h-screen flex bg-background overflow-x-hidden" suppressHydrationWarning>
+    <div className="min-h-screen flex bg-background overflow-x-hidden w-full max-w-full" suppressHydrationWarning>
       {/* Desktop Sidebar */}
       <aside className="hidden md:block w-64 fixed inset-y-0 start-0 z-50 border-e border-sidebar-border">
         <SidebarContent />
@@ -119,7 +119,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       </div>
 
       {/* Main Content Area */}
-      <main className="flex-1 md:ml-64 pt-16 md:pt-0 min-h-screen flex flex-col">
+      <main className="flex-1 md:ml-64 pt-14 md:pt-0 min-h-screen flex flex-col overflow-x-hidden w-full max-w-full">
         {/* Desktop Header */}
         <header className="hidden md:flex h-16 items-center justify-between px-8 border-b border-neutral-200 bg-white sticky top-0 z-40">
            <div className="flex-1 flex items-center">
@@ -127,7 +127,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
            </div>
         </header>
         
-        <div className="flex-1 p-4 md:p-8 max-w-7xl mx-auto w-full">
+        <div className="flex-1 w-full max-w-full overflow-x-hidden md:max-w-7xl md:mx-auto md:px-8 md:py-8">
           {children}
         </div>
       </main>
