@@ -14,6 +14,7 @@ import { ImageUploader } from '@/components/ui/image-uploader';
 import { BusinessHoursEditor } from './BusinessHoursEditor';
 import { BusinessHoursConfig } from '@/lib/types';
 import { useTranslation } from '@/i18n/provider';
+import { AccountSettings } from './AccountSettings';
 
 export default function SettingsAdmin() {
   const { toast } = useToast();
@@ -100,6 +101,7 @@ export default function SettingsAdmin() {
       </div>
 
       <div className="grid gap-6">
+        <AccountSettings />
         <Card>
           <CardHeader className="text-start">
             <CardTitle>{t('admin.settings.generalInfo')}</CardTitle>

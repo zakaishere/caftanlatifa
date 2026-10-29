@@ -11,6 +11,7 @@ import type {
     createCategorySchema,
     updateSettingsSchema,
     registerSchema,
+    updateAccountSchema,
 } from '../validators/admin.validator.js';
 
 type CreateProductInput = z.infer<typeof createProductSchema>;
@@ -35,6 +36,27 @@ function generateSlug(name: string): string {
 const SALT_ROUNDS = 12;
 
 export class AdminService {
+    static async updateAccount(id: string, data: z.infer<typeof updateAccountSchema>) {
+        const admin = await prisma.adminUser.findUnique({ where: { id } });
+        if (!admin || !await bcrypt.compare(data.currentPassword, admin.password)) {
+            throw new AppError(401, 'Current password is incorrect', 'INVALID_CREDENTIALS');
+        }
+        try {
+            return await prisma.adminUser.update({
+                where: { id },
+                data: {
+                    email: data.email,
+                    ...(data.newPassword && { password: await bcrypt.hash(data.newPassword, SALT_ROUNDS) }),
+                },
+                select: { id: true, username: true, email: true, createdAt: true },
+            });
+        } catch (error) {
+            if ((error as { code?: string }).code === 'P2002') {
+                throw new AppError(409, 'Email is already in use', 'CONFLICT');
+            }
+            throw error;
+        }
+    }
     // ─── Auth ─────────────────────────────────────────────────────────────────
 
     static async login(email: string, password: string): Promise<string> {

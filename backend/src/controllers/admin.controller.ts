@@ -11,7 +11,8 @@ import {
     updateProductSchema,
     createCategorySchema,
     updateOrderStatusSchema,
-    updateSettingsSchema
+    updateSettingsSchema,
+    updateAccountSchema
 } from '../validators/admin.validator.js';
 
 const COOKIE_NAME = 'admin_token';
@@ -24,6 +25,14 @@ const COOKIE_OPTIONS = {
 };
 
 export class AdminController {
+    static updateAccount = asyncHandler(async (req: Request, res: Response) => {
+        const parsed = updateAccountSchema.safeParse(req.body);
+        if (!parsed.success) {
+            throw new AppError(400, 'Enter a valid email, current password, and a new password of 12–72 characters', 'VALIDATION_ERROR');
+        }
+        const admin = await AdminService.updateAccount(req.user!.id, parsed.data);
+        res.json(admin);
+    });
     // ----- Auth -----
     static login = asyncHandler(async (req: Request, res: Response) => {
         const { email, password } = loginSchema.parse(req.body);

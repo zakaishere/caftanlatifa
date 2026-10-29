@@ -14,6 +14,7 @@ router.use(requireAdmin);
 
 // Auth – current user
 router.get('/me', AdminController.me);
+router.patch('/me', AdminController.updateAccount);
 router.post('/logout', AdminController.logout);
 
 // Dashboard

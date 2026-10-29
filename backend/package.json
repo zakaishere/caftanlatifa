@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "build": "prisma generate && prisma migrate deploy && tsc",
-    "start": "node dist/index.js",
+    "start": "npm run seed:admin && node dist/index.js",
+    "seed:admin": "node dist/scripts/create-admin.js",
+    "test:admin": "node --import tsx --test tests/seed-admin.test.ts tests/admin-account.test.ts",
     "keep-alive": "node scripts/keep-alive.js",
     "db:push": "prisma db push"
   },

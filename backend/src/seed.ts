@@ -1,7 +1,7 @@
 import { Pool } from 'pg';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '@prisma/client';
-import bcrypt from 'bcrypt';
+import { seedAdmin } from './lib/seed-admin.js';
 import "dotenv/config";
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
@@ -12,13 +12,7 @@ async function main() {
     console.log('🌱 Seeding database...');
 
     // ── Admin User ────────────────────────────────────────────────────────────
-    const hashedPassword = await bcrypt.hash('adminpassword123', 10);
-    const admin = await prisma.adminUser.upsert({
-        where: { username: 'admin' },
-        update: {},
-        create: { username: 'admin', email: 'admin@example.com', password: hashedPassword },
-    });
-    console.log(`✅ Admin: ${admin.email} / adminpassword123`);
+    await seedAdmin(prisma);
 
     // ── Settings ─────────────────────────────────────────────────────────────
     await prisma.settings.upsert({
@@ -184,7 +178,6 @@ async function main() {
     console.log(`✅ Seeded ${productCount} new products (skipped duplicates)`);
 
     console.log('\n🎉 Database seeded successfully!');
-    console.log('   Admin login: admin@example.com / adminpassword123');
 }
 
 main()

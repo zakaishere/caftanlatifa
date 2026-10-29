@@ -1,11 +1,17 @@
 import { z } from 'zod';
 
+export const updateAccountSchema = z.object({
+    email: z.string().trim().email().transform(value => value.toLowerCase()),
+    currentPassword: z.string().min(1),
+    newPassword: z.string().min(12).max(72).optional(),
+});
+
 export const PRODUCT_SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'ONE_SIZE'] as const;
 export type ProductSizeValue = typeof PRODUCT_SIZES[number];
 
 // Auth schemas
 export const loginSchema = z.object({
-    email: z.string().email(),
+    email: z.string().trim().email().transform(value => value.toLowerCase()),
     password: z.string().min(6),
 });
 
