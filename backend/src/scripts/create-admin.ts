@@ -1,11 +1,12 @@
 ﻿import 'dotenv/config';
 import prisma from '../lib/prisma.js';
 import { seedAdmin } from '../lib/seed-admin.js';
+import { describeSeedError } from '../lib/seed-error.js';
 
 try {
     await seedAdmin(prisma);
-} catch {
-    console.error('Admin seed failed. Check SEED_ADMIN_EMAIL, SEED_ADMIN_PASSWORD (12-72 characters), and database access.');
+} catch (error) {
+    console.error(`Admin seed failed: ${describeSeedError(error)}`);
     process.exitCode = 1;
 } finally {
     await prisma.$disconnect();
