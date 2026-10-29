@@ -130,16 +130,6 @@ export class AdminService {
         // Revenue is stored in cents — convert to MAD for display
         const revenueInMad = Math.round((revenue._sum.total ?? 0) / 100);
 
-        const chartData = [
-            { name: 'Mon', total: 4000 },
-            { name: 'Tue', total: 3000 },
-            { name: 'Wed', total: 2000 },
-            { name: 'Thu', total: 2780 },
-            { name: 'Fri', total: 1890 },
-            { name: 'Sat', total: 2390 },
-            { name: 'Sun', total: 3490 },
-        ];
-
         return {
             kpis: [
                 { label: 'Total Revenue', value: `${revenueInMad} MAD`, trend: 'up' as const, change: '+12.5%' },
@@ -147,7 +137,6 @@ export class AdminService {
                 { label: 'Pending', value: pendingOrders.toString(), trend: 'neutral' as const, change: '0%' },
                 { label: 'Out of Stock', value: outOfStock.toString(), trend: 'down' as const, change: '-2' },
             ],
-            chartData,
             recentOrders,
         };
     }

@@ -113,7 +113,6 @@ export interface ApiStats {
         trend: 'up' | 'down' | 'neutral';
         change: string;
     }[];
-    chartData: { name: string; total: number }[];
     recentOrders: {
         id: string;
         customerName: string;

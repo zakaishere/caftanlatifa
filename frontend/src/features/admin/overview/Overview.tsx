@@ -3,23 +3,6 @@ import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow
-} from '@/components/ui/table';
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer
-} from 'recharts';
 import { ArrowUpRight, ArrowDownRight, MoreHorizontal, ShoppingBag, Loader2 } from 'lucide-react';
 import type { ApiStats, OrderStatus } from '@/lib/types';
 import { centsToMad } from '@/lib/types';
@@ -82,42 +65,9 @@ export default function AdminOverview() {
         ))}
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-        {/* Chart */}
-        <Card className="col-span-4 shadow-sm">
-          <CardHeader>
-            <CardTitle>{t('admin.dashboard.weeklyRevenue')}</CardTitle>
-          </CardHeader>
-          <CardContent className="ps-2">
-            <ResponsiveContainer width="100%" height={350}>
-              <BarChart data={(stats?.chartData ?? []).map(d => ({ ...d, name: t(`common.days.short.${d.name.toLowerCase()}`) }))}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
-                <XAxis
-                  dataKey="name"
-                  stroke="#888888"
-                  fontSize={12}
-                  tickLine={false}
-                  axisLine={false}
-                />
-                <YAxis
-                  stroke="#888888"
-                  fontSize={12}
-                  tickLine={false}
-                  axisLine={false}
-                  tickFormatter={(value) => `${value} ${t('common.currency')}`}
-                />
-                <Tooltip
-                  cursor={{ fill: 'hsl(var(--muted))' }}
-                  contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
-                />
-                <Bar dataKey="total" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-
+      <div>
         {/* Recent Orders */}
-        <Card className="col-span-3 shadow-sm">
+        <Card className="shadow-sm">
           <CardHeader>
             <CardTitle>{t('admin.dashboard.recentOrders')}</CardTitle>
           </CardHeader>
