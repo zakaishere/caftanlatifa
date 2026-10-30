@@ -23,6 +23,10 @@ test('first admin is hashed; rerunning after changing email and password preserv
         assert.ok(await bcrypt.compare(process.env.SEED_ADMIN_PASSWORD, stored!.password));
         stored!.email = 'changed@example.com';
         stored!.password = 'changed-password-hash';
+        // Deployment still has the original bootstrap credentials configured.
+        await seedAdmin(prisma);
+        assert.equal(stored?.email, 'changed@example.com');
+        assert.equal(stored?.password, 'changed-password-hash');
         delete process.env.SEED_ADMIN_EMAIL;
         delete process.env.SEED_ADMIN_PASSWORD;
         await seedAdmin(prisma);
