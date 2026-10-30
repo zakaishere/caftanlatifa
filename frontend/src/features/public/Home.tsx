@@ -1,6 +1,7 @@
 "use client";
 import Link from 'next/link';
 import Image from 'next/image';
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, Truck, CreditCard, Star, Loader2, CheckCircle, Sparkles } from 'lucide-react';
@@ -8,10 +9,11 @@ import { ProductCard } from '@/components/ui/product-card';
 import type { ApiInitData } from '@/lib/types';
 import { useTranslation } from '@/i18n/provider';
 
-const PLACEHOLDER_HERO = "https://images.unsplash.com/photo-1583391733956-6c78276477e2?q=80&w=1974&auto=format&fit=crop";
+const PLACEHOLDER_HERO = '/background.jpeg';
 
 export default function Home() {
   const { t } = useTranslation();
+  const [failedHeroImage, setFailedHeroImage] = useState<string | null>(null);
   
   const { data, isLoading } = useQuery<ApiInitData>({
     queryKey: ['/api/public/init'],
@@ -21,6 +23,7 @@ export default function Home() {
   const featuredProducts = data?.featuredProducts ?? [];
   const settings = data?.settings;
   const heroImage = settings?.heroImage || PLACEHOLDER_HERO;
+  const heroSource = failedHeroImage === heroImage ? PLACEHOLDER_HERO : heroImage;
 
   return (
     <div className="flex flex-col bg-[#FAF7F2] min-h-screen">
@@ -31,7 +34,10 @@ export default function Home() {
       <section className="relative w-full overflow-hidden min-h-[55vh] flex flex-col justify-center lg:min-h-[clamp(420px,60vh,620px)]">
         {/* Background image */}
         <Image
-          src={heroImage}
+          src={heroSource}
+          onError={() => {
+            if (heroSource !== PLACEHOLDER_HERO) setFailedHeroImage(heroImage);
+          }}
           alt={settings?.storeName ?? 'Caftan Latifa'}
           fill
           sizes="100vw"

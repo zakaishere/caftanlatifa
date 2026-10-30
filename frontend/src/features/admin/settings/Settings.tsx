@@ -9,7 +9,7 @@ import { Switch } from '@/components/ui/switch';
 import { Save, Loader2, ImageIcon } from 'lucide-react';
 import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
-import { ApiSettings, centsToMad } from '@/lib/types';
+import { ApiSettings, ApiInitData, centsToMad } from '@/lib/types';
 import { ImageUploader } from '@/components/ui/image-uploader';
 import { BusinessHoursEditor } from './BusinessHoursEditor';
 import { BusinessHoursConfig } from '@/lib/types';
@@ -59,8 +59,11 @@ export default function SettingsAdmin() {
       const res = await apiRequest('PATCH', '/api/admin/settings', payload);
       return res.json();
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/settings'] });
+    onSuccess: (savedSettings: ApiSettings) => {
+      queryClient.setQueryData(['/api/admin/settings'], savedSettings);
+      queryClient.setQueryData<ApiInitData>(['/api/public/init'], current =>
+        current ? { ...current, settings: savedSettings } : current
+      );
       // Since public configs depend on settings, invalidate them too
       queryClient.invalidateQueries({ queryKey: ['/api/public/init'] });
       toast({ title: t('admin.settings.toast.success') });

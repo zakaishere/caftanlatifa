@@ -6,6 +6,7 @@ import { createOrderSchema, productParamsSchema, contactSchema } from '../valida
 export class PublicController {
     static getInitData = asyncHandler(async (req: Request, res: Response) => {
         const data = await PublicService.getInitData();
+        res.set('Cache-Control', 'no-store');
         res.json(data);
     });
 

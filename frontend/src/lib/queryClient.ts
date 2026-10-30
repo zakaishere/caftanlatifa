@@ -68,3 +68,10 @@ export const queryClient = new QueryClient({
     },
   },
 });
+
+// Store settings can change in another tab while the storefront is open.
+queryClient.setQueryDefaults(['/api/public/init'], {
+  staleTime: 0,
+  refetchOnMount: 'always',
+  refetchOnWindowFocus: true,
+});
